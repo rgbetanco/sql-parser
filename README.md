@@ -21,3 +21,9 @@ SELECT [ ALL | DISTINCT ]
     [ <GROUP BY> ]   
     [ HAVING < search_condition > ]   
 ```
+## Usage
+```
+git clone https://github.com/rgbetanco/sql-parser.git
+make
+select "name" from "city";
+```

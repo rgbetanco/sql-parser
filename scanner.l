@@ -11,10 +11,10 @@ from|FROM               {return FROM;}
 
 [A-Za-z][A-Za-z0-9_]*   {
                             yylval.strVal = strdup(yytext);
-                            return NAME;   
+                            return STRING;   
                         }
 
-[;\n,]                   {return *yytext;}
+[;\n,\"\']                   {return *yytext;}
 
 .                       ;
  

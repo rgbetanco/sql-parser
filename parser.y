@@ -1,11 +1,11 @@
-%token SELECT FROM NAME
+%token SELECT FROM STRING
 
 %union{
     char* strVal;
     int intVal;
 }
 
-%type <strVal> NAME
+%type <strVal> STRING
 
 %{
     #include <stdio.h> 
@@ -25,11 +25,16 @@ statement:
     SELECT COLUMN FROM TABLE {}
     ;
 COLUMN:
-    NAME    {printf("column name : %s\n", $1); free($1);}
-    |NAME ',' NAME {printf("column anem : %s and %s\n", $1, $3); free($1); free($3);}
+    NAME
     ;
 TABLE:
-    NAME    {printf("table name : %s\n", $1); free($1);}
+    NAME
+    ;
+NAME:
+    STRING    {printf("column name : %s\n", $1); free($1);}
+    |STRING ',' STRING {printf("column anem : %s and %s\n", $1, $3); free($1); free($3);}
+    |'\'' STRING '\'' {printf("column name : %s\n", $2); free($2);}
+    |'\"' STRING '\"' {printf("column name : %s\n", $2); free($2);}
     ;
 
 %%

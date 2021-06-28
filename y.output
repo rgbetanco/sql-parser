@@ -8,35 +8,43 @@ Grammar
     3 statement: SELECT COLUMN FROM TABLE
 
     4 COLUMN: NAME
-    5       | NAME ',' NAME
 
-    6 TABLE: NAME
+    5 TABLE: NAME
+
+    6 NAME: STRING
+    7     | STRING ',' STRING
+    8     | '\'' STRING '\''
+    9     | '"' STRING '"'
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 '\n' (10) 1
-',' (44) 5
+'"' (34) 9
+'\'' (39) 8
+',' (44) 7
 ';' (59) 1
 error (256)
 SELECT (258) 3
 FROM (259) 3
-NAME (260) 4 5 6
+STRING (260) 6 7 8 9
 
 
 Nonterminals, with rules where they appear
 
-$accept (9)
+$accept (11)
     on left: 0
-statement_list (10)
+statement_list (12)
     on left: 1 2, on right: 0 1
-statement (11)
+statement (13)
     on left: 3, on right: 1
-COLUMN (12)
-    on left: 4 5, on right: 3
-TABLE (13)
-    on left: 6, on right: 3
+COLUMN (14)
+    on left: 4, on right: 3
+TABLE (15)
+    on left: 5, on right: 3
+NAME (16)
+    on left: 6 7 8 9, on right: 4 5
 
 
 State 0
@@ -70,81 +78,136 @@ State 3
 
     3 statement: SELECT . COLUMN FROM TABLE
 
-    NAME  shift, and go to state 5
+    STRING  shift, and go to state 5
+    '\''    shift, and go to state 6
+    '"'     shift, and go to state 7
 
-    COLUMN  go to state 6
+    COLUMN  go to state 8
+    NAME    go to state 9
 
 
 State 4
 
     1 statement_list: statement_list statement . ';' '\n'
 
-    ';'  shift, and go to state 7
+    ';'  shift, and go to state 10
 
 
 State 5
 
-    4 COLUMN: NAME .
-    5       | NAME . ',' NAME
+    6 NAME: STRING .
+    7     | STRING . ',' STRING
 
-    ','  shift, and go to state 8
+    ','  shift, and go to state 11
 
-    $default  reduce using rule 4 (COLUMN)
+    $default  reduce using rule 6 (NAME)
 
 
 State 6
 
-    3 statement: SELECT COLUMN . FROM TABLE
+    8 NAME: '\'' . STRING '\''
 
-    FROM  shift, and go to state 9
+    STRING  shift, and go to state 12
 
 
 State 7
 
-    1 statement_list: statement_list statement ';' . '\n'
+    9 NAME: '"' . STRING '"'
 
-    '\n'  shift, and go to state 10
+    STRING  shift, and go to state 13
 
 
 State 8
 
-    5 COLUMN: NAME ',' . NAME
+    3 statement: SELECT COLUMN . FROM TABLE
 
-    NAME  shift, and go to state 11
+    FROM  shift, and go to state 14
 
 
 State 9
 
-    3 statement: SELECT COLUMN FROM . TABLE
+    4 COLUMN: NAME .
 
-    NAME  shift, and go to state 12
-
-    TABLE  go to state 13
+    $default  reduce using rule 4 (COLUMN)
 
 
 State 10
+
+    1 statement_list: statement_list statement ';' . '\n'
+
+    '\n'  shift, and go to state 15
+
+
+State 11
+
+    7 NAME: STRING ',' . STRING
+
+    STRING  shift, and go to state 16
+
+
+State 12
+
+    8 NAME: '\'' STRING . '\''
+
+    '\''  shift, and go to state 17
+
+
+State 13
+
+    9 NAME: '"' STRING . '"'
+
+    '"'  shift, and go to state 18
+
+
+State 14
+
+    3 statement: SELECT COLUMN FROM . TABLE
+
+    STRING  shift, and go to state 5
+    '\''    shift, and go to state 6
+    '"'     shift, and go to state 7
+
+    TABLE  go to state 19
+    NAME   go to state 20
+
+
+State 15
 
     1 statement_list: statement_list statement ';' '\n' .
 
     $default  reduce using rule 1 (statement_list)
 
 
-State 11
+State 16
 
-    5 COLUMN: NAME ',' NAME .
+    7 NAME: STRING ',' STRING .
 
-    $default  reduce using rule 5 (COLUMN)
-
-
-State 12
-
-    6 TABLE: NAME .
-
-    $default  reduce using rule 6 (TABLE)
+    $default  reduce using rule 7 (NAME)
 
 
-State 13
+State 17
+
+    8 NAME: '\'' STRING '\'' .
+
+    $default  reduce using rule 8 (NAME)
+
+
+State 18
+
+    9 NAME: '"' STRING '"' .
+
+    $default  reduce using rule 9 (NAME)
+
+
+State 19
 
     3 statement: SELECT COLUMN FROM TABLE .
 
     $default  reduce using rule 3 (statement)
+
+
+State 20
+
+    5 TABLE: NAME .
+
+    $default  reduce using rule 5 (TABLE)
