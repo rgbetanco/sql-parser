@@ -6,17 +6,17 @@
 
 %%
 
-select                  {return SELECT;}
-from                    {return FROM;}
+select|SELECT           {return SELECT;}
+from|FROM               {return FROM;}
 
 [A-Za-z][A-Za-z0-9_]*   {
                             yylval.strVal = strdup(yytext);
                             return NAME;   
                         }
 
-[;\n]                   {return *yytext;}
+[;\n,]                   {return *yytext;}
 
-.  ;
+.                       ;
  
 %%
 

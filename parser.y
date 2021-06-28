@@ -22,14 +22,15 @@ statement_list:
     |
     ;
 statement:
-    SELECT NAME FROM NAME {printf("%s %s\n", $2, $4);}
+    SELECT COLUMN FROM TABLE {}
     ;
-/*COLUMN:
-    NAME    {printf("column name : %s", $1);}
+COLUMN:
+    NAME    {printf("column name : %s\n", $1); free($1);}
+    |NAME ',' NAME {printf("column anem : %s and %s\n", $1, $3); free($1); free($3);}
     ;
 TABLE:
-    NAME
-    ;*/
+    NAME    {printf("table name : %s\n", $1); free($1);}
+    ;
 
 %%
 

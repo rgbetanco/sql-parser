@@ -5,28 +5,38 @@ Grammar
     1 statement_list: statement_list statement ';' '\n'
     2               | %empty
 
-    3 statement: SELECT NAME FROM NAME
+    3 statement: SELECT COLUMN FROM TABLE
+
+    4 COLUMN: NAME
+    5       | NAME ',' NAME
+
+    6 TABLE: NAME
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 '\n' (10) 1
+',' (44) 5
 ';' (59) 1
 error (256)
 SELECT (258) 3
 FROM (259) 3
-NAME (260) 3
+NAME (260) 4 5 6
 
 
 Nonterminals, with rules where they appear
 
-$accept (8)
+$accept (9)
     on left: 0
-statement_list (9)
+statement_list (10)
     on left: 1 2, on right: 0 1
-statement (10)
+statement (11)
     on left: 3, on right: 1
+COLUMN (12)
+    on left: 4 5, on right: 3
+TABLE (13)
+    on left: 6, on right: 3
 
 
 State 0
@@ -58,48 +68,83 @@ State 2
 
 State 3
 
-    3 statement: SELECT . NAME FROM NAME
+    3 statement: SELECT . COLUMN FROM TABLE
 
     NAME  shift, and go to state 5
+
+    COLUMN  go to state 6
 
 
 State 4
 
     1 statement_list: statement_list statement . ';' '\n'
 
-    ';'  shift, and go to state 6
+    ';'  shift, and go to state 7
 
 
 State 5
 
-    3 statement: SELECT NAME . FROM NAME
+    4 COLUMN: NAME .
+    5       | NAME . ',' NAME
 
-    FROM  shift, and go to state 7
+    ','  shift, and go to state 8
+
+    $default  reduce using rule 4 (COLUMN)
 
 
 State 6
 
-    1 statement_list: statement_list statement ';' . '\n'
+    3 statement: SELECT COLUMN . FROM TABLE
 
-    '\n'  shift, and go to state 8
+    FROM  shift, and go to state 9
 
 
 State 7
 
-    3 statement: SELECT NAME FROM . NAME
+    1 statement_list: statement_list statement ';' . '\n'
 
-    NAME  shift, and go to state 9
+    '\n'  shift, and go to state 10
 
 
 State 8
+
+    5 COLUMN: NAME ',' . NAME
+
+    NAME  shift, and go to state 11
+
+
+State 9
+
+    3 statement: SELECT COLUMN FROM . TABLE
+
+    NAME  shift, and go to state 12
+
+    TABLE  go to state 13
+
+
+State 10
 
     1 statement_list: statement_list statement ';' '\n' .
 
     $default  reduce using rule 1 (statement_list)
 
 
-State 9
+State 11
 
-    3 statement: SELECT NAME FROM NAME .
+    5 COLUMN: NAME ',' NAME .
+
+    $default  reduce using rule 5 (COLUMN)
+
+
+State 12
+
+    6 TABLE: NAME .
+
+    $default  reduce using rule 6 (TABLE)
+
+
+State 13
+
+    3 statement: SELECT COLUMN FROM TABLE .
 
     $default  reduce using rule 3 (statement)
