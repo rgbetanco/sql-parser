@@ -1,9 +1,11 @@
 CC = gcc
 OUT = parser.out
+SCANNER = scanner.l
+PARSER = parser.y
 
 all : 
-	flex parser.l
-	bison -vdty parser.y
+	flex $(SCANNER)
+	bison -vdty $(PARSER)
 	$(CC) -o $(OUT) lex.yy.c y.tab.c
 
 clean : 
