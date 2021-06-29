@@ -1,3 +1,33 @@
+Nonterminals useless in grammar
+
+   select_expr_list
+   select_expr
+   from_statement
+   table
+
+
+Terminals unused in grammar
+
+   NAME
+   APPROXNUM
+   FROM
+   ','
+
+
+Rules useless in grammar
+
+   18 select_expr_list: '*'
+   19                 | select_expr
+   20                 | select_expr_list ',' select_expr
+
+   21 select_expr: NAME
+   22            | %empty
+
+   23 from_statement: FROM table
+
+   24 table: NAME
+
+
 Grammar
 
     0 $accept: statement_list $end
@@ -5,52 +35,67 @@ Grammar
     1 statement_list: statement_list statement ';' '\n'
     2               | %empty
 
-    3 statement: SELECT select_list from_statement
+    3 statement: select_statement
 
-    4 select_list: '*'
-    5            | name
-    6            | name ',' name
+    4 expr: INTNUMBER
+    5     | '(' expr ')'
+    6     | expr '+' expr
+    7     | expr '-' expr
+    8     | expr '*' expr
+    9     | expr '/' expr
+   10     | %empty
 
-    7 from_statement: FROM table
+   11 select_statement: SELECT select_options top_options
 
-    8 table: name
+   12 select_options: %empty
+   13               | select_options ALL
+   14               | select_options DISTINCT
 
-    9 name: STRING
-   10     | '\'' STRING '\''
-   11     | '"' STRING '"'
+   15 top_options: %empty
+   16            | top_options TOP expr PERCENT
+   17            | top_options TOP expr
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 '\n' (10) 1
-'"' (34) 11
-'\'' (39) 10
-'*' (42) 4
-',' (44) 6
+'(' (40) 5
+')' (41) 5
+'*' (42) 8
+'+' (43) 6
+',' (44)
+'-' (45) 7
+'/' (47) 9
 ';' (59) 1
 error (256)
-SELECT (258) 3
-FROM (259) 7
-STRING (260) 9 10 11
+NAME (258)
+INTNUMBER (259) 4
+APPROXNUM (260)
+SELECT (261) 11
+FROM (262)
+ALL (263) 13
+DISTINCT (264) 14
+TOP (265) 16 17
+PERCENT (266) 16
 
 
 Nonterminals, with rules where they appear
 
-$accept (12)
+$accept (21)
     on left: 0
-statement_list (13)
+statement_list (22)
     on left: 1 2, on right: 0 1
-statement (14)
+statement (23)
     on left: 3, on right: 1
-select_list (15)
-    on left: 4 5 6, on right: 3
-from_statement (16)
-    on left: 7, on right: 3
-table (17)
-    on left: 8, on right: 7
-name (18)
-    on left: 9 10 11, on right: 5 6 8
+expr (24)
+    on left: 4 5 6 7 8 9 10, on right: 5 6 7 8 9 16 17
+select_statement (25)
+    on left: 11, on right: 3
+select_options (26)
+    on left: 12 13 14, on right: 11 13 14
+top_options (27)
+    on left: 15 16 17, on right: 11 16 17
 
 
 State 0
@@ -70,7 +115,8 @@ State 1
     $end    shift, and go to state 2
     SELECT  shift, and go to state 3
 
-    statement  go to state 4
+    statement         go to state 4
+    select_statement  go to state 5
 
 
 State 2
@@ -82,159 +128,252 @@ State 2
 
 State 3
 
-    3 statement: SELECT . select_list from_statement
+   11 select_statement: SELECT . select_options top_options
 
-    STRING  shift, and go to state 5
-    '*'     shift, and go to state 6
-    '\''    shift, and go to state 7
-    '"'     shift, and go to state 8
+    $default  reduce using rule 12 (select_options)
 
-    select_list  go to state 9
-    name         go to state 10
+    select_options  go to state 6
 
 
 State 4
 
     1 statement_list: statement_list statement . ';' '\n'
 
-    ';'  shift, and go to state 11
+    ';'  shift, and go to state 7
 
 
 State 5
 
-    9 name: STRING .
-
-    $default  reduce using rule 9 (name)
-
-
-State 6
-
-    4 select_list: '*' .
-
-    $default  reduce using rule 4 (select_list)
-
-
-State 7
-
-   10 name: '\'' . STRING '\''
-
-    STRING  shift, and go to state 12
-
-
-State 8
-
-   11 name: '"' . STRING '"'
-
-    STRING  shift, and go to state 13
-
-
-State 9
-
-    3 statement: SELECT select_list . from_statement
-
-    FROM  shift, and go to state 14
-
-    from_statement  go to state 15
-
-
-State 10
-
-    5 select_list: name .
-    6            | name . ',' name
-
-    ','  shift, and go to state 16
-
-    $default  reduce using rule 5 (select_list)
-
-
-State 11
-
-    1 statement_list: statement_list statement ';' . '\n'
-
-    '\n'  shift, and go to state 17
-
-
-State 12
-
-   10 name: '\'' STRING . '\''
-
-    '\''  shift, and go to state 18
-
-
-State 13
-
-   11 name: '"' STRING . '"'
-
-    '"'  shift, and go to state 19
-
-
-State 14
-
-    7 from_statement: FROM . table
-
-    STRING  shift, and go to state 5
-    '\''    shift, and go to state 7
-    '"'     shift, and go to state 8
-
-    table  go to state 20
-    name   go to state 21
-
-
-State 15
-
-    3 statement: SELECT select_list from_statement .
+    3 statement: select_statement .
 
     $default  reduce using rule 3 (statement)
 
 
-State 16
+State 6
 
-    6 select_list: name ',' . name
+   11 select_statement: SELECT select_options . top_options
+   13 select_options: select_options . ALL
+   14               | select_options . DISTINCT
 
-    STRING  shift, and go to state 5
-    '\''    shift, and go to state 7
-    '"'     shift, and go to state 8
+    ALL       shift, and go to state 8
+    DISTINCT  shift, and go to state 9
 
-    name  go to state 22
+    $default  reduce using rule 15 (top_options)
+
+    top_options  go to state 10
 
 
-State 17
+State 7
+
+    1 statement_list: statement_list statement ';' . '\n'
+
+    '\n'  shift, and go to state 11
+
+
+State 8
+
+   13 select_options: select_options ALL .
+
+    $default  reduce using rule 13 (select_options)
+
+
+State 9
+
+   14 select_options: select_options DISTINCT .
+
+    $default  reduce using rule 14 (select_options)
+
+
+State 10
+
+   11 select_statement: SELECT select_options top_options .
+   16 top_options: top_options . TOP expr PERCENT
+   17            | top_options . TOP expr
+
+    TOP  shift, and go to state 12
+
+    $default  reduce using rule 11 (select_statement)
+
+
+State 11
 
     1 statement_list: statement_list statement ';' '\n' .
 
     $default  reduce using rule 1 (statement_list)
 
 
+State 12
+
+   16 top_options: top_options TOP . expr PERCENT
+   17            | top_options TOP . expr
+
+    INTNUMBER  shift, and go to state 13
+    '('        shift, and go to state 14
+
+    $default  reduce using rule 10 (expr)
+
+    expr  go to state 15
+
+
+State 13
+
+    4 expr: INTNUMBER .
+
+    $default  reduce using rule 4 (expr)
+
+
+State 14
+
+    5 expr: '(' . expr ')'
+
+    INTNUMBER  shift, and go to state 13
+    '('        shift, and go to state 14
+
+    $default  reduce using rule 10 (expr)
+
+    expr  go to state 16
+
+
+State 15
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   16 top_options: top_options TOP expr . PERCENT
+   17            | top_options TOP expr .
+
+    PERCENT  shift, and go to state 17
+    '+'      shift, and go to state 18
+    '-'      shift, and go to state 19
+    '*'      shift, and go to state 20
+    '/'      shift, and go to state 21
+
+    $default  reduce using rule 17 (top_options)
+
+
+State 16
+
+    5 expr: '(' expr . ')'
+    6     | expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+
+    '+'  shift, and go to state 18
+    '-'  shift, and go to state 19
+    '*'  shift, and go to state 20
+    '/'  shift, and go to state 21
+    ')'  shift, and go to state 22
+
+
+State 17
+
+   16 top_options: top_options TOP expr PERCENT .
+
+    $default  reduce using rule 16 (top_options)
+
+
 State 18
 
-   10 name: '\'' STRING '\'' .
+    6 expr: expr '+' . expr
 
-    $default  reduce using rule 10 (name)
+    INTNUMBER  shift, and go to state 13
+    '('        shift, and go to state 14
+
+    $default  reduce using rule 10 (expr)
+
+    expr  go to state 23
 
 
 State 19
 
-   11 name: '"' STRING '"' .
+    7 expr: expr '-' . expr
 
-    $default  reduce using rule 11 (name)
+    INTNUMBER  shift, and go to state 13
+    '('        shift, and go to state 14
+
+    $default  reduce using rule 10 (expr)
+
+    expr  go to state 24
 
 
 State 20
 
-    7 from_statement: FROM table .
+    8 expr: expr '*' . expr
 
-    $default  reduce using rule 7 (from_statement)
+    INTNUMBER  shift, and go to state 13
+    '('        shift, and go to state 14
+
+    $default  reduce using rule 10 (expr)
+
+    expr  go to state 25
 
 
 State 21
 
-    8 table: name .
+    9 expr: expr '/' . expr
 
-    $default  reduce using rule 8 (table)
+    INTNUMBER  shift, and go to state 13
+    '('        shift, and go to state 14
+
+    $default  reduce using rule 10 (expr)
+
+    expr  go to state 26
 
 
 State 22
 
-    6 select_list: name ',' name .
+    5 expr: '(' expr ')' .
 
-    $default  reduce using rule 6 (select_list)
+    $default  reduce using rule 5 (expr)
+
+
+State 23
+
+    6 expr: expr . '+' expr
+    6     | expr '+' expr .
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+
+    '*'  shift, and go to state 20
+    '/'  shift, and go to state 21
+
+    $default  reduce using rule 6 (expr)
+
+
+State 24
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    7     | expr '-' expr .
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+
+    '*'  shift, and go to state 20
+    '/'  shift, and go to state 21
+
+    $default  reduce using rule 7 (expr)
+
+
+State 25
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    8     | expr '*' expr .
+    9     | expr . '/' expr
+
+    $default  reduce using rule 8 (expr)
+
+
+State 26
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+    9     | expr '/' expr .
+
+    $default  reduce using rule 9 (expr)
