@@ -13,10 +13,14 @@ from|FROM               {return FROM;}
                             yylval.strVal = strdup(yytext);
                             return STRING;   
                         }
+[A-Za-z][A-Za-z0-9_]*\.[[A-Za-z][A-Za-z0-9_]*   {
+                            yylval.strVal = strdup(yytext);
+                            return STRING;
+                        }                        
 
-[;\n,\"\']                   {return *yytext;}
+[;\n,\"\'*]             {return *yytext;}
 
-.                       ;
+[ \t]                   ;
  
 %%
 

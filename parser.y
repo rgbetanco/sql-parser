@@ -5,7 +5,7 @@
     int intVal;
 }
 
-%type <strVal> STRING
+%type <strVal> STRING name
 
 %{
     #include <stdio.h> 
@@ -22,19 +22,23 @@ statement_list:
     |
     ;
 statement:
-    SELECT COLUMN FROM TABLE {}
+    SELECT select_list from_statement
     ;
-COLUMN:
-    NAME
+select_list:
+    '*'
+    |name   {printf("select_list : %s\n", $1); free($1);}
+    |name ',' name {printf("select_list : %s, %s\n", $1, $3); free($1); free($3);}
     ;
-TABLE:
-    NAME
+from_statement:
+    FROM table
+    ; 
+table:
+    name    {printf("table name : %s\n", $1); free($1);}
     ;
-NAME:
-    STRING    {printf("column name : %s\n", $1); free($1);}
-    |STRING ',' STRING {printf("column anem : %s and %s\n", $1, $3); free($1); free($3);}
-    |'\'' STRING '\'' {printf("column name : %s\n", $2); free($2);}
-    |'\"' STRING '\"' {printf("column name : %s\n", $2); free($2);}
+name:
+    STRING              {$$ = strdup($1); free($1);}
+    |'\'' STRING '\''   {$$ = strdup($2); free($2);}
+    |'\"' STRING '\"'   {$$ = strdup($2); free($2);}
     ;
 
 %%
