@@ -15,6 +15,8 @@ percent|PERCENT         {return PERCENT;}
 as|AS                   {return AS;}
 with|WITH               {return WITH;}
 ties|TIES               {return TIES;}
+into|INTO               {return INTO;}
+where|WHERE             {return WHERE;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -38,7 +40,17 @@ ties|TIES               {return TIES;}
                         }
 
     /* operators */
-[;,()-+*/\n=]            {return *yytext;}
+[;,()-+*/\n=.]            {return *yytext;}
+
+    /* subtok */
+"="     {yylval.subtok = 4; return COMPARISON;}
+"<=>"   {yylval.subtok = 12; return COMPARISON;}
+">="    {yylval.subtok = 6; return COMPARISON;}
+">"     {yylval.subtok = 2; return COMPARISON;}
+"<="    {yylval.subtok = 5; return COMPARISON;}
+"<"     {yylval.subtok = 1; return COMPARISON;}
+"!="    |
+"<>"    {yylval.subtok = 3; return COMPARISON;}
 
     /* everything else */
 [ \t]                   ;

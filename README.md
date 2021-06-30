@@ -25,5 +25,16 @@ SELECT [ ALL | DISTINCT ]
 ```
 git clone https://github.com/rgbetanco/sql-parser.git
 make
-select "name" from "city";
+select name from city;
+```
+## Successful Statement
+```
+select name from city;
+select * from city;
+select name.* from city;
+select name, weather, t as traffic from city;
+SELECT FirstName, LastName, BaseRate, BaseRate * 40 AS GrossPay FROM DimEmployee;
+SELECT OrderDateKey, SUM(SalesAmount) AS TotalSales FROM FactInternetSales;
+SELECT TOP 5 PERCENT score INTO new_table FROM table;
+select name from table1, table2;
 ```
