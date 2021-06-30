@@ -4,7 +4,7 @@ SCANNER = scanner.l
 PARSER = parser.y
 
 all :
-	flex $(SCANNER)
+	flex -d $(SCANNER)
 	bison -vdty $(PARSER)
 	$(CC) -o $(OUT) lex.yy.c y.tab.c
 	./$(OUT)

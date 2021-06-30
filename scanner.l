@@ -12,6 +12,9 @@ all|ALL                 {return ALL;}
 distinct|DISTINCT       {return DISTINCT;}
 top|TOP                 {return TOP;}
 percent|PERCENT         {return PERCENT;}
+as|AS                   {return AS;}
+with|WITH               {return WITH;}
+ties|TIES               {return TIES;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -28,19 +31,19 @@ percent|PERCENT         {return PERCENT;}
                             yylval.floatVal = atof(yytext);
                             return APPROXNUM;
                         }*/
-
+    /*name */
 [A-Za-z][A-Za-z0-9_]*   {
                             yylval.strVal = strdup(yytext);
                             return NAME;   
-                        }     
+                        }
 
     /* operators */
-[;,()-+*/]               {return *yytext;}
+[;,()-+*/\n=]            {return *yytext;}
 
     /* everything else */
-[ \t\n]                  ;
-.                        {yyerror("mystery character '%c'", *yytext);}
- 
+[ \t]                   ;
+.                       {yyerror("mystery character '%c'", *yytext);}
+
 %%
 
 int yywrap()
