@@ -17,6 +17,11 @@ with|WITH               {return WITH;}
 ties|TIES               {return TIES;}
 into|INTO               {return INTO;}
 where|WHERE             {return WHERE;}
+like|LIKE               {return LIKE;}
+and|AND|&&|&            {return AND;}
+or|OR|\|\||\|           {return OR;}
+in|IN                   {return IN;}
+between|BETWEEN         {return BETWEEN;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -38,11 +43,17 @@ where|WHERE             {return WHERE;}
                             yylval.strVal = strdup(yytext);
                             return NAME;   
                         }
+	/* strings */
+'(\\.|''|[^'\n])*'   |
+\"(\\.|\"\"|[^"\n])*\"  { yylval.strVal = strdup(yytext); return STRING; }
+
+'(\\.|[^'\n])*$      { yyerror("Unterminated string"); }
+\"(\\.|[^"\n])*$    { yyerror("Unterminated string"); }             
 
     /* operators */
-[;,()-+*/\n=.]            {return *yytext;}
+[;,()-+*/\n.]            {return *yytext;}
 
-    /* subtok */
+    /* comparison operator */
 "="     {yylval.subtok = 4; return COMPARISON;}
 "<=>"   {yylval.subtok = 12; return COMPARISON;}
 ">="    {yylval.subtok = 6; return COMPARISON;}

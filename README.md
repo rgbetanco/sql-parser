@@ -37,4 +37,9 @@ SELECT FirstName, LastName, BaseRate, BaseRate * 40 AS GrossPay FROM DimEmployee
 SELECT OrderDateKey, SUM(SalesAmount) AS TotalSales FROM FactInternetSales;
 SELECT TOP 5 PERCENT score INTO new_table FROM table;
 select name from table1, table2;
+select name from table where id <= 4;
+SELECT EmployeeKey, LastName FROM DimEmployee WHERE LastName LIKE ('%Smi%');  
+SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey <= 500 AND LastName LIKE '%Smi%' AND FirstName LIKE '%A%';
+SELECT EmployeeKey, LastName FROM DimEmployee WHERE LastName IN ('Smith', 'Godfrey', 'Johnson');  
+SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey Between 100 AND 200;  
 ```

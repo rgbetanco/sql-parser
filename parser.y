@@ -1,4 +1,4 @@
-%token NAME INTNUMBER APPROXNUM
+%token NAME INTNUMBER APPROXNUM STRING
 
 /* reserved word */
 %token SELECT
@@ -12,6 +12,10 @@
 %token TIES
 %token INTO
 %token WHERE
+%token LIKE
+%token AND
+%token OR
+%token IN
 
 %union{
     char* strVal;
@@ -20,9 +24,20 @@
     int subtok;
 }
 
-%left <subtok> COMPARISON
+/* operators and precedence levels */
+%left OR
+%left AND
+%nonassoc LIKE IN
+%left '!'
+%left BETWEEN
+%left <subtok> COMPARISON /* = <> < > <= >= <=> */
+%left '|'
+%left '&'
+%left '+' '-'
+%left '*' '/' '%'
+%left '^'
 
-%type <strVal> NAME expr
+%type <strVal> NAME expr STRING
 %type <intVal> INTNUMBER
 %type <floatVal> APPROXNUM
 
@@ -43,6 +58,7 @@ statement_list:
     ;
 statement:
     select_statement
+    |STRING
     /*|delete_statement*/
     ;
 
@@ -55,8 +71,14 @@ expr:
     |expr '*' expr      {}
     |expr '/' expr      {}
     |expr COMPARISON expr
+    |expr AND expr
+    |expr OR expr
     |NAME               {printf("expression name %s\n", $1); free($1);}
     |NAME '.' NAME      {printf("expression field name %s.%s\n", $1, $3); free($1);}
+    |STRING             {printf("expression string %s\n", $1); free($1);}
+    |expr LIKE expr
+    |expr IN '(' val_list ')'
+    |expr BETWEEN expr AND expr %prec BETWEEN
     ;
 
 /****  function ****/    
@@ -73,14 +95,14 @@ val_list:
 
 /****  select statement  ****/
 select_statement:
-    SELECT select_options top_options /*select_expr_list opt_into opt_from_list opt_where*/ {printf("select\n");}
+    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where {printf("select\n");}
     ;
 select_options:
                                 {/*empty*/}
     |select_options ALL         {printf("select options \"all\"\n");}
     |select_options DISTINCT    {printf("select options \"distinct\"\n");}
     ;
-top_options:
+top_options:    /* 'top 5' is work but 'top (5)'' is not work maybe due to the grammar conflict */
                                     {/*empty*/}
     |top_options TOP expr PERCENT WITH TIES     {printf("select options \"top expr percent with ties\"\n");}
     |top_options TOP expr PERCENT               {printf("select options \"top expr percent\"\n");}
@@ -109,15 +131,15 @@ opt_from_list:
         {}
     |FROM opt_from
     ;
-opt_from:
+opt_from:   /* there is more statement need to parse */
     NAME
     |NAME '.' NAME
     |opt_from ',' opt_from
     ;
 opt_where:
         {}
-    |WHERE expr {printf("option where\n");}
-    ;
+    |WHERE expr
+
 %%
 
 int main(void)
