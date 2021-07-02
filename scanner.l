@@ -22,6 +22,11 @@ and|AND|&&|&            {return AND;}
 or|OR|\|\||\|           {return OR;}
 in|IN                   {return IN;}
 between|BETWEEN         {return BETWEEN;}
+group|GROUPO            {return GROUP;}
+by|BY                   {return BY;}
+rollup|ROLLUP           {return ROLLUP;}
+grouping|GROUPING       {return GROUPING;}
+sets|SETS               {return SETS;}
 
     /* interger numbers */
 -?[0-9]+                {

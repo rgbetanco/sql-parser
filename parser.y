@@ -16,6 +16,12 @@
 %token AND
 %token OR
 %token IN
+%token GROUP
+%token BY
+%token ROLLUP
+%token CUBE
+%token GROUPING
+%token SETS
 
 %union{
     char* strVal;
@@ -58,7 +64,6 @@ statement_list:
     ;
 statement:
     select_statement
-    |STRING
     /*|delete_statement*/
     ;
 
@@ -95,7 +100,7 @@ val_list:
 
 /****  select statement  ****/
 select_statement:
-    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where {printf("select\n");}
+    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby{printf("select\n");}
     ;
 select_options:
                                 {/*empty*/}
@@ -136,16 +141,56 @@ opt_from:   /* there is more statement need to parse */
     |NAME '.' NAME
     |opt_from ',' opt_from
     ;
+
+/**** where statement ****/
 opt_where:
         {}
     |WHERE expr
+    ;
 
+/**** group by statement ****/
+opt_groupby:
+        {}
+    |GROUP BY groupby_list
+    ;
+groupby_list:
+    groupby_statement
+    |groupby_list ',' groupby_statement
+    ;
+groupby_statement:
+    expr
+    |ROLLUP '(' groupby_expr_list ')'
+    |CUBE '(' groupby_expr_list ')'
+    |GROUPING SETS '(' grouping_set ')'
+    |'(' ')'
+    ;
+groupby_expr_list:
+    groupby_expr
+    |groupby_expr_list ',' groupby_expr
+    ;
+groupby_expr:
+    expr
+    |'(' groupby_expr ',' expr ')'
+    ;
+grouping_set:
+    '(' ')'
+    |grouping_set_item_list
+    ;
+grouping_set_item_list:
+    grouping_set_item
+    |grouping_set_item_list ',' grouping_set_item
+    ;
+grouping_set_item:
+    groupby_expr
+    |ROLLUP '(' groupby_expr_list ')'
+    |CUBE '(' groupby_expr_list ')'
+    ;
 %%
 
 int main(void)
 {
     #ifdef YYDEBUG
-    yydebug = 1;    //if yydebug = 1, it will show the degug info in command line
+    yydebug = 0;    //if yydebug = 1, it will show the degug info in command line
     #endif
 
     yyparse();

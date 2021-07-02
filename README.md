@@ -41,5 +41,8 @@ select name from table where id <= 4;
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE LastName LIKE ('%Smi%');  
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey <= 500 AND LastName LIKE '%Smi%' AND FirstName LIKE '%A%';
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE LastName IN ('Smith', 'Godfrey', 'Johnson');  
-SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey Between 100 AND 200;  
+SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey Between 100 AND 200;
+SELECT ColumnA, ColumnB FROM T GROUP BY ColumnA, ColumnB;
+SELECT Country, Region, SUM(Sales) AS TotalSales FROM Sales GROUP BY ROLLUP (Country, Region);
+SELECT Country, Region, SUM(Sales) AS TotalSales FROM Sales GROUP BY GROUPING SETS ( ROLLUP (Country, Region), CUBE (Country, Region) );
 ```
