@@ -22,6 +22,22 @@
 %token CUBE
 %token GROUPING
 %token SETS
+%token HAVING
+%token ON
+%token JOIN
+%token INNER
+%token OUTER
+%token RIGHT
+%token LEFT
+%token FULL
+%token REDUCE
+%token REPLICATE
+%token REDISTRIBUTE
+%token CROSS
+%token APPLY
+%token ORDER
+%token ASC
+%token DESC
 
 %union{
     char* strVal;
@@ -70,7 +86,7 @@ statement:
 /****  expressions  ****/
 expr:
     INTNUMBER           {printf("expression interger %d\n", $1);}
-    |'(' expr ')'       {printf("expression \"(%s)\"\n", $2);}
+    |'(' expr ')'       {printf("(expression)");}
     |expr '+' expr      {}
     |expr '-' expr      {}
     |expr '*' expr      {}
@@ -100,14 +116,14 @@ val_list:
 
 /****  select statement  ****/
 select_statement:
-    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby{printf("select\n");}
+    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby{printf("select\n");}
     ;
 select_options:
                                 {/*empty*/}
     |select_options ALL         {printf("select options \"all\"\n");}
     |select_options DISTINCT    {printf("select options \"distinct\"\n");}
     ;
-top_options:    /* 'top 5' is work but 'top (5)'' is not work maybe due to the grammar conflict */
+top_options:
                                     {/*empty*/}
     |top_options TOP expr PERCENT WITH TIES     {printf("select options \"top expr percent with ties\"\n");}
     |top_options TOP expr PERCENT               {printf("select options \"top expr percent\"\n");}
@@ -132,23 +148,59 @@ opt_into:
         {}
     |INTO NAME  {printf("into option\n");}
     ;
+
+/****  from statement  ****/
 opt_from_list:
         {}
     |FROM opt_from
     ;
 opt_from:   /* there is more statement need to parse */
-    NAME
-    |NAME '.' NAME
-    |opt_from ',' opt_from
+    from_statement
+    |opt_from ',' from_statement
+    ;
+from_statement:
+    NAME opt_as_alias
+    |NAME '.' NAME opt_as_alias
+    |joined_table
+    ;
+joined_table:
+    from_statement join_type from_statement ON expr
+    |from_statement CROSS JOIN from_statement
+    |NAME cross_outer APPLY NAME
+    |'(' joined_table ')'
+    ;
+join_type:
+    opt_join_type opt_join_hint JOIN
+    ;
+opt_join_type:
+        {}
+    |INNER
+    |LEFT opt_outer
+    |RIGHT opt_outer
+    |FULL opt_outer
+    ;
+opt_outer:
+        {}
+    |OUTER
+    ;
+opt_join_hint:
+        {}
+    |REDUCE
+    |REPLICATE
+    |REDISTRIBUTE
+    ;
+cross_outer:
+    CROSS
+    |OUTER
     ;
 
-/**** where statement ****/
+/****  where statement  ****/
 opt_where:
         {}
     |WHERE expr
     ;
 
-/**** group by statement ****/
+/****  group by statement  ****/
 opt_groupby:
         {}
     |GROUP BY groupby_list
@@ -184,6 +236,30 @@ grouping_set_item:
     groupby_expr
     |ROLLUP '(' groupby_expr_list ')'
     |CUBE '(' groupby_expr_list ')'
+    ;
+
+/****  having statement  ****/
+opt_having:
+        {}
+    |HAVING expr
+    ;
+
+/****  order by statement  ****/
+opt_orderby:
+        {}
+    |ORDER BY orderby_statement_list
+    ;
+orderby_statement_list:
+    orderby_statement
+    |orderby_statement_list ',' orderby_statement
+    ;
+orderby_statement:
+    expr opt_asc_desc
+    ;
+opt_asc_desc:
+        {}
+    |ASC
+    |DESC
     ;
 %%
 

@@ -29,20 +29,38 @@ select name from city;
 ```
 ## Successful Statement
 ```
+// basic statement
 select name from city;
 select * from city;
 select name.* from city;
+select name from table1, table2;
+
+// 'as' statement
 select name, weather, t as traffic from city;
 SELECT FirstName, LastName, BaseRate, BaseRate * 40 AS GrossPay FROM DimEmployee;
 SELECT OrderDateKey, SUM(SalesAmount) AS TotalSales FROM FactInternetSales;
+
+// 'top' statement
 SELECT TOP 5 PERCENT score INTO new_table FROM table;
-select name from table1, table2;
+
+// 'where' statement
 select name from table where id <= 4;
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE LastName LIKE ('%Smi%');  
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey <= 500 AND LastName LIKE '%Smi%' AND FirstName LIKE '%A%';
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE LastName IN ('Smith', 'Godfrey', 'Johnson');  
 SELECT EmployeeKey, LastName FROM DimEmployee WHERE EmployeeKey Between 100 AND 200;
+
+// 'group by' statement
 SELECT ColumnA, ColumnB FROM T GROUP BY ColumnA, ColumnB;
 SELECT Country, Region, SUM(Sales) AS TotalSales FROM Sales GROUP BY ROLLUP (Country, Region);
 SELECT Country, Region, SUM(Sales) AS TotalSales FROM Sales GROUP BY GROUPING SETS ( ROLLUP (Country, Region), CUBE (Country, Region) );
+SELECT SalesOrderID, SUM(LineTotal) AS SubTotal FROM Sales.SalesOrderDetail GROUP BY SalesOrderID HAVING SUM(LineTotal) > 100000.00 ORDER BY SalesOrderID ;
+
+// 'order by' statement
+SELECT name, SCHEMA_NAME(schema_id) AS SchemaName FROM sys.objects WHERE type = 'U' ORDER BY SchemaName; 
+SELECT BusinessEntityID, JobTitle, HireDate FROM HumanResources.Employee ORDER BY DATEPART(year, HireDate);
+SELECT LastName, FirstName FROM Person.Person WHERE LastName LIKE 'R%' ORDER BY FirstName ASC, LastName DESC ;  
+
+// joined table statement
+SELECT p.ProductID, v.BusinessEntityID FROM Production.Product AS p LEFT JOIN Purchasing.ProductVendor AS v ON (p.ProductID = v.ProductID);
 ```

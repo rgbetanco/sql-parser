@@ -27,6 +27,22 @@ by|BY                   {return BY;}
 rollup|ROLLUP           {return ROLLUP;}
 grouping|GROUPING       {return GROUPING;}
 sets|SETS               {return SETS;}
+having|HAVING           {return HAVING;}
+on|ON                   {return ON;}
+join|JOIN               {return JOIN;}
+inner|INNER             {return INNER;}
+outer|OUTER             {return OUTER;}
+right|RIGHT             {return RIGHT;}
+left|LEFT               {return LEFT;}
+full|FULL               {return FULL;}
+reduce|REDUCE           {return REDUCE;}
+replicate|REPLICATE     {return REPLICATE;}
+redistribute|REDISTRIBUTE {return REDISTRIBUTE;}
+cross|CROSS             {return CROSS;}
+apply|APPLY             {return APPLY;}
+order|ORDER             {return ORDER;}
+asc|ASC                 {return ASC;}
+desc|DESC               {return DESC;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -52,21 +68,21 @@ sets|SETS               {return SETS;}
 '(\\.|''|[^'\n])*'   |
 \"(\\.|\"\"|[^"\n])*\"  { yylval.strVal = strdup(yytext); return STRING; }
 
-'(\\.|[^'\n])*$      { yyerror("Unterminated string"); }
-\"(\\.|[^"\n])*$    { yyerror("Unterminated string"); }             
+'(\\.|[^'\n])*$         { yyerror("Unterminated string"); }
+\"(\\.|[^"\n])*$        { yyerror("Unterminated string"); }             
 
     /* operators */
-[;,()-+*/\n.]            {return *yytext;}
+[;,()-+*/\n.]           {return *yytext;}
 
     /* comparison operator */
-"="     {yylval.subtok = 4; return COMPARISON;}
-"<=>"   {yylval.subtok = 12; return COMPARISON;}
-">="    {yylval.subtok = 6; return COMPARISON;}
-">"     {yylval.subtok = 2; return COMPARISON;}
-"<="    {yylval.subtok = 5; return COMPARISON;}
-"<"     {yylval.subtok = 1; return COMPARISON;}
-"!="    |
-"<>"    {yylval.subtok = 3; return COMPARISON;}
+"="                     {yylval.subtok = 4; return COMPARISON;}
+"<=>"                   {yylval.subtok = 12; return COMPARISON;}
+">="                    {yylval.subtok = 6; return COMPARISON;}
+">"                     {yylval.subtok = 2; return COMPARISON;}
+"<="                    {yylval.subtok = 5; return COMPARISON;}
+"<"                     {yylval.subtok = 1; return COMPARISON;}
+"!="                    |
+"<>"                    {yylval.subtok = 3; return COMPARISON;}
 
     /* everything else */
 [ \t]                   ;
