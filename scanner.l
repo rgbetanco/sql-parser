@@ -43,6 +43,9 @@ apply|APPLY             {return APPLY;}
 order|ORDER             {return ORDER;}
 asc|ASC                 {return ASC;}
 desc|DESC               {return DESC;}
+union|UNION             {return UNION;}
+except|EXCEPT           {return EXCEPT;}
+intersect|INTERSECT     {return INTERSECT;}
 
     /* interger numbers */
 -?[0-9]+                {

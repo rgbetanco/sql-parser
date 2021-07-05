@@ -63,4 +63,9 @@ SELECT LastName, FirstName FROM Person.Person WHERE LastName LIKE 'R%' ORDER BY 
 
 // joined table statement
 SELECT p.ProductID, v.BusinessEntityID FROM Production.Product AS p LEFT JOIN Purchasing.ProductVendor AS v ON (p.ProductID = v.ProductID);
+
+// union statement
+SELECT LastName, FirstName,JobTitle FROM dbo.EmployeeOne UNION ALL  
+( SELECT LastName, FirstName, JobTitle FROM dbo.EmployeeTwo UNION 
+SELECT LastName, FirstName,JobTitle FROM dbo.EmployeeThree);  
 ```

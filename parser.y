@@ -38,6 +38,9 @@
 %token ORDER
 %token ASC
 %token DESC
+%token UNION
+%token INTERSECT
+%token EXCEPT
 
 %union{
     char* strVal;
@@ -116,6 +119,31 @@ val_list:
 
 /****  select statement  ****/
 select_statement:
+    query_expression
+    ;
+query_expression:
+    query_specification opt_query
+    |'(' query_expression ')' opt_query
+    ;
+opt_query:
+        {}
+    |union_list
+    ;
+union_list:
+    union_statement
+    |union_list union_statement
+    ;
+union_statement:
+    opt_union query_specification
+    |opt_union '(' query_expression ')'
+    ;
+opt_union:
+    UNION
+    |UNION ALL
+    |EXCEPT
+    |INTERSECT
+    ;
+query_specification:
     SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby{printf("select\n");}
     ;
 select_options:

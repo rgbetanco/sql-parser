@@ -8,11 +8,11 @@ Terminals unused in grammar
    '^'
 
 
-State 24 conflicts: 1 shift/reduce
-State 25 conflicts: 1 shift/reduce
-State 72 conflicts: 1 shift/reduce
-State 82 conflicts: 2 reduce/reduce
-State 120 conflicts: 5 shift/reduce, 4 reduce/reduce
+State 42 conflicts: 1 shift/reduce
+State 43 conflicts: 1 shift/reduce
+State 91 conflicts: 1 shift/reduce
+State 101 conflicts: 2 reduce/reduce
+State 139 conflicts: 5 shift/reduce, 4 reduce/reduce
 
 
 Grammar
@@ -47,111 +47,130 @@ Grammar
    22 val_list: expr
    23         | expr ',' val_list
 
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
+   24 select_statement: query_expression
 
-   25 select_options: %empty
-   26               | select_options ALL
-   27               | select_options DISTINCT
+   25 query_expression: query_specification opt_query
+   26                 | '(' query_expression ')' opt_query
 
-   28 top_options: %empty
-   29            | top_options TOP expr PERCENT WITH TIES
-   30            | top_options TOP expr PERCENT
-   31            | top_options TOP expr WITH TIES
-   32            | top_options TOP expr
+   27 opt_query: %empty
+   28          | union_list
 
-   33 select_expr_list: select_expr
-   34                 | select_expr_list ',' select_expr
+   29 union_list: union_statement
+   30           | union_list union_statement
 
-   35 select_expr: '*'
-   36            | expr opt_as_alias
-   37            | NAME '=' expr
+   31 union_statement: opt_union query_specification
+   32                | opt_union '(' query_expression ')'
 
-   38 opt_as_alias: %empty
-   39             | AS NAME
-   40             | NAME
+   33 opt_union: UNION
+   34          | UNION ALL
+   35          | EXCEPT
+   36          | INTERSECT
 
-   41 opt_into: %empty
-   42         | INTO NAME
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
 
-   43 opt_from_list: %empty
-   44              | FROM opt_from
+   38 select_options: %empty
+   39               | select_options ALL
+   40               | select_options DISTINCT
 
-   45 opt_from: from_statement
-   46         | opt_from ',' from_statement
+   41 top_options: %empty
+   42            | top_options TOP expr PERCENT WITH TIES
+   43            | top_options TOP expr PERCENT
+   44            | top_options TOP expr WITH TIES
+   45            | top_options TOP expr
 
-   47 from_statement: NAME opt_as_alias
-   48               | NAME '.' NAME opt_as_alias
-   49               | joined_table
+   46 select_expr_list: select_expr
+   47                 | select_expr_list ',' select_expr
 
-   50 joined_table: from_statement join_type from_statement ON expr
-   51             | from_statement CROSS JOIN from_statement
-   52             | NAME cross_outer APPLY NAME
-   53             | '(' joined_table ')'
+   48 select_expr: '*'
+   49            | expr opt_as_alias
+   50            | NAME '=' expr
 
-   54 join_type: opt_join_type opt_join_hint JOIN
+   51 opt_as_alias: %empty
+   52             | AS NAME
+   53             | NAME
 
-   55 opt_join_type: %empty
-   56              | INNER
-   57              | LEFT opt_outer
-   58              | RIGHT opt_outer
-   59              | FULL opt_outer
+   54 opt_into: %empty
+   55         | INTO NAME
 
-   60 opt_outer: %empty
-   61          | OUTER
+   56 opt_from_list: %empty
+   57              | FROM opt_from
 
-   62 opt_join_hint: %empty
-   63              | REDUCE
-   64              | REPLICATE
-   65              | REDISTRIBUTE
+   58 opt_from: from_statement
+   59         | opt_from ',' from_statement
 
-   66 cross_outer: CROSS
-   67            | OUTER
+   60 from_statement: NAME opt_as_alias
+   61               | NAME '.' NAME opt_as_alias
+   62               | joined_table
 
-   68 opt_where: %empty
-   69          | WHERE expr
+   63 joined_table: from_statement join_type from_statement ON expr
+   64             | from_statement CROSS JOIN from_statement
+   65             | NAME cross_outer APPLY NAME
+   66             | '(' joined_table ')'
 
-   70 opt_groupby: %empty
-   71            | GROUP BY groupby_list
+   67 join_type: opt_join_type opt_join_hint JOIN
 
-   72 groupby_list: groupby_statement
-   73             | groupby_list ',' groupby_statement
+   68 opt_join_type: %empty
+   69              | INNER
+   70              | LEFT opt_outer
+   71              | RIGHT opt_outer
+   72              | FULL opt_outer
 
-   74 groupby_statement: expr
-   75                  | ROLLUP '(' groupby_expr_list ')'
-   76                  | CUBE '(' groupby_expr_list ')'
-   77                  | GROUPING SETS '(' grouping_set ')'
-   78                  | '(' ')'
+   73 opt_outer: %empty
+   74          | OUTER
 
-   79 groupby_expr_list: groupby_expr
-   80                  | groupby_expr_list ',' groupby_expr
+   75 opt_join_hint: %empty
+   76              | REDUCE
+   77              | REPLICATE
+   78              | REDISTRIBUTE
 
-   81 groupby_expr: expr
-   82             | '(' groupby_expr ',' expr ')'
+   79 cross_outer: CROSS
+   80            | OUTER
 
-   83 grouping_set: '(' ')'
-   84             | grouping_set_item_list
+   81 opt_where: %empty
+   82          | WHERE expr
 
-   85 grouping_set_item_list: grouping_set_item
-   86                       | grouping_set_item_list ',' grouping_set_item
+   83 opt_groupby: %empty
+   84            | GROUP BY groupby_list
 
-   87 grouping_set_item: groupby_expr
+   85 groupby_list: groupby_statement
+   86             | groupby_list ',' groupby_statement
+
+   87 groupby_statement: expr
    88                  | ROLLUP '(' groupby_expr_list ')'
    89                  | CUBE '(' groupby_expr_list ')'
+   90                  | GROUPING SETS '(' grouping_set ')'
+   91                  | '(' ')'
 
-   90 opt_having: %empty
-   91           | HAVING expr
+   92 groupby_expr_list: groupby_expr
+   93                  | groupby_expr_list ',' groupby_expr
 
-   92 opt_orderby: %empty
-   93            | ORDER BY orderby_statement_list
+   94 groupby_expr: expr
+   95             | '(' groupby_expr ',' expr ')'
 
-   94 orderby_statement_list: orderby_statement
-   95                       | orderby_statement_list ',' orderby_statement
+   96 grouping_set: '(' ')'
+   97             | grouping_set_item_list
 
-   96 orderby_statement: expr opt_asc_desc
+   98 grouping_set_item_list: grouping_set_item
+   99                       | grouping_set_item_list ',' grouping_set_item
 
-   97 opt_asc_desc: %empty
-   98             | ASC
-   99             | DESC
+  100 grouping_set_item: groupby_expr
+  101                  | ROLLUP '(' groupby_expr_list ')'
+  102                  | CUBE '(' groupby_expr_list ')'
+
+  103 opt_having: %empty
+  104           | HAVING expr
+
+  105 opt_orderby: %empty
+  106            | ORDER BY orderby_statement_list
+
+  107 orderby_statement_list: orderby_statement
+  108                       | orderby_statement_list ',' orderby_statement
+
+  109 orderby_statement: expr opt_asc_desc
+
+  110 opt_asc_desc: %empty
+  111             | ASC
+  112             | DESC
 
 
 Terminals, with rules where they appear
@@ -161,140 +180,155 @@ $end (0) 0
 '!' (33)
 '%' (37)
 '&' (38)
-'(' (40) 5 17 19 53 75 76 77 78 82 83 88 89
-')' (41) 5 17 19 53 75 76 77 78 82 83 88 89
-'*' (42) 8 35
+'(' (40) 5 17 19 26 32 66 88 89 90 91 95 96 101 102
+')' (41) 5 17 19 26 32 66 88 89 90 91 95 96 101 102
+'*' (42) 8 48
 '+' (43) 6
-',' (44) 23 34 46 73 80 82 86 95
+',' (44) 23 47 59 86 93 95 99 108
 '-' (45) 7
-'.' (46) 14 48
+'.' (46) 14 61
 '/' (47) 9
 ';' (59) 1
-'=' (61) 37
+'=' (61) 50
 '^' (94)
 '|' (124)
 error (256)
-NAME (258) 13 14 19 37 39 40 42 47 48 52
+NAME (258) 13 14 19 50 52 53 55 60 61 65
 INTNUMBER (259) 4
 APPROXNUM (260)
 STRING (261) 15
-SELECT (262) 24
-FROM (263) 44
-ALL (264) 26
-DISTINCT (265) 27
-TOP (266) 29 30 31 32
-PERCENT (267) 29 30
-AS (268) 39
-WITH (269) 29 31
-TIES (270) 29 31
-INTO (271) 42
-WHERE (272) 69
+SELECT (262) 37
+FROM (263) 57
+ALL (264) 34 39
+DISTINCT (265) 40
+TOP (266) 42 43 44 45
+PERCENT (267) 42 43
+AS (268) 52
+WITH (269) 42 44
+TIES (270) 42 44
+INTO (271) 55
+WHERE (272) 82
 LIKE (273) 16
 AND (274) 11 18
 OR (275) 12
 IN (276) 17
-GROUP (277) 71
-BY (278) 71 93
-ROLLUP (279) 75 88
-CUBE (280) 76 89
-GROUPING (281) 77
-SETS (282) 77
-HAVING (283) 91
-ON (284) 50
-JOIN (285) 51 54
-INNER (286) 56
-OUTER (287) 61 67
-RIGHT (288) 58
-LEFT (289) 57
-FULL (290) 59
-REDUCE (291) 63
-REPLICATE (292) 64
-REDISTRIBUTE (293) 65
-CROSS (294) 51 66
-APPLY (295) 52
-ORDER (296) 93
-ASC (297) 98
-DESC (298) 99
-BETWEEN (299) 18
-COMPARISON (300) 10
+GROUP (277) 84
+BY (278) 84 106
+ROLLUP (279) 88 101
+CUBE (280) 89 102
+GROUPING (281) 90
+SETS (282) 90
+HAVING (283) 104
+ON (284) 63
+JOIN (285) 64 67
+INNER (286) 69
+OUTER (287) 74 80
+RIGHT (288) 71
+LEFT (289) 70
+FULL (290) 72
+REDUCE (291) 76
+REPLICATE (292) 77
+REDISTRIBUTE (293) 78
+CROSS (294) 64 79
+APPLY (295) 65
+ORDER (296) 106
+ASC (297) 111
+DESC (298) 112
+UNION (299) 33 34
+INTERSECT (300) 36
+EXCEPT (301) 35
+BETWEEN (302) 18
+COMPARISON (303) 10
 
 
 Nonterminals, with rules where they appear
 
-$accept (62)
+$accept (65)
     on left: 0
-statement_list (63)
+statement_list (66)
     on left: 1 2, on right: 0 1
-statement (64)
+statement (67)
     on left: 3, on right: 1
-expr (65)
+expr (68)
     on left: 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19, on right: 5
-    6 7 8 9 10 11 12 16 17 18 22 23 29 30 31 32 36 37 50 69 74 81 82
-    91 96
-opt_val_list (66)
+    6 7 8 9 10 11 12 16 17 18 22 23 42 43 44 45 49 50 63 82 87 94 95
+    104 109
+opt_val_list (69)
     on left: 20 21, on right: 19
-val_list (67)
+val_list (70)
     on left: 22 23, on right: 17 21 23
-select_statement (68)
+select_statement (71)
     on left: 24, on right: 3
-select_options (69)
-    on left: 25 26 27, on right: 24 26 27
-top_options (70)
-    on left: 28 29 30 31 32, on right: 24 29 30 31 32
-select_expr_list (71)
-    on left: 33 34, on right: 24 34
-select_expr (72)
-    on left: 35 36 37, on right: 33 34
-opt_as_alias (73)
-    on left: 38 39 40, on right: 36 47 48
-opt_into (74)
-    on left: 41 42, on right: 24
-opt_from_list (75)
-    on left: 43 44, on right: 24
-opt_from (76)
-    on left: 45 46, on right: 44 46
-from_statement (77)
-    on left: 47 48 49, on right: 45 46 50 51
-joined_table (78)
-    on left: 50 51 52 53, on right: 49 53
-join_type (79)
-    on left: 54, on right: 50
-opt_join_type (80)
-    on left: 55 56 57 58 59, on right: 54
-opt_outer (81)
-    on left: 60 61, on right: 57 58 59
-opt_join_hint (82)
-    on left: 62 63 64 65, on right: 54
-cross_outer (83)
-    on left: 66 67, on right: 52
-opt_where (84)
-    on left: 68 69, on right: 24
-opt_groupby (85)
-    on left: 70 71, on right: 24
-groupby_list (86)
-    on left: 72 73, on right: 71 73
-groupby_statement (87)
-    on left: 74 75 76 77 78, on right: 72 73
-groupby_expr_list (88)
-    on left: 79 80, on right: 75 76 80 88 89
-groupby_expr (89)
-    on left: 81 82, on right: 79 80 82 87
-grouping_set (90)
-    on left: 83 84, on right: 77
-grouping_set_item_list (91)
+query_expression (72)
+    on left: 25 26, on right: 24 26 32
+opt_query (73)
+    on left: 27 28, on right: 25 26
+union_list (74)
+    on left: 29 30, on right: 28 30
+union_statement (75)
+    on left: 31 32, on right: 29 30
+opt_union (76)
+    on left: 33 34 35 36, on right: 31 32
+query_specification (77)
+    on left: 37, on right: 25 31
+select_options (78)
+    on left: 38 39 40, on right: 37 39 40
+top_options (79)
+    on left: 41 42 43 44 45, on right: 37 42 43 44 45
+select_expr_list (80)
+    on left: 46 47, on right: 37 47
+select_expr (81)
+    on left: 48 49 50, on right: 46 47
+opt_as_alias (82)
+    on left: 51 52 53, on right: 49 60 61
+opt_into (83)
+    on left: 54 55, on right: 37
+opt_from_list (84)
+    on left: 56 57, on right: 37
+opt_from (85)
+    on left: 58 59, on right: 57 59
+from_statement (86)
+    on left: 60 61 62, on right: 58 59 63 64
+joined_table (87)
+    on left: 63 64 65 66, on right: 62 66
+join_type (88)
+    on left: 67, on right: 63
+opt_join_type (89)
+    on left: 68 69 70 71 72, on right: 67
+opt_outer (90)
+    on left: 73 74, on right: 70 71 72
+opt_join_hint (91)
+    on left: 75 76 77 78, on right: 67
+cross_outer (92)
+    on left: 79 80, on right: 65
+opt_where (93)
+    on left: 81 82, on right: 37
+opt_groupby (94)
+    on left: 83 84, on right: 37
+groupby_list (95)
     on left: 85 86, on right: 84 86
-grouping_set_item (92)
-    on left: 87 88 89, on right: 85 86
-opt_having (93)
-    on left: 90 91, on right: 24
-opt_orderby (94)
-    on left: 92 93, on right: 24
-orderby_statement_list (95)
-    on left: 94 95, on right: 93 95
-orderby_statement (96)
-    on left: 96, on right: 94 95
-opt_asc_desc (97)
-    on left: 97 98 99, on right: 96
+groupby_statement (96)
+    on left: 87 88 89 90 91, on right: 85 86
+groupby_expr_list (97)
+    on left: 92 93, on right: 88 89 93 101 102
+groupby_expr (98)
+    on left: 94 95, on right: 92 93 95 100
+grouping_set (99)
+    on left: 96 97, on right: 90
+grouping_set_item_list (100)
+    on left: 98 99, on right: 97 99
+grouping_set_item (101)
+    on left: 100 101 102, on right: 98 99
+opt_having (102)
+    on left: 103 104, on right: 37
+opt_orderby (103)
+    on left: 105 106, on right: 37
+orderby_statement_list (104)
+    on left: 107 108, on right: 106 108
+orderby_statement (105)
+    on left: 109, on right: 107 108
+opt_asc_desc (106)
+    on left: 110 111 112, on right: 109
 
 
 State 0
@@ -313,9 +347,12 @@ State 1
 
     $end    shift, and go to state 2
     SELECT  shift, and go to state 3
+    '('     shift, and go to state 4
 
-    statement         go to state 4
-    select_statement  go to state 5
+    statement            go to state 5
+    select_statement     go to state 6
+    query_expression     go to state 7
+    query_specification  go to state 8
 
 
 State 2
@@ -327,152 +364,305 @@ State 2
 
 State 3
 
-   24 select_statement: SELECT . select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
+   37 query_specification: SELECT . select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
 
-    $default  reduce using rule 25 (select_options)
+    $default  reduce using rule 38 (select_options)
 
-    select_options  go to state 6
+    select_options  go to state 9
 
 
 State 4
 
-    1 statement_list: statement_list statement . ';' '\n'
+   26 query_expression: '(' . query_expression ')' opt_query
 
-    ';'  shift, and go to state 7
+    SELECT  shift, and go to state 3
+    '('     shift, and go to state 4
+
+    query_expression     go to state 10
+    query_specification  go to state 8
 
 
 State 5
+
+    1 statement_list: statement_list statement . ';' '\n'
+
+    ';'  shift, and go to state 11
+
+
+State 6
 
     3 statement: select_statement .
 
     $default  reduce using rule 3 (statement)
 
 
-State 6
-
-   24 select_statement: SELECT select_options . top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
-   26 select_options: select_options . ALL
-   27               | select_options . DISTINCT
-
-    ALL       shift, and go to state 8
-    DISTINCT  shift, and go to state 9
-
-    $default  reduce using rule 28 (top_options)
-
-    top_options  go to state 10
-
-
 State 7
 
-    1 statement_list: statement_list statement ';' . '\n'
+   24 select_statement: query_expression .
 
-    '\n'  shift, and go to state 11
+    $default  reduce using rule 24 (select_statement)
 
 
 State 8
 
-   26 select_options: select_options ALL .
+   25 query_expression: query_specification . opt_query
 
-    $default  reduce using rule 26 (select_options)
+    UNION      shift, and go to state 12
+    INTERSECT  shift, and go to state 13
+    EXCEPT     shift, and go to state 14
+
+    $default  reduce using rule 27 (opt_query)
+
+    opt_query        go to state 15
+    union_list       go to state 16
+    union_statement  go to state 17
+    opt_union        go to state 18
 
 
 State 9
 
-   27 select_options: select_options DISTINCT .
+   37 query_specification: SELECT select_options . top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
+   39 select_options: select_options . ALL
+   40               | select_options . DISTINCT
 
-    $default  reduce using rule 27 (select_options)
+    ALL       shift, and go to state 19
+    DISTINCT  shift, and go to state 20
+
+    $default  reduce using rule 41 (top_options)
+
+    top_options  go to state 21
 
 
 State 10
 
-   24 select_statement: SELECT select_options top_options . select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
-   29 top_options: top_options . TOP expr PERCENT WITH TIES
-   30            | top_options . TOP expr PERCENT
-   31            | top_options . TOP expr WITH TIES
-   32            | top_options . TOP expr
+   26 query_expression: '(' query_expression . ')' opt_query
 
-    NAME       shift, and go to state 12
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    TOP        shift, and go to state 15
-    '*'        shift, and go to state 16
-    '('        shift, and go to state 17
-
-    expr              go to state 18
-    select_expr_list  go to state 19
-    select_expr       go to state 20
+    ')'  shift, and go to state 22
 
 
 State 11
+
+    1 statement_list: statement_list statement ';' . '\n'
+
+    '\n'  shift, and go to state 23
+
+
+State 12
+
+   33 opt_union: UNION .
+   34          | UNION . ALL
+
+    ALL  shift, and go to state 24
+
+    $default  reduce using rule 33 (opt_union)
+
+
+State 13
+
+   36 opt_union: INTERSECT .
+
+    $default  reduce using rule 36 (opt_union)
+
+
+State 14
+
+   35 opt_union: EXCEPT .
+
+    $default  reduce using rule 35 (opt_union)
+
+
+State 15
+
+   25 query_expression: query_specification opt_query .
+
+    $default  reduce using rule 25 (query_expression)
+
+
+State 16
+
+   28 opt_query: union_list .
+   30 union_list: union_list . union_statement
+
+    UNION      shift, and go to state 12
+    INTERSECT  shift, and go to state 13
+    EXCEPT     shift, and go to state 14
+
+    $default  reduce using rule 28 (opt_query)
+
+    union_statement  go to state 25
+    opt_union        go to state 18
+
+
+State 17
+
+   29 union_list: union_statement .
+
+    $default  reduce using rule 29 (union_list)
+
+
+State 18
+
+   31 union_statement: opt_union . query_specification
+   32                | opt_union . '(' query_expression ')'
+
+    SELECT  shift, and go to state 3
+    '('     shift, and go to state 26
+
+    query_specification  go to state 27
+
+
+State 19
+
+   39 select_options: select_options ALL .
+
+    $default  reduce using rule 39 (select_options)
+
+
+State 20
+
+   40 select_options: select_options DISTINCT .
+
+    $default  reduce using rule 40 (select_options)
+
+
+State 21
+
+   37 query_specification: SELECT select_options top_options . select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
+   42 top_options: top_options . TOP expr PERCENT WITH TIES
+   43            | top_options . TOP expr PERCENT
+   44            | top_options . TOP expr WITH TIES
+   45            | top_options . TOP expr
+
+    NAME       shift, and go to state 28
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    TOP        shift, and go to state 31
+    '*'        shift, and go to state 32
+    '('        shift, and go to state 33
+
+    expr              go to state 34
+    select_expr_list  go to state 35
+    select_expr       go to state 36
+
+
+State 22
+
+   26 query_expression: '(' query_expression ')' . opt_query
+
+    UNION      shift, and go to state 12
+    INTERSECT  shift, and go to state 13
+    EXCEPT     shift, and go to state 14
+
+    $default  reduce using rule 27 (opt_query)
+
+    opt_query        go to state 37
+    union_list       go to state 16
+    union_statement  go to state 17
+    opt_union        go to state 18
+
+
+State 23
 
     1 statement_list: statement_list statement ';' '\n' .
 
     $default  reduce using rule 1 (statement_list)
 
 
-State 12
+State 24
+
+   34 opt_union: UNION ALL .
+
+    $default  reduce using rule 34 (opt_union)
+
+
+State 25
+
+   30 union_list: union_list union_statement .
+
+    $default  reduce using rule 30 (union_list)
+
+
+State 26
+
+   32 union_statement: opt_union '(' . query_expression ')'
+
+    SELECT  shift, and go to state 3
+    '('     shift, and go to state 4
+
+    query_expression     go to state 38
+    query_specification  go to state 8
+
+
+State 27
+
+   31 union_statement: opt_union query_specification .
+
+    $default  reduce using rule 31 (union_statement)
+
+
+State 28
 
    13 expr: NAME .
    14     | NAME . '.' NAME
    19     | NAME . '(' opt_val_list ')'
-   37 select_expr: NAME . '=' expr
+   50 select_expr: NAME . '=' expr
 
-    '('  shift, and go to state 21
-    '.'  shift, and go to state 22
-    '='  shift, and go to state 23
+    '('  shift, and go to state 39
+    '.'  shift, and go to state 40
+    '='  shift, and go to state 41
 
     $default  reduce using rule 13 (expr)
 
 
-State 13
+State 29
 
     4 expr: INTNUMBER .
 
     $default  reduce using rule 4 (expr)
 
 
-State 14
+State 30
 
    15 expr: STRING .
 
     $default  reduce using rule 15 (expr)
 
 
-State 15
+State 31
 
-   29 top_options: top_options TOP . expr PERCENT WITH TIES
-   30            | top_options TOP . expr PERCENT
-   31            | top_options TOP . expr WITH TIES
-   32            | top_options TOP . expr
+   42 top_options: top_options TOP . expr PERCENT WITH TIES
+   43            | top_options TOP . expr PERCENT
+   44            | top_options TOP . expr WITH TIES
+   45            | top_options TOP . expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr  go to state 25
-
-
-State 16
-
-   35 select_expr: '*' .
-
-    $default  reduce using rule 35 (select_expr)
+    expr  go to state 43
 
 
-State 17
+State 32
+
+   48 select_expr: '*' .
+
+    $default  reduce using rule 48 (select_expr)
+
+
+State 33
 
     5 expr: '(' . expr ')'
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr  go to state 26
+    expr  go to state 44
 
 
-State 18
+State 34
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -484,321 +674,106 @@ State 18
    16     | expr . LIKE expr
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
-   36 select_expr: expr . opt_as_alias
+   49 select_expr: expr . opt_as_alias
 
-    NAME        shift, and go to state 27
-    AS          shift, and go to state 28
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    NAME        shift, and go to state 45
+    AS          shift, and go to state 46
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
-    $default  reduce using rule 38 (opt_as_alias)
+    $default  reduce using rule 51 (opt_as_alias)
 
-    opt_as_alias  go to state 39
-
-
-State 19
-
-   24 select_statement: SELECT select_options top_options select_expr_list . opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
-   34 select_expr_list: select_expr_list . ',' select_expr
-
-    INTO  shift, and go to state 40
-    ','   shift, and go to state 41
-
-    $default  reduce using rule 41 (opt_into)
-
-    opt_into  go to state 42
+    opt_as_alias  go to state 57
 
 
-State 20
+State 35
 
-   33 select_expr_list: select_expr .
+   37 query_specification: SELECT select_options top_options select_expr_list . opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby
+   47 select_expr_list: select_expr_list . ',' select_expr
 
-    $default  reduce using rule 33 (select_expr_list)
+    INTO  shift, and go to state 58
+    ','   shift, and go to state 59
+
+    $default  reduce using rule 54 (opt_into)
+
+    opt_into  go to state 60
 
 
-State 21
+State 36
+
+   46 select_expr_list: select_expr .
+
+    $default  reduce using rule 46 (select_expr_list)
+
+
+State 37
+
+   26 query_expression: '(' query_expression ')' opt_query .
+
+    $default  reduce using rule 26 (query_expression)
+
+
+State 38
+
+   32 union_statement: opt_union '(' query_expression . ')'
+
+    ')'  shift, and go to state 61
+
+
+State 39
 
    19 expr: NAME '(' . opt_val_list ')'
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
     $default  reduce using rule 20 (opt_val_list)
 
-    expr          go to state 43
-    opt_val_list  go to state 44
-    val_list      go to state 45
+    expr          go to state 62
+    opt_val_list  go to state 63
+    val_list      go to state 64
 
 
-State 22
+State 40
 
    14 expr: NAME '.' . NAME
 
-    NAME  shift, and go to state 46
+    NAME  shift, and go to state 65
 
 
-State 23
+State 41
 
-   37 select_expr: NAME '=' . expr
+   50 select_expr: NAME '=' . expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr  go to state 47
+    expr  go to state 66
 
 
-State 24
+State 42
 
    13 expr: NAME .
    14     | NAME . '.' NAME
    19     | NAME . '(' opt_val_list ')'
 
-    '('  shift, and go to state 21
-    '.'  shift, and go to state 22
+    '('  shift, and go to state 39
+    '.'  shift, and go to state 40
 
     '('       [reduce using rule 13 (expr)]
     $default  reduce using rule 13 (expr)
-
-
-State 25
-
-    6 expr: expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-   29 top_options: top_options TOP expr . PERCENT WITH TIES
-   30            | top_options TOP expr . PERCENT
-   31            | top_options TOP expr . WITH TIES
-   32            | top_options TOP expr .
-
-    PERCENT     shift, and go to state 48
-    WITH        shift, and go to state 49
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-
-    '*'       [reduce using rule 32 (top_options)]
-    $default  reduce using rule 32 (top_options)
-
-
-State 26
-
-    5 expr: '(' expr . ')'
-    6     | expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-    ')'         shift, and go to state 50
-
-
-State 27
-
-   40 opt_as_alias: NAME .
-
-    $default  reduce using rule 40 (opt_as_alias)
-
-
-State 28
-
-   39 opt_as_alias: AS . NAME
-
-    NAME  shift, and go to state 51
-
-
-State 29
-
-   16 expr: expr LIKE . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 52
-
-
-State 30
-
-   11 expr: expr AND . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 53
-
-
-State 31
-
-   12 expr: expr OR . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 54
-
-
-State 32
-
-   17 expr: expr IN . '(' val_list ')'
-
-    '('  shift, and go to state 55
-
-
-State 33
-
-   18 expr: expr BETWEEN . expr AND expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 56
-
-
-State 34
-
-   10 expr: expr COMPARISON . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 57
-
-
-State 35
-
-    6 expr: expr '+' . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 58
-
-
-State 36
-
-    7 expr: expr '-' . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 59
-
-
-State 37
-
-    8 expr: expr '*' . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 60
-
-
-State 38
-
-    9 expr: expr '/' . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 61
-
-
-State 39
-
-   36 select_expr: expr opt_as_alias .
-
-    $default  reduce using rule 36 (select_expr)
-
-
-State 40
-
-   42 opt_into: INTO . NAME
-
-    NAME  shift, and go to state 62
-
-
-State 41
-
-   34 select_expr_list: select_expr_list ',' . select_expr
-
-    NAME       shift, and go to state 12
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '*'        shift, and go to state 16
-    '('        shift, and go to state 17
-
-    expr         go to state 18
-    select_expr  go to state 63
-
-
-State 42
-
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into . opt_from_list opt_where opt_groupby opt_having opt_orderby
-
-    FROM  shift, and go to state 64
-
-    $default  reduce using rule 43 (opt_from_list)
-
-    opt_from_list  go to state 65
 
 
 State 43
@@ -813,46 +788,231 @@ State 43
    16     | expr . LIKE expr
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
-   22 val_list: expr .
-   23         | expr . ',' val_list
+   42 top_options: top_options TOP expr . PERCENT WITH TIES
+   43            | top_options TOP expr . PERCENT
+   44            | top_options TOP expr . WITH TIES
+   45            | top_options TOP expr .
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-    ','         shift, and go to state 66
+    PERCENT     shift, and go to state 67
+    WITH        shift, and go to state 68
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
-    $default  reduce using rule 22 (val_list)
+    '*'       [reduce using rule 45 (top_options)]
+    $default  reduce using rule 45 (top_options)
 
 
 State 44
 
-   19 expr: NAME '(' opt_val_list . ')'
+    5 expr: '(' expr . ')'
+    6     | expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
 
-    ')'  shift, and go to state 67
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+    ')'         shift, and go to state 69
 
 
 State 45
 
-   21 opt_val_list: val_list .
+   53 opt_as_alias: NAME .
 
-    $default  reduce using rule 21 (opt_val_list)
+    $default  reduce using rule 53 (opt_as_alias)
 
 
 State 46
 
-   14 expr: NAME '.' NAME .
+   52 opt_as_alias: AS . NAME
 
-    $default  reduce using rule 14 (expr)
+    NAME  shift, and go to state 70
 
 
 State 47
+
+   16 expr: expr LIKE . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 71
+
+
+State 48
+
+   11 expr: expr AND . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 72
+
+
+State 49
+
+   12 expr: expr OR . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 73
+
+
+State 50
+
+   17 expr: expr IN . '(' val_list ')'
+
+    '('  shift, and go to state 74
+
+
+State 51
+
+   18 expr: expr BETWEEN . expr AND expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 75
+
+
+State 52
+
+   10 expr: expr COMPARISON . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 76
+
+
+State 53
+
+    6 expr: expr '+' . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 77
+
+
+State 54
+
+    7 expr: expr '-' . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 78
+
+
+State 55
+
+    8 expr: expr '*' . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 79
+
+
+State 56
+
+    9 expr: expr '/' . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 80
+
+
+State 57
+
+   49 select_expr: expr opt_as_alias .
+
+    $default  reduce using rule 49 (select_expr)
+
+
+State 58
+
+   55 opt_into: INTO . NAME
+
+    NAME  shift, and go to state 81
+
+
+State 59
+
+   47 select_expr_list: select_expr_list ',' . select_expr
+
+    NAME       shift, and go to state 28
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '*'        shift, and go to state 32
+    '('        shift, and go to state 33
+
+    expr         go to state 34
+    select_expr  go to state 82
+
+
+State 60
+
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into . opt_from_list opt_where opt_groupby opt_having opt_orderby
+
+    FROM  shift, and go to state 83
+
+    $default  reduce using rule 56 (opt_from_list)
+
+    opt_from_list  go to state 84
+
+
+State 61
+
+   32 union_statement: opt_union '(' query_expression ')' .
+
+    $default  reduce using rule 32 (union_statement)
+
+
+State 62
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -864,54 +1024,105 @@ State 47
    16     | expr . LIKE expr
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
-   37 select_expr: NAME '=' expr .
+   22 val_list: expr .
+   23         | expr . ',' val_list
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+    ','         shift, and go to state 85
 
-    $default  reduce using rule 37 (select_expr)
-
-
-State 48
-
-   29 top_options: top_options TOP expr PERCENT . WITH TIES
-   30            | top_options TOP expr PERCENT .
-
-    WITH  shift, and go to state 68
-
-    $default  reduce using rule 30 (top_options)
+    $default  reduce using rule 22 (val_list)
 
 
-State 49
+State 63
 
-   31 top_options: top_options TOP expr WITH . TIES
+   19 expr: NAME '(' opt_val_list . ')'
 
-    TIES  shift, and go to state 69
+    ')'  shift, and go to state 86
 
 
-State 50
+State 64
+
+   21 opt_val_list: val_list .
+
+    $default  reduce using rule 21 (opt_val_list)
+
+
+State 65
+
+   14 expr: NAME '.' NAME .
+
+    $default  reduce using rule 14 (expr)
+
+
+State 66
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
+   50 select_expr: NAME '=' expr .
+
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+
+    $default  reduce using rule 50 (select_expr)
+
+
+State 67
+
+   42 top_options: top_options TOP expr PERCENT . WITH TIES
+   43            | top_options TOP expr PERCENT .
+
+    WITH  shift, and go to state 87
+
+    $default  reduce using rule 43 (top_options)
+
+
+State 68
+
+   44 top_options: top_options TOP expr WITH . TIES
+
+    TIES  shift, and go to state 88
+
+
+State 69
 
     5 expr: '(' expr ')' .
 
     $default  reduce using rule 5 (expr)
 
 
-State 51
+State 70
 
-   39 opt_as_alias: AS NAME .
+   52 opt_as_alias: AS NAME .
 
-    $default  reduce using rule 39 (opt_as_alias)
+    $default  reduce using rule 52 (opt_as_alias)
 
 
-State 52
+State 71
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -925,12 +1136,12 @@ State 52
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
 
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
     LIKE  error (nonassociative)
     IN    error (nonassociative)
@@ -938,7 +1149,7 @@ State 52
     $default  reduce using rule 16 (expr)
 
 
-State 53
+State 72
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -952,19 +1163,19 @@ State 53
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
 
-    LIKE        shift, and go to state 29
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    LIKE        shift, and go to state 47
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
     $default  reduce using rule 11 (expr)
 
 
-State 54
+State 73
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -978,33 +1189,33 @@ State 54
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
     $default  reduce using rule 12 (expr)
 
 
-State 55
+State 74
 
    17 expr: expr IN '(' . val_list ')'
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr      go to state 43
-    val_list  go to state 70
+    expr      go to state 62
+    val_list  go to state 89
 
 
-State 56
+State 75
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -1018,19 +1229,19 @@ State 56
    18     | expr . BETWEEN expr AND expr
    18     | expr BETWEEN expr . AND expr
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 71
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 90
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
 
-State 57
+State 76
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -1044,15 +1255,15 @@ State 57
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
 
-    '+'  shift, and go to state 35
-    '-'  shift, and go to state 36
-    '*'  shift, and go to state 37
-    '/'  shift, and go to state 38
+    '+'  shift, and go to state 53
+    '-'  shift, and go to state 54
+    '*'  shift, and go to state 55
+    '/'  shift, and go to state 56
 
     $default  reduce using rule 10 (expr)
 
 
-State 58
+State 77
 
     6 expr: expr . '+' expr
     6     | expr '+' expr .
@@ -1066,13 +1277,13 @@ State 58
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
 
-    '*'  shift, and go to state 37
-    '/'  shift, and go to state 38
+    '*'  shift, and go to state 55
+    '/'  shift, and go to state 56
 
     $default  reduce using rule 6 (expr)
 
 
-State 59
+State 78
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -1086,13 +1297,13 @@ State 59
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
 
-    '*'  shift, and go to state 37
-    '/'  shift, and go to state 38
+    '*'  shift, and go to state 55
+    '/'  shift, and go to state 56
 
     $default  reduce using rule 7 (expr)
 
 
-State 60
+State 79
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -1109,7 +1320,7 @@ State 60
     $default  reduce using rule 8 (expr)
 
 
-State 61
+State 80
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -1126,211 +1337,211 @@ State 61
     $default  reduce using rule 9 (expr)
 
 
-State 62
+State 81
 
-   42 opt_into: INTO NAME .
+   55 opt_into: INTO NAME .
 
-    $default  reduce using rule 42 (opt_into)
-
-
-State 63
-
-   34 select_expr_list: select_expr_list ',' select_expr .
-
-    $default  reduce using rule 34 (select_expr_list)
+    $default  reduce using rule 55 (opt_into)
 
 
-State 64
+State 82
 
-   44 opt_from_list: FROM . opt_from
+   47 select_expr_list: select_expr_list ',' select_expr .
 
-    NAME  shift, and go to state 72
-    '('   shift, and go to state 73
-
-    opt_from        go to state 74
-    from_statement  go to state 75
-    joined_table    go to state 76
+    $default  reduce using rule 47 (select_expr_list)
 
 
-State 65
+State 83
 
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into opt_from_list . opt_where opt_groupby opt_having opt_orderby
+   57 opt_from_list: FROM . opt_from
 
-    WHERE  shift, and go to state 77
+    NAME  shift, and go to state 91
+    '('   shift, and go to state 92
 
-    $default  reduce using rule 68 (opt_where)
+    opt_from        go to state 93
+    from_statement  go to state 94
+    joined_table    go to state 95
 
-    opt_where  go to state 78
+
+State 84
+
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list . opt_where opt_groupby opt_having opt_orderby
+
+    WHERE  shift, and go to state 96
+
+    $default  reduce using rule 81 (opt_where)
+
+    opt_where  go to state 97
 
 
-State 66
+State 85
 
    23 val_list: expr ',' . val_list
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr      go to state 43
-    val_list  go to state 79
+    expr      go to state 62
+    val_list  go to state 98
 
 
-State 67
+State 86
 
    19 expr: NAME '(' opt_val_list ')' .
 
     $default  reduce using rule 19 (expr)
 
 
-State 68
+State 87
 
-   29 top_options: top_options TOP expr PERCENT WITH . TIES
+   42 top_options: top_options TOP expr PERCENT WITH . TIES
 
-    TIES  shift, and go to state 80
-
-
-State 69
-
-   31 top_options: top_options TOP expr WITH TIES .
-
-    $default  reduce using rule 31 (top_options)
+    TIES  shift, and go to state 99
 
 
-State 70
+State 88
+
+   44 top_options: top_options TOP expr WITH TIES .
+
+    $default  reduce using rule 44 (top_options)
+
+
+State 89
 
    17 expr: expr IN '(' val_list . ')'
 
-    ')'  shift, and go to state 81
+    ')'  shift, and go to state 100
 
 
-State 71
+State 90
 
    11 expr: expr AND . expr
    18     | expr BETWEEN expr AND . expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr  go to state 82
-
-
-State 72
-
-   47 from_statement: NAME . opt_as_alias
-   48               | NAME . '.' NAME opt_as_alias
-   52 joined_table: NAME . cross_outer APPLY NAME
-
-    NAME   shift, and go to state 27
-    AS     shift, and go to state 28
-    OUTER  shift, and go to state 83
-    CROSS  shift, and go to state 84
-    '.'    shift, and go to state 85
-
-    CROSS     [reduce using rule 38 (opt_as_alias)]
-    $default  reduce using rule 38 (opt_as_alias)
-
-    opt_as_alias  go to state 86
-    cross_outer   go to state 87
+    expr  go to state 101
 
 
-State 73
+State 91
 
-   53 joined_table: '(' . joined_table ')'
+   60 from_statement: NAME . opt_as_alias
+   61               | NAME . '.' NAME opt_as_alias
+   65 joined_table: NAME . cross_outer APPLY NAME
 
-    NAME  shift, and go to state 72
-    '('   shift, and go to state 73
+    NAME   shift, and go to state 45
+    AS     shift, and go to state 46
+    OUTER  shift, and go to state 102
+    CROSS  shift, and go to state 103
+    '.'    shift, and go to state 104
 
-    from_statement  go to state 88
-    joined_table    go to state 89
+    CROSS     [reduce using rule 51 (opt_as_alias)]
+    $default  reduce using rule 51 (opt_as_alias)
 
-
-State 74
-
-   44 opt_from_list: FROM opt_from .
-   46 opt_from: opt_from . ',' from_statement
-
-    ','  shift, and go to state 90
-
-    $default  reduce using rule 44 (opt_from_list)
+    opt_as_alias  go to state 105
+    cross_outer   go to state 106
 
 
-State 75
+State 92
 
-   45 opt_from: from_statement .
-   50 joined_table: from_statement . join_type from_statement ON expr
-   51             | from_statement . CROSS JOIN from_statement
+   66 joined_table: '(' . joined_table ')'
 
-    INNER  shift, and go to state 91
-    RIGHT  shift, and go to state 92
-    LEFT   shift, and go to state 93
-    FULL   shift, and go to state 94
-    CROSS  shift, and go to state 95
+    NAME  shift, and go to state 91
+    '('   shift, and go to state 92
 
-    JOIN          reduce using rule 55 (opt_join_type)
-    REDUCE        reduce using rule 55 (opt_join_type)
-    REPLICATE     reduce using rule 55 (opt_join_type)
-    REDISTRIBUTE  reduce using rule 55 (opt_join_type)
-    $default      reduce using rule 45 (opt_from)
-
-    join_type      go to state 96
-    opt_join_type  go to state 97
+    from_statement  go to state 107
+    joined_table    go to state 108
 
 
-State 76
+State 93
 
-   49 from_statement: joined_table .
+   57 opt_from_list: FROM opt_from .
+   59 opt_from: opt_from . ',' from_statement
 
-    $default  reduce using rule 49 (from_statement)
+    ','  shift, and go to state 109
 
-
-State 77
-
-   69 opt_where: WHERE . expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 98
+    $default  reduce using rule 57 (opt_from_list)
 
 
-State 78
+State 94
 
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where . opt_groupby opt_having opt_orderby
+   58 opt_from: from_statement .
+   63 joined_table: from_statement . join_type from_statement ON expr
+   64             | from_statement . CROSS JOIN from_statement
 
-    GROUP  shift, and go to state 99
+    INNER  shift, and go to state 110
+    RIGHT  shift, and go to state 111
+    LEFT   shift, and go to state 112
+    FULL   shift, and go to state 113
+    CROSS  shift, and go to state 114
 
-    $default  reduce using rule 70 (opt_groupby)
+    JOIN          reduce using rule 68 (opt_join_type)
+    REDUCE        reduce using rule 68 (opt_join_type)
+    REPLICATE     reduce using rule 68 (opt_join_type)
+    REDISTRIBUTE  reduce using rule 68 (opt_join_type)
+    $default      reduce using rule 58 (opt_from)
 
-    opt_groupby  go to state 100
+    join_type      go to state 115
+    opt_join_type  go to state 116
 
 
-State 79
+State 95
+
+   62 from_statement: joined_table .
+
+    $default  reduce using rule 62 (from_statement)
+
+
+State 96
+
+   82 opt_where: WHERE . expr
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 117
+
+
+State 97
+
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where . opt_groupby opt_having opt_orderby
+
+    GROUP  shift, and go to state 118
+
+    $default  reduce using rule 83 (opt_groupby)
+
+    opt_groupby  go to state 119
+
+
+State 98
 
    23 val_list: expr ',' val_list .
 
     $default  reduce using rule 23 (val_list)
 
 
-State 80
+State 99
 
-   29 top_options: top_options TOP expr PERCENT WITH TIES .
+   42 top_options: top_options TOP expr PERCENT WITH TIES .
 
-    $default  reduce using rule 29 (top_options)
+    $default  reduce using rule 42 (top_options)
 
 
-State 81
+State 100
 
    17 expr: expr IN '(' val_list ')' .
 
     $default  reduce using rule 17 (expr)
 
 
-State 82
+State 101
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -1345,11 +1556,11 @@ State 82
    18     | expr . BETWEEN expr AND expr
    18     | expr BETWEEN expr AND expr .
 
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
     AND       reduce using rule 11 (expr)
     AND       [reduce using rule 18 (expr)]
@@ -1358,749 +1569,470 @@ State 82
     $default  reduce using rule 18 (expr)
 
 
-State 83
-
-   67 cross_outer: OUTER .
-
-    $default  reduce using rule 67 (cross_outer)
-
-
-State 84
-
-   66 cross_outer: CROSS .
-
-    $default  reduce using rule 66 (cross_outer)
-
-
-State 85
-
-   48 from_statement: NAME '.' . NAME opt_as_alias
-
-    NAME  shift, and go to state 101
-
-
-State 86
-
-   47 from_statement: NAME opt_as_alias .
-
-    $default  reduce using rule 47 (from_statement)
-
-
-State 87
-
-   52 joined_table: NAME cross_outer . APPLY NAME
-
-    APPLY  shift, and go to state 102
-
-
-State 88
-
-   50 joined_table: from_statement . join_type from_statement ON expr
-   51             | from_statement . CROSS JOIN from_statement
-
-    INNER  shift, and go to state 91
-    RIGHT  shift, and go to state 92
-    LEFT   shift, and go to state 93
-    FULL   shift, and go to state 94
-    CROSS  shift, and go to state 95
-
-    $default  reduce using rule 55 (opt_join_type)
-
-    join_type      go to state 96
-    opt_join_type  go to state 97
-
-
-State 89
-
-   49 from_statement: joined_table .
-   53 joined_table: '(' joined_table . ')'
-
-    ')'  shift, and go to state 103
-
-    $default  reduce using rule 49 (from_statement)
-
-
-State 90
-
-   46 opt_from: opt_from ',' . from_statement
-
-    NAME  shift, and go to state 72
-    '('   shift, and go to state 73
-
-    from_statement  go to state 104
-    joined_table    go to state 76
-
-
-State 91
-
-   56 opt_join_type: INNER .
-
-    $default  reduce using rule 56 (opt_join_type)
-
-
-State 92
-
-   58 opt_join_type: RIGHT . opt_outer
-
-    OUTER  shift, and go to state 105
-
-    $default  reduce using rule 60 (opt_outer)
-
-    opt_outer  go to state 106
-
-
-State 93
-
-   57 opt_join_type: LEFT . opt_outer
-
-    OUTER  shift, and go to state 105
-
-    $default  reduce using rule 60 (opt_outer)
-
-    opt_outer  go to state 107
-
-
-State 94
-
-   59 opt_join_type: FULL . opt_outer
-
-    OUTER  shift, and go to state 105
-
-    $default  reduce using rule 60 (opt_outer)
-
-    opt_outer  go to state 108
-
-
-State 95
-
-   51 joined_table: from_statement CROSS . JOIN from_statement
-
-    JOIN  shift, and go to state 109
-
-
-State 96
-
-   50 joined_table: from_statement join_type . from_statement ON expr
-
-    NAME  shift, and go to state 72
-    '('   shift, and go to state 73
-
-    from_statement  go to state 110
-    joined_table    go to state 76
-
-
-State 97
-
-   54 join_type: opt_join_type . opt_join_hint JOIN
-
-    REDUCE        shift, and go to state 111
-    REPLICATE     shift, and go to state 112
-    REDISTRIBUTE  shift, and go to state 113
-
-    $default  reduce using rule 62 (opt_join_hint)
-
-    opt_join_hint  go to state 114
-
-
-State 98
-
-    6 expr: expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-   69 opt_where: WHERE expr .
-
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-
-    $default  reduce using rule 69 (opt_where)
-
-
-State 99
-
-   71 opt_groupby: GROUP . BY groupby_list
-
-    BY  shift, and go to state 115
-
-
-State 100
-
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby . opt_having opt_orderby
-
-    HAVING  shift, and go to state 116
-
-    $default  reduce using rule 90 (opt_having)
-
-    opt_having  go to state 117
-
-
-State 101
-
-   48 from_statement: NAME '.' NAME . opt_as_alias
-
-    NAME  shift, and go to state 27
-    AS    shift, and go to state 28
-
-    $default  reduce using rule 38 (opt_as_alias)
-
-    opt_as_alias  go to state 118
-
-
 State 102
 
-   52 joined_table: NAME cross_outer APPLY . NAME
+   80 cross_outer: OUTER .
 
-    NAME  shift, and go to state 119
+    $default  reduce using rule 80 (cross_outer)
 
 
 State 103
 
-   53 joined_table: '(' joined_table ')' .
+   79 cross_outer: CROSS .
 
-    $default  reduce using rule 53 (joined_table)
+    $default  reduce using rule 79 (cross_outer)
 
 
 State 104
 
-   46 opt_from: opt_from ',' from_statement .
-   50 joined_table: from_statement . join_type from_statement ON expr
-   51             | from_statement . CROSS JOIN from_statement
+   61 from_statement: NAME '.' . NAME opt_as_alias
 
-    INNER  shift, and go to state 91
-    RIGHT  shift, and go to state 92
-    LEFT   shift, and go to state 93
-    FULL   shift, and go to state 94
-    CROSS  shift, and go to state 95
-
-    JOIN          reduce using rule 55 (opt_join_type)
-    REDUCE        reduce using rule 55 (opt_join_type)
-    REPLICATE     reduce using rule 55 (opt_join_type)
-    REDISTRIBUTE  reduce using rule 55 (opt_join_type)
-    $default      reduce using rule 46 (opt_from)
-
-    join_type      go to state 96
-    opt_join_type  go to state 97
+    NAME  shift, and go to state 120
 
 
 State 105
 
-   61 opt_outer: OUTER .
+   60 from_statement: NAME opt_as_alias .
 
-    $default  reduce using rule 61 (opt_outer)
+    $default  reduce using rule 60 (from_statement)
 
 
 State 106
 
-   58 opt_join_type: RIGHT opt_outer .
+   65 joined_table: NAME cross_outer . APPLY NAME
 
-    $default  reduce using rule 58 (opt_join_type)
+    APPLY  shift, and go to state 121
 
 
 State 107
 
-   57 opt_join_type: LEFT opt_outer .
+   63 joined_table: from_statement . join_type from_statement ON expr
+   64             | from_statement . CROSS JOIN from_statement
 
-    $default  reduce using rule 57 (opt_join_type)
+    INNER  shift, and go to state 110
+    RIGHT  shift, and go to state 111
+    LEFT   shift, and go to state 112
+    FULL   shift, and go to state 113
+    CROSS  shift, and go to state 114
+
+    $default  reduce using rule 68 (opt_join_type)
+
+    join_type      go to state 115
+    opt_join_type  go to state 116
 
 
 State 108
 
-   59 opt_join_type: FULL opt_outer .
+   62 from_statement: joined_table .
+   66 joined_table: '(' joined_table . ')'
 
-    $default  reduce using rule 59 (opt_join_type)
+    ')'  shift, and go to state 122
+
+    $default  reduce using rule 62 (from_statement)
 
 
 State 109
 
-   51 joined_table: from_statement CROSS JOIN . from_statement
+   59 opt_from: opt_from ',' . from_statement
 
-    NAME  shift, and go to state 72
-    '('   shift, and go to state 73
+    NAME  shift, and go to state 91
+    '('   shift, and go to state 92
 
-    from_statement  go to state 120
-    joined_table    go to state 76
+    from_statement  go to state 123
+    joined_table    go to state 95
 
 
 State 110
 
-   50 joined_table: from_statement . join_type from_statement ON expr
-   50             | from_statement join_type from_statement . ON expr
-   51             | from_statement . CROSS JOIN from_statement
+   69 opt_join_type: INNER .
 
-    ON     shift, and go to state 121
-    INNER  shift, and go to state 91
-    RIGHT  shift, and go to state 92
-    LEFT   shift, and go to state 93
-    FULL   shift, and go to state 94
-    CROSS  shift, and go to state 95
-
-    $default  reduce using rule 55 (opt_join_type)
-
-    join_type      go to state 96
-    opt_join_type  go to state 97
+    $default  reduce using rule 69 (opt_join_type)
 
 
 State 111
 
-   63 opt_join_hint: REDUCE .
+   71 opt_join_type: RIGHT . opt_outer
 
-    $default  reduce using rule 63 (opt_join_hint)
+    OUTER  shift, and go to state 124
+
+    $default  reduce using rule 73 (opt_outer)
+
+    opt_outer  go to state 125
 
 
 State 112
 
-   64 opt_join_hint: REPLICATE .
+   70 opt_join_type: LEFT . opt_outer
 
-    $default  reduce using rule 64 (opt_join_hint)
+    OUTER  shift, and go to state 124
+
+    $default  reduce using rule 73 (opt_outer)
+
+    opt_outer  go to state 126
 
 
 State 113
 
-   65 opt_join_hint: REDISTRIBUTE .
+   72 opt_join_type: FULL . opt_outer
 
-    $default  reduce using rule 65 (opt_join_hint)
+    OUTER  shift, and go to state 124
+
+    $default  reduce using rule 73 (opt_outer)
+
+    opt_outer  go to state 127
 
 
 State 114
 
-   54 join_type: opt_join_type opt_join_hint . JOIN
+   64 joined_table: from_statement CROSS . JOIN from_statement
 
-    JOIN  shift, and go to state 122
+    JOIN  shift, and go to state 128
 
 
 State 115
 
-   71 opt_groupby: GROUP BY . groupby_list
+   63 joined_table: from_statement join_type . from_statement ON expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    ROLLUP     shift, and go to state 123
-    CUBE       shift, and go to state 124
-    GROUPING   shift, and go to state 125
-    '('        shift, and go to state 126
+    NAME  shift, and go to state 91
+    '('   shift, and go to state 92
 
-    expr               go to state 127
-    groupby_list       go to state 128
-    groupby_statement  go to state 129
+    from_statement  go to state 129
+    joined_table    go to state 95
 
 
 State 116
 
-   91 opt_having: HAVING . expr
+   67 join_type: opt_join_type . opt_join_hint JOIN
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    REDUCE        shift, and go to state 130
+    REPLICATE     shift, and go to state 131
+    REDISTRIBUTE  shift, and go to state 132
 
-    expr  go to state 130
+    $default  reduce using rule 75 (opt_join_hint)
+
+    opt_join_hint  go to state 133
 
 
 State 117
 
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having . opt_orderby
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
+   82 opt_where: WHERE expr .
 
-    ORDER  shift, and go to state 131
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
-    $default  reduce using rule 92 (opt_orderby)
-
-    opt_orderby  go to state 132
+    $default  reduce using rule 82 (opt_where)
 
 
 State 118
 
-   48 from_statement: NAME '.' NAME opt_as_alias .
+   84 opt_groupby: GROUP . BY groupby_list
 
-    $default  reduce using rule 48 (from_statement)
+    BY  shift, and go to state 134
 
 
 State 119
 
-   52 joined_table: NAME cross_outer APPLY NAME .
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby . opt_having opt_orderby
 
-    $default  reduce using rule 52 (joined_table)
+    HAVING  shift, and go to state 135
+
+    $default  reduce using rule 103 (opt_having)
+
+    opt_having  go to state 136
 
 
 State 120
 
-   50 joined_table: from_statement . join_type from_statement ON expr
-   51             | from_statement . CROSS JOIN from_statement
-   51             | from_statement CROSS JOIN from_statement .
+   61 from_statement: NAME '.' NAME . opt_as_alias
 
-    INNER  shift, and go to state 91
-    RIGHT  shift, and go to state 92
-    LEFT   shift, and go to state 93
-    FULL   shift, and go to state 94
-    CROSS  shift, and go to state 95
+    NAME  shift, and go to state 45
+    AS    shift, and go to state 46
 
-    JOIN          reduce using rule 51 (joined_table)
-    JOIN          [reduce using rule 55 (opt_join_type)]
-    INNER         [reduce using rule 51 (joined_table)]
-    RIGHT         [reduce using rule 51 (joined_table)]
-    LEFT          [reduce using rule 51 (joined_table)]
-    FULL          [reduce using rule 51 (joined_table)]
-    REDUCE        reduce using rule 51 (joined_table)
-    REDUCE        [reduce using rule 55 (opt_join_type)]
-    REPLICATE     reduce using rule 51 (joined_table)
-    REPLICATE     [reduce using rule 55 (opt_join_type)]
-    REDISTRIBUTE  reduce using rule 51 (joined_table)
-    REDISTRIBUTE  [reduce using rule 55 (opt_join_type)]
-    CROSS         [reduce using rule 51 (joined_table)]
-    $default      reduce using rule 51 (joined_table)
+    $default  reduce using rule 51 (opt_as_alias)
 
-    join_type      go to state 96
-    opt_join_type  go to state 97
+    opt_as_alias  go to state 137
 
 
 State 121
 
-   50 joined_table: from_statement join_type from_statement ON . expr
+   65 joined_table: NAME cross_outer APPLY . NAME
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 133
+    NAME  shift, and go to state 138
 
 
 State 122
 
-   54 join_type: opt_join_type opt_join_hint JOIN .
+   66 joined_table: '(' joined_table ')' .
 
-    $default  reduce using rule 54 (join_type)
+    $default  reduce using rule 66 (joined_table)
 
 
 State 123
 
-   75 groupby_statement: ROLLUP . '(' groupby_expr_list ')'
+   59 opt_from: opt_from ',' from_statement .
+   63 joined_table: from_statement . join_type from_statement ON expr
+   64             | from_statement . CROSS JOIN from_statement
 
-    '('  shift, and go to state 134
+    INNER  shift, and go to state 110
+    RIGHT  shift, and go to state 111
+    LEFT   shift, and go to state 112
+    FULL   shift, and go to state 113
+    CROSS  shift, and go to state 114
+
+    JOIN          reduce using rule 68 (opt_join_type)
+    REDUCE        reduce using rule 68 (opt_join_type)
+    REPLICATE     reduce using rule 68 (opt_join_type)
+    REDISTRIBUTE  reduce using rule 68 (opt_join_type)
+    $default      reduce using rule 59 (opt_from)
+
+    join_type      go to state 115
+    opt_join_type  go to state 116
 
 
 State 124
 
-   76 groupby_statement: CUBE . '(' groupby_expr_list ')'
+   74 opt_outer: OUTER .
 
-    '('  shift, and go to state 135
+    $default  reduce using rule 74 (opt_outer)
 
 
 State 125
 
-   77 groupby_statement: GROUPING . SETS '(' grouping_set ')'
+   71 opt_join_type: RIGHT opt_outer .
 
-    SETS  shift, and go to state 136
+    $default  reduce using rule 71 (opt_join_type)
 
 
 State 126
 
-    5 expr: '(' . expr ')'
-   78 groupby_statement: '(' . ')'
+   70 opt_join_type: LEFT opt_outer .
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-    ')'        shift, and go to state 137
-
-    expr  go to state 26
+    $default  reduce using rule 70 (opt_join_type)
 
 
 State 127
 
-    6 expr: expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-   74 groupby_statement: expr .
+   72 opt_join_type: FULL opt_outer .
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-
-    $default  reduce using rule 74 (groupby_statement)
+    $default  reduce using rule 72 (opt_join_type)
 
 
 State 128
 
-   71 opt_groupby: GROUP BY groupby_list .
-   73 groupby_list: groupby_list . ',' groupby_statement
+   64 joined_table: from_statement CROSS JOIN . from_statement
 
-    ','  shift, and go to state 138
+    NAME  shift, and go to state 91
+    '('   shift, and go to state 92
 
-    $default  reduce using rule 71 (opt_groupby)
+    from_statement  go to state 139
+    joined_table    go to state 95
 
 
 State 129
 
-   72 groupby_list: groupby_statement .
+   63 joined_table: from_statement . join_type from_statement ON expr
+   63             | from_statement join_type from_statement . ON expr
+   64             | from_statement . CROSS JOIN from_statement
 
-    $default  reduce using rule 72 (groupby_list)
+    ON     shift, and go to state 140
+    INNER  shift, and go to state 110
+    RIGHT  shift, and go to state 111
+    LEFT   shift, and go to state 112
+    FULL   shift, and go to state 113
+    CROSS  shift, and go to state 114
+
+    $default  reduce using rule 68 (opt_join_type)
+
+    join_type      go to state 115
+    opt_join_type  go to state 116
 
 
 State 130
 
-    6 expr: expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-   91 opt_having: HAVING expr .
+   76 opt_join_hint: REDUCE .
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-
-    $default  reduce using rule 91 (opt_having)
+    $default  reduce using rule 76 (opt_join_hint)
 
 
 State 131
 
-   93 opt_orderby: ORDER . BY orderby_statement_list
+   77 opt_join_hint: REPLICATE .
 
-    BY  shift, and go to state 139
+    $default  reduce using rule 77 (opt_join_hint)
 
 
 State 132
 
-   24 select_statement: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby .
+   78 opt_join_hint: REDISTRIBUTE .
 
-    $default  reduce using rule 24 (select_statement)
+    $default  reduce using rule 78 (opt_join_hint)
 
 
 State 133
 
-    6 expr: expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-   50 joined_table: from_statement join_type from_statement ON expr .
+   67 join_type: opt_join_type opt_join_hint . JOIN
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-
-    $default  reduce using rule 50 (joined_table)
+    JOIN  shift, and go to state 141
 
 
 State 134
 
-   75 groupby_statement: ROLLUP '(' . groupby_expr_list ')'
+   84 opt_groupby: GROUP BY . groupby_list
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    ROLLUP     shift, and go to state 142
+    CUBE       shift, and go to state 143
+    GROUPING   shift, and go to state 144
+    '('        shift, and go to state 145
 
-    expr               go to state 141
-    groupby_expr_list  go to state 142
-    groupby_expr       go to state 143
+    expr               go to state 146
+    groupby_list       go to state 147
+    groupby_statement  go to state 148
 
 
 State 135
 
-   76 groupby_statement: CUBE '(' . groupby_expr_list ')'
+  104 opt_having: HAVING . expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr               go to state 141
-    groupby_expr_list  go to state 144
-    groupby_expr       go to state 143
+    expr  go to state 149
 
 
 State 136
 
-   77 groupby_statement: GROUPING SETS . '(' grouping_set ')'
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having . opt_orderby
 
-    '('  shift, and go to state 145
+    ORDER  shift, and go to state 150
+
+    $default  reduce using rule 105 (opt_orderby)
+
+    opt_orderby  go to state 151
 
 
 State 137
 
-   78 groupby_statement: '(' ')' .
+   61 from_statement: NAME '.' NAME opt_as_alias .
 
-    $default  reduce using rule 78 (groupby_statement)
+    $default  reduce using rule 61 (from_statement)
 
 
 State 138
 
-   73 groupby_list: groupby_list ',' . groupby_statement
+   65 joined_table: NAME cross_outer APPLY NAME .
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    ROLLUP     shift, and go to state 123
-    CUBE       shift, and go to state 124
-    GROUPING   shift, and go to state 125
-    '('        shift, and go to state 126
-
-    expr               go to state 127
-    groupby_statement  go to state 146
+    $default  reduce using rule 65 (joined_table)
 
 
 State 139
 
-   93 opt_orderby: ORDER BY . orderby_statement_list
+   63 joined_table: from_statement . join_type from_statement ON expr
+   64             | from_statement . CROSS JOIN from_statement
+   64             | from_statement CROSS JOIN from_statement .
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
+    INNER  shift, and go to state 110
+    RIGHT  shift, and go to state 111
+    LEFT   shift, and go to state 112
+    FULL   shift, and go to state 113
+    CROSS  shift, and go to state 114
 
-    expr                    go to state 147
-    orderby_statement_list  go to state 148
-    orderby_statement       go to state 149
+    JOIN          reduce using rule 64 (joined_table)
+    JOIN          [reduce using rule 68 (opt_join_type)]
+    INNER         [reduce using rule 64 (joined_table)]
+    RIGHT         [reduce using rule 64 (joined_table)]
+    LEFT          [reduce using rule 64 (joined_table)]
+    FULL          [reduce using rule 64 (joined_table)]
+    REDUCE        reduce using rule 64 (joined_table)
+    REDUCE        [reduce using rule 68 (opt_join_type)]
+    REPLICATE     reduce using rule 64 (joined_table)
+    REPLICATE     [reduce using rule 68 (opt_join_type)]
+    REDISTRIBUTE  reduce using rule 64 (joined_table)
+    REDISTRIBUTE  [reduce using rule 68 (opt_join_type)]
+    CROSS         [reduce using rule 64 (joined_table)]
+    $default      reduce using rule 64 (joined_table)
+
+    join_type      go to state 115
+    opt_join_type  go to state 116
 
 
 State 140
 
-    5 expr: '(' . expr ')'
-   82 groupby_expr: '(' . groupby_expr ',' expr ')'
+   63 joined_table: from_statement join_type from_statement ON . expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
 
-    expr          go to state 150
-    groupby_expr  go to state 151
+    expr  go to state 152
 
 
 State 141
 
-    6 expr: expr . '+' expr
-    7     | expr . '-' expr
-    8     | expr . '*' expr
-    9     | expr . '/' expr
-   10     | expr . COMPARISON expr
-   11     | expr . AND expr
-   12     | expr . OR expr
-   16     | expr . LIKE expr
-   17     | expr . IN '(' val_list ')'
-   18     | expr . BETWEEN expr AND expr
-   81 groupby_expr: expr .
+   67 join_type: opt_join_type opt_join_hint JOIN .
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-
-    $default  reduce using rule 81 (groupby_expr)
+    $default  reduce using rule 67 (join_type)
 
 
 State 142
 
-   75 groupby_statement: ROLLUP '(' groupby_expr_list . ')'
-   80 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+   88 groupby_statement: ROLLUP . '(' groupby_expr_list ')'
 
-    ')'  shift, and go to state 152
-    ','  shift, and go to state 153
+    '('  shift, and go to state 153
 
 
 State 143
 
-   79 groupby_expr_list: groupby_expr .
+   89 groupby_statement: CUBE . '(' groupby_expr_list ')'
 
-    $default  reduce using rule 79 (groupby_expr_list)
+    '('  shift, and go to state 154
 
 
 State 144
 
-   76 groupby_statement: CUBE '(' groupby_expr_list . ')'
-   80 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+   90 groupby_statement: GROUPING . SETS '(' grouping_set ')'
 
-    ')'  shift, and go to state 154
-    ','  shift, and go to state 153
+    SETS  shift, and go to state 155
 
 
 State 145
 
-   77 groupby_statement: GROUPING SETS '(' . grouping_set ')'
+    5 expr: '(' . expr ')'
+   91 groupby_statement: '(' . ')'
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    ROLLUP     shift, and go to state 155
-    CUBE       shift, and go to state 156
-    '('        shift, and go to state 157
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+    ')'        shift, and go to state 156
 
-    expr                    go to state 141
-    groupby_expr            go to state 158
-    grouping_set            go to state 159
-    grouping_set_item_list  go to state 160
-    grouping_set_item       go to state 161
+    expr  go to state 44
 
 
 State 146
-
-   73 groupby_list: groupby_list ',' groupby_statement .
-
-    $default  reduce using rule 73 (groupby_list)
-
-
-State 147
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -2112,44 +2044,323 @@ State 147
    16     | expr . LIKE expr
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
-   96 orderby_statement: expr . opt_asc_desc
+   87 groupby_statement: expr .
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    ASC         shift, and go to state 162
-    DESC        shift, and go to state 163
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
 
-    $default  reduce using rule 97 (opt_asc_desc)
+    $default  reduce using rule 87 (groupby_statement)
 
-    opt_asc_desc  go to state 164
+
+State 147
+
+   84 opt_groupby: GROUP BY groupby_list .
+   86 groupby_list: groupby_list . ',' groupby_statement
+
+    ','  shift, and go to state 157
+
+    $default  reduce using rule 84 (opt_groupby)
 
 
 State 148
 
-   93 opt_orderby: ORDER BY orderby_statement_list .
-   95 orderby_statement_list: orderby_statement_list . ',' orderby_statement
+   85 groupby_list: groupby_statement .
 
-    ','  shift, and go to state 165
-
-    $default  reduce using rule 93 (opt_orderby)
+    $default  reduce using rule 85 (groupby_list)
 
 
 State 149
 
-   94 orderby_statement_list: orderby_statement .
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
+  104 opt_having: HAVING expr .
 
-    $default  reduce using rule 94 (orderby_statement_list)
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+
+    $default  reduce using rule 104 (opt_having)
 
 
 State 150
+
+  106 opt_orderby: ORDER . BY orderby_statement_list
+
+    BY  shift, and go to state 158
+
+
+State 151
+
+   37 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby .
+
+    $default  reduce using rule 37 (query_specification)
+
+
+State 152
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
+   63 joined_table: from_statement join_type from_statement ON expr .
+
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+
+    $default  reduce using rule 63 (joined_table)
+
+
+State 153
+
+   88 groupby_statement: ROLLUP '(' . groupby_expr_list ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
+
+    expr               go to state 160
+    groupby_expr_list  go to state 161
+    groupby_expr       go to state 162
+
+
+State 154
+
+   89 groupby_statement: CUBE '(' . groupby_expr_list ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
+
+    expr               go to state 160
+    groupby_expr_list  go to state 163
+    groupby_expr       go to state 162
+
+
+State 155
+
+   90 groupby_statement: GROUPING SETS . '(' grouping_set ')'
+
+    '('  shift, and go to state 164
+
+
+State 156
+
+   91 groupby_statement: '(' ')' .
+
+    $default  reduce using rule 91 (groupby_statement)
+
+
+State 157
+
+   86 groupby_list: groupby_list ',' . groupby_statement
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    ROLLUP     shift, and go to state 142
+    CUBE       shift, and go to state 143
+    GROUPING   shift, and go to state 144
+    '('        shift, and go to state 145
+
+    expr               go to state 146
+    groupby_statement  go to state 165
+
+
+State 158
+
+  106 opt_orderby: ORDER BY . orderby_statement_list
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr                    go to state 166
+    orderby_statement_list  go to state 167
+    orderby_statement       go to state 168
+
+
+State 159
+
+    5 expr: '(' . expr ')'
+   95 groupby_expr: '(' . groupby_expr ',' expr ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
+
+    expr          go to state 169
+    groupby_expr  go to state 170
+
+
+State 160
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
+   94 groupby_expr: expr .
+
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+
+    $default  reduce using rule 94 (groupby_expr)
+
+
+State 161
+
+   88 groupby_statement: ROLLUP '(' groupby_expr_list . ')'
+   93 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+
+    ')'  shift, and go to state 171
+    ','  shift, and go to state 172
+
+
+State 162
+
+   92 groupby_expr_list: groupby_expr .
+
+    $default  reduce using rule 92 (groupby_expr_list)
+
+
+State 163
+
+   89 groupby_statement: CUBE '(' groupby_expr_list . ')'
+   93 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+
+    ')'  shift, and go to state 173
+    ','  shift, and go to state 172
+
+
+State 164
+
+   90 groupby_statement: GROUPING SETS '(' . grouping_set ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    ROLLUP     shift, and go to state 174
+    CUBE       shift, and go to state 175
+    '('        shift, and go to state 176
+
+    expr                    go to state 160
+    groupby_expr            go to state 177
+    grouping_set            go to state 178
+    grouping_set_item_list  go to state 179
+    grouping_set_item       go to state 180
+
+
+State 165
+
+   86 groupby_list: groupby_list ',' groupby_statement .
+
+    $default  reduce using rule 86 (groupby_list)
+
+
+State 166
+
+    6 expr: expr . '+' expr
+    7     | expr . '-' expr
+    8     | expr . '*' expr
+    9     | expr . '/' expr
+   10     | expr . COMPARISON expr
+   11     | expr . AND expr
+   12     | expr . OR expr
+   16     | expr . LIKE expr
+   17     | expr . IN '(' val_list ')'
+   18     | expr . BETWEEN expr AND expr
+  109 orderby_statement: expr . opt_asc_desc
+
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    ASC         shift, and go to state 181
+    DESC        shift, and go to state 182
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+
+    $default  reduce using rule 110 (opt_asc_desc)
+
+    opt_asc_desc  go to state 183
+
+
+State 167
+
+  106 opt_orderby: ORDER BY orderby_statement_list .
+  108 orderby_statement_list: orderby_statement_list . ',' orderby_statement
+
+    ','  shift, and go to state 184
+
+    $default  reduce using rule 106 (opt_orderby)
+
+
+State 168
+
+  107 orderby_statement_list: orderby_statement .
+
+    $default  reduce using rule 107 (orderby_statement_list)
+
+
+State 169
 
     5 expr: '(' expr . ')'
     6     | expr . '+' expr
@@ -2162,237 +2373,237 @@ State 150
    16     | expr . LIKE expr
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
-   81 groupby_expr: expr .
-
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-    ')'         shift, and go to state 50
-
-    $default  reduce using rule 81 (groupby_expr)
-
-
-State 151
-
-   82 groupby_expr: '(' groupby_expr . ',' expr ')'
-
-    ','  shift, and go to state 166
-
-
-State 152
-
-   75 groupby_statement: ROLLUP '(' groupby_expr_list ')' .
-
-    $default  reduce using rule 75 (groupby_statement)
-
-
-State 153
-
-   80 groupby_expr_list: groupby_expr_list ',' . groupby_expr
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
-
-    expr          go to state 141
-    groupby_expr  go to state 167
-
-
-State 154
-
-   76 groupby_statement: CUBE '(' groupby_expr_list ')' .
-
-    $default  reduce using rule 76 (groupby_statement)
-
-
-State 155
-
-   88 grouping_set_item: ROLLUP . '(' groupby_expr_list ')'
-
-    '('  shift, and go to state 168
-
-
-State 156
-
-   89 grouping_set_item: CUBE . '(' groupby_expr_list ')'
-
-    '('  shift, and go to state 169
-
-
-State 157
-
-    5 expr: '(' . expr ')'
-   82 groupby_expr: '(' . groupby_expr ',' expr ')'
-   83 grouping_set: '(' . ')'
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
-    ')'        shift, and go to state 170
-
-    expr          go to state 150
-    groupby_expr  go to state 151
-
-
-State 158
-
-   87 grouping_set_item: groupby_expr .
-
-    $default  reduce using rule 87 (grouping_set_item)
-
-
-State 159
-
-   77 groupby_statement: GROUPING SETS '(' grouping_set . ')'
-
-    ')'  shift, and go to state 171
-
-
-State 160
-
-   84 grouping_set: grouping_set_item_list .
-   86 grouping_set_item_list: grouping_set_item_list . ',' grouping_set_item
-
-    ','  shift, and go to state 172
-
-    $default  reduce using rule 84 (grouping_set)
-
-
-State 161
-
-   85 grouping_set_item_list: grouping_set_item .
-
-    $default  reduce using rule 85 (grouping_set_item_list)
-
-
-State 162
-
-   98 opt_asc_desc: ASC .
-
-    $default  reduce using rule 98 (opt_asc_desc)
-
-
-State 163
-
-   99 opt_asc_desc: DESC .
-
-    $default  reduce using rule 99 (opt_asc_desc)
-
-
-State 164
-
-   96 orderby_statement: expr opt_asc_desc .
-
-    $default  reduce using rule 96 (orderby_statement)
-
-
-State 165
-
-   95 orderby_statement_list: orderby_statement_list ',' . orderby_statement
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr               go to state 147
-    orderby_statement  go to state 173
-
-
-State 166
-
-   82 groupby_expr: '(' groupby_expr ',' . expr ')'
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 17
-
-    expr  go to state 174
-
-
-State 167
-
-   80 groupby_expr_list: groupby_expr_list ',' groupby_expr .
-
-    $default  reduce using rule 80 (groupby_expr_list)
-
-
-State 168
-
-   88 grouping_set_item: ROLLUP '(' . groupby_expr_list ')'
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
-
-    expr               go to state 141
-    groupby_expr_list  go to state 175
-    groupby_expr       go to state 143
-
-
-State 169
-
-   89 grouping_set_item: CUBE '(' . groupby_expr_list ')'
-
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    '('        shift, and go to state 140
-
-    expr               go to state 141
-    groupby_expr_list  go to state 176
-    groupby_expr       go to state 143
+   94 groupby_expr: expr .
+
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+    ')'         shift, and go to state 69
+
+    $default  reduce using rule 94 (groupby_expr)
 
 
 State 170
 
-   83 grouping_set: '(' ')' .
+   95 groupby_expr: '(' groupby_expr . ',' expr ')'
 
-    $default  reduce using rule 83 (grouping_set)
+    ','  shift, and go to state 185
 
 
 State 171
 
-   77 groupby_statement: GROUPING SETS '(' grouping_set ')' .
+   88 groupby_statement: ROLLUP '(' groupby_expr_list ')' .
 
-    $default  reduce using rule 77 (groupby_statement)
+    $default  reduce using rule 88 (groupby_statement)
 
 
 State 172
 
-   86 grouping_set_item_list: grouping_set_item_list ',' . grouping_set_item
+   93 groupby_expr_list: groupby_expr_list ',' . groupby_expr
 
-    NAME       shift, and go to state 24
-    INTNUMBER  shift, and go to state 13
-    STRING     shift, and go to state 14
-    ROLLUP     shift, and go to state 155
-    CUBE       shift, and go to state 156
-    '('        shift, and go to state 140
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
 
-    expr               go to state 141
-    groupby_expr       go to state 158
-    grouping_set_item  go to state 177
+    expr          go to state 160
+    groupby_expr  go to state 186
 
 
 State 173
 
-   95 orderby_statement_list: orderby_statement_list ',' orderby_statement .
+   89 groupby_statement: CUBE '(' groupby_expr_list ')' .
 
-    $default  reduce using rule 95 (orderby_statement_list)
+    $default  reduce using rule 89 (groupby_statement)
 
 
 State 174
+
+  101 grouping_set_item: ROLLUP . '(' groupby_expr_list ')'
+
+    '('  shift, and go to state 187
+
+
+State 175
+
+  102 grouping_set_item: CUBE . '(' groupby_expr_list ')'
+
+    '('  shift, and go to state 188
+
+
+State 176
+
+    5 expr: '(' . expr ')'
+   95 groupby_expr: '(' . groupby_expr ',' expr ')'
+   96 grouping_set: '(' . ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
+    ')'        shift, and go to state 189
+
+    expr          go to state 169
+    groupby_expr  go to state 170
+
+
+State 177
+
+  100 grouping_set_item: groupby_expr .
+
+    $default  reduce using rule 100 (grouping_set_item)
+
+
+State 178
+
+   90 groupby_statement: GROUPING SETS '(' grouping_set . ')'
+
+    ')'  shift, and go to state 190
+
+
+State 179
+
+   97 grouping_set: grouping_set_item_list .
+   99 grouping_set_item_list: grouping_set_item_list . ',' grouping_set_item
+
+    ','  shift, and go to state 191
+
+    $default  reduce using rule 97 (grouping_set)
+
+
+State 180
+
+   98 grouping_set_item_list: grouping_set_item .
+
+    $default  reduce using rule 98 (grouping_set_item_list)
+
+
+State 181
+
+  111 opt_asc_desc: ASC .
+
+    $default  reduce using rule 111 (opt_asc_desc)
+
+
+State 182
+
+  112 opt_asc_desc: DESC .
+
+    $default  reduce using rule 112 (opt_asc_desc)
+
+
+State 183
+
+  109 orderby_statement: expr opt_asc_desc .
+
+    $default  reduce using rule 109 (orderby_statement)
+
+
+State 184
+
+  108 orderby_statement_list: orderby_statement_list ',' . orderby_statement
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr               go to state 166
+    orderby_statement  go to state 192
+
+
+State 185
+
+   95 groupby_expr: '(' groupby_expr ',' . expr ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 33
+
+    expr  go to state 193
+
+
+State 186
+
+   93 groupby_expr_list: groupby_expr_list ',' groupby_expr .
+
+    $default  reduce using rule 93 (groupby_expr_list)
+
+
+State 187
+
+  101 grouping_set_item: ROLLUP '(' . groupby_expr_list ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
+
+    expr               go to state 160
+    groupby_expr_list  go to state 194
+    groupby_expr       go to state 162
+
+
+State 188
+
+  102 grouping_set_item: CUBE '(' . groupby_expr_list ')'
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    '('        shift, and go to state 159
+
+    expr               go to state 160
+    groupby_expr_list  go to state 195
+    groupby_expr       go to state 162
+
+
+State 189
+
+   96 grouping_set: '(' ')' .
+
+    $default  reduce using rule 96 (grouping_set)
+
+
+State 190
+
+   90 groupby_statement: GROUPING SETS '(' grouping_set ')' .
+
+    $default  reduce using rule 90 (groupby_statement)
+
+
+State 191
+
+   99 grouping_set_item_list: grouping_set_item_list ',' . grouping_set_item
+
+    NAME       shift, and go to state 42
+    INTNUMBER  shift, and go to state 29
+    STRING     shift, and go to state 30
+    ROLLUP     shift, and go to state 174
+    CUBE       shift, and go to state 175
+    '('        shift, and go to state 159
+
+    expr               go to state 160
+    groupby_expr       go to state 177
+    grouping_set_item  go to state 196
+
+
+State 192
+
+  108 orderby_statement_list: orderby_statement_list ',' orderby_statement .
+
+    $default  reduce using rule 108 (orderby_statement_list)
+
+
+State 193
 
     6 expr: expr . '+' expr
     7     | expr . '-' expr
@@ -2404,62 +2615,62 @@ State 174
    16     | expr . LIKE expr
    17     | expr . IN '(' val_list ')'
    18     | expr . BETWEEN expr AND expr
-   82 groupby_expr: '(' groupby_expr ',' expr . ')'
+   95 groupby_expr: '(' groupby_expr ',' expr . ')'
 
-    LIKE        shift, and go to state 29
-    AND         shift, and go to state 30
-    OR          shift, and go to state 31
-    IN          shift, and go to state 32
-    BETWEEN     shift, and go to state 33
-    COMPARISON  shift, and go to state 34
-    '+'         shift, and go to state 35
-    '-'         shift, and go to state 36
-    '*'         shift, and go to state 37
-    '/'         shift, and go to state 38
-    ')'         shift, and go to state 178
-
-
-State 175
-
-   80 groupby_expr_list: groupby_expr_list . ',' groupby_expr
-   88 grouping_set_item: ROLLUP '(' groupby_expr_list . ')'
-
-    ')'  shift, and go to state 179
-    ','  shift, and go to state 153
+    LIKE        shift, and go to state 47
+    AND         shift, and go to state 48
+    OR          shift, and go to state 49
+    IN          shift, and go to state 50
+    BETWEEN     shift, and go to state 51
+    COMPARISON  shift, and go to state 52
+    '+'         shift, and go to state 53
+    '-'         shift, and go to state 54
+    '*'         shift, and go to state 55
+    '/'         shift, and go to state 56
+    ')'         shift, and go to state 197
 
 
-State 176
+State 194
 
-   80 groupby_expr_list: groupby_expr_list . ',' groupby_expr
-   89 grouping_set_item: CUBE '(' groupby_expr_list . ')'
+   93 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+  101 grouping_set_item: ROLLUP '(' groupby_expr_list . ')'
 
-    ')'  shift, and go to state 180
-    ','  shift, and go to state 153
-
-
-State 177
-
-   86 grouping_set_item_list: grouping_set_item_list ',' grouping_set_item .
-
-    $default  reduce using rule 86 (grouping_set_item_list)
+    ')'  shift, and go to state 198
+    ','  shift, and go to state 172
 
 
-State 178
+State 195
 
-   82 groupby_expr: '(' groupby_expr ',' expr ')' .
+   93 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+  102 grouping_set_item: CUBE '(' groupby_expr_list . ')'
 
-    $default  reduce using rule 82 (groupby_expr)
-
-
-State 179
-
-   88 grouping_set_item: ROLLUP '(' groupby_expr_list ')' .
-
-    $default  reduce using rule 88 (grouping_set_item)
+    ')'  shift, and go to state 199
+    ','  shift, and go to state 172
 
 
-State 180
+State 196
 
-   89 grouping_set_item: CUBE '(' groupby_expr_list ')' .
+   99 grouping_set_item_list: grouping_set_item_list ',' grouping_set_item .
 
-    $default  reduce using rule 89 (grouping_set_item)
+    $default  reduce using rule 99 (grouping_set_item_list)
+
+
+State 197
+
+   95 groupby_expr: '(' groupby_expr ',' expr ')' .
+
+    $default  reduce using rule 95 (groupby_expr)
+
+
+State 198
+
+  101 grouping_set_item: ROLLUP '(' groupby_expr_list ')' .
+
+    $default  reduce using rule 101 (grouping_set_item)
+
+
+State 199
+
+  102 grouping_set_item: CUBE '(' groupby_expr_list ')' .
+
+    $default  reduce using rule 102 (grouping_set_item)
