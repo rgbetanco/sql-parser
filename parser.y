@@ -44,6 +44,38 @@
 %token IS
 %token NOT
 %token NULLX
+%token LABEL
+%token HASH
+%token LOOP
+%token MERGE
+%token FORCE
+%token DISABLE
+%token EXTERNALPUSHDOWN
+%token CONCAT
+%token IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
+%token KEEP
+%token KEEPFIXED
+%token PLAN
+%token MAX_GRANT_PERCENT
+%token MIN_GRANT_PERCENT
+%token MAXDOP
+%token MAXRECURSION
+%token NO_PERFORMANCE_SPOOL
+%token OPTIMIZE
+%token FOR 
+%token UNKNOWN
+%token PARAMETERIZATION 
+%token SIMPLE
+%token FORCED
+%token QUERYTRACEON
+%token RECOMPILE
+%token ROBUST
+%token SCALEOUTEXECUTION
+%token EXPAND 
+%token VIEWS
+%token FAST
+%token OPTION
+%token EQUAL
 
 %union{
     char* strVal;
@@ -58,7 +90,7 @@
 %nonassoc LIKE IN
 %left '!'
 %left BETWEEN
-%left <subtok> COMPARISON /* = <> < > <= >= <=> */
+%left <subtok> COMPARISON EQUAL/* = <> < > <= >= <=> */
 %left '|'
 %left '&'
 %left '+' '-'
@@ -98,6 +130,7 @@ expr:
     |expr '*' expr      {}
     |expr '/' expr      {}
     |expr COMPARISON expr
+    |expr EQUAL expr
     |expr AND expr
     |expr OR expr
     |NAME               {printf("expression name %s\n", $1); free($1);}
@@ -134,6 +167,46 @@ opt_for:    /* for statemetn not complete yet */
     ;
 opt_option:
         {}
+    |OPTION '(' query_option_list ')'
+    ;
+query_option_list:
+    query_option
+    |query_option_list ',' query_option
+    ;
+query_option:
+    LABEL EQUAL STRING
+    |query_hint
+    ;
+query_hint:
+    HASH GROUP
+    |ORDER GROUP
+    |CONCAT UNION
+    |HASH UNION
+    |MERGE UNION
+    |LOOP JOIN
+    |MERGE JOIN
+    |HASH JOIN
+    |EXPAND VIEWS
+    |FAST INTNUMBER
+    |FORCE ORDER
+    |FORCE EXTERNALPUSHDOWN
+    |DISABLE EXTERNALPUSHDOWN
+    |FORCE SCALEOUTEXECUTION
+    |DISABLE SCALEOUTEXECUTION
+    |IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
+    |KEEP PLAN
+    |KEEPFIXED PLAN
+    |MAX_GRANT_PERCENT '=' INTNUMBER
+    |MIN_GRANT_PERCENT '=' INTNUMBER
+    |MAXDOP INTNUMBER
+    |MAXRECURSION INTNUMBER
+    |NO_PERFORMANCE_SPOOL
+    |OPTIMIZE FOR UNKNOWN
+    |PARAMETERIZATION SIMPLE
+    |PARAMETERIZATION FORCED
+    |QUERYTRACEON INTNUMBER
+    |RECOMPILE
+    |ROBUST PLAN
     ;
 opt_with:
         {}

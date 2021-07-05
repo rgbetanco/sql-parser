@@ -49,6 +49,37 @@ intersect|INTERSECT     {return INTERSECT;}
 is|IS                   {return IS;}
 not|NOT                 {return NOT;}
 null|NULL               {return NULLX;}
+label|LABEL             {return LABEL;}
+hash|HASH               {return HASH;}
+loop|LOOP               {return LOOP;}
+merge|MERGE             {return MERGE;}
+force|FORCE             {return FORCE;}
+disable|DISABLE         {return DISABLE;}
+externalpushdown|EXTERNALPUSHDOWN {return EXTERNALPUSHDOWN;}
+concat|CONCAT           {return CONCAT;}
+ignore_nonclustered_columnstore_index|IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX   {return IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX;}
+keep|KEEP               {return KEEP;}
+keepfixed|KEEPFIXED     {return KEEPFIXED;}
+plan|PLAN               {return PLAN;}
+max_grant_percent|MAX_GRANT_PERCENT     {return MAX_GRANT_PERCENT;}
+min_grant_percent|MIN_GRANT_PERCENT     {return MIN_GRANT_PERCENT;}
+maxdop|MAXDOP           {return MAXDOP;}
+maxrecursion|MAXRECURSION               {return MAXRECURSION;}
+no_performance_spool|NO_PERFORMANCE_SPOOL   {return NO_PERFORMANCE_SPOOL;}
+optimize|OPTIMIZE       {return OPTIMIZE;}
+for|FOR                 {return FOR ;}
+unknown|UNKNOWN         {return UNKNOWN;}
+parameterization|PARAMETERIZATION       {return PARAMETERIZATION ;}
+simple|SIMPLE           {return SIMPLE;}
+forced|FORCED           {return FORCED;}
+querytraceon|QUERYTRACEON               {return QUERYTRACEON;}
+recompile|RECOMPILE     {return RECOMPILE;}
+robust|ROBUST           {return ROBUST;}
+scaleoutexecution|SCALEOUTEXECUTION     {return SCALEOUTEXECUTION;}
+expand|EXPAND           {return EXPAND ;}
+views|VIEWS             {return VIEWS;}
+fast|FAST               {return FAST;}
+option|OPTION           {return OPTION;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -81,7 +112,7 @@ null|NULL               {return NULLX;}
 [;,()-+*/\n.]           {return *yytext;}
 
     /* comparison operator */
-"="                     {yylval.subtok = 4; return COMPARISON;}
+"="                     {yylval.subtok = 4; return EQUAL;}
 "<=>"                   {yylval.subtok = 12; return COMPARISON;}
 ">="                    {yylval.subtok = 6; return COMPARISON;}
 ">"                     {yylval.subtok = 2; return COMPARISON;}
