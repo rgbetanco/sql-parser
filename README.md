@@ -68,4 +68,16 @@ SELECT p.ProductID, v.BusinessEntityID FROM Production.Product AS p LEFT JOIN Pu
 SELECT LastName, FirstName,JobTitle FROM dbo.EmployeeOne UNION ALL  
 ( SELECT LastName, FirstName, JobTitle FROM dbo.EmployeeTwo UNION 
 SELECT LastName, FirstName,JobTitle FROM dbo.EmployeeThree);  
+
+// with ... as ... statement
+WITH Sales_CTE (SalesPersonID, NumberOfOrders)  
+AS  
+(  
+    SELECT SalesPersonID, COUNT(*)  
+    FROM Sales.SalesOrderHeader  
+    WHERE SalesPersonID IS NOT NULL  
+    GROUP BY SalesPersonID  
+)  
+SELECT AVG(NumberOfOrders) AS "Average Sales Per Person"  
+FROM Sales_CTE; 
 ```

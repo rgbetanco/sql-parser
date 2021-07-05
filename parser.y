@@ -41,6 +41,9 @@
 %token UNION
 %token INTERSECT
 %token EXCEPT
+%token IS
+%token NOT
+%token NULLX
 
 %union{
     char* strVal;
@@ -101,8 +104,12 @@ expr:
     |NAME '.' NAME      {printf("expression field name %s.%s\n", $1, $3); free($1);}
     |STRING             {printf("expression string %s\n", $1); free($1);}
     |expr LIKE expr
+    |expr NOT LIKE expr
     |expr IN '(' val_list ')'
     |expr BETWEEN expr AND expr %prec BETWEEN
+    |expr NOT BETWEEN expr AND expr %prec BETWEEN
+    |expr IS NULLX
+    |expr IS NOT NULLX
     ;
 
 /****  function ****/    
@@ -115,11 +122,37 @@ opt_val_list:
     ;
 val_list:
     expr
+    |'*'
     |expr ',' val_list
 
 /****  select statement  ****/
 select_statement:
-    query_expression
+    opt_with query_expression opt_orderby opt_for opt_option
+    ;
+opt_for:    /* for statemetn not complete yet */
+        {}
+    ;
+opt_option:
+        {}
+    ;
+opt_with:
+        {}
+    |WITH common_table_expression_list AS '(' query_expression ')'
+    ;
+common_table_expression_list:
+    common_table_expression
+    |common_table_expression_list common_table_expression
+    ;
+common_table_expression:
+    NAME opt_column_name_list
+    ;
+opt_column_name_list:
+        {}
+    |'(' column_name_list ')'
+    ;
+column_name_list:
+    NAME
+    |column_name_list ',' NAME
     ;
 query_expression:
     query_specification opt_query
@@ -144,7 +177,7 @@ opt_union:
     |INTERSECT
     ;
 query_specification:
-    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having opt_orderby{printf("select\n");}
+    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having {printf("select\n");}
     ;
 select_options:
                                 {/*empty*/}
@@ -170,6 +203,7 @@ select_expr:    /* funciton not complete yet */
 opt_as_alias:
                     {/*empty*/}
     |AS NAME        {printf("as %s\n", $2); free($2);}
+    |AS STRING
     |NAME           {printf("as %s\n", $1); free($1);}
     ;
 opt_into:

@@ -46,6 +46,9 @@ desc|DESC               {return DESC;}
 union|UNION             {return UNION;}
 except|EXCEPT           {return EXCEPT;}
 intersect|INTERSECT     {return INTERSECT;}
+is|IS                   {return IS;}
+not|NOT                 {return NOT;}
+null|NULL               {return NULLX;}
 
     /* interger numbers */
 -?[0-9]+                {
