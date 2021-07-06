@@ -76,6 +76,8 @@
 %token FAST
 %token OPTION
 %token EQUAL
+%token INSERT
+%token DELETE
 
 %union{
     char* strVal;
@@ -118,7 +120,8 @@ statement_list:
     ;
 statement:
     select_statement
-    /*|delete_statement*/
+    |insert_statement
+    |delete_statement
     ;
 
 /****  expressions  ****/
@@ -157,10 +160,29 @@ val_list:
     expr
     |'*'
     |expr ',' val_list
+    |query_specification
+    ;
+
+/**** delete statement  ****/
+delete_statement:
+    opt_with DELETE top_options FROM object opt_from_list opt_where opt_option
+    |opt_with DELETE top_options object opt_from_list opt_where opt_option
+    ;
+object:
+    NAME '.' NAME '.' NAME '.' NAME
+    |NAME '.' NAME '.' NAME
+    |NAME '.' NAME
+    |NAME
+    ;
+
+/****  insert statement  ****/
+insert_statement:
+    opt_with INSERT top_options INTO object
+    ;
 
 /****  select statement  ****/
 select_statement:
-    opt_with query_expression opt_orderby opt_for opt_option
+    opt_with query_expression opt_orderby opt_for opt_option opt_into
     ;
 opt_for:    /* for statemetn not complete yet */
         {}
@@ -289,7 +311,7 @@ opt_from_list:
         {}
     |FROM opt_from
     ;
-opt_from:   /* there is more statement need to parse */
+opt_from:
     from_statement
     |opt_from ',' from_statement
     ;

@@ -80,6 +80,8 @@ expand|EXPAND           {return EXPAND ;}
 views|VIEWS             {return VIEWS;}
 fast|FAST               {return FAST;}
 option|OPTION           {return OPTION;}
+insert|INSERT           {return INSERT;}
+delete|DELEDTE          {return DELETE;}
 
     /* interger numbers */
 -?[0-9]+                {

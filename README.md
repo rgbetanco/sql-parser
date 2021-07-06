@@ -28,6 +28,7 @@ make
 select name from city;
 ```
 ## Successful Statement
+### Select statement
 ```
 // basic statement
 select name from city;
@@ -84,4 +85,10 @@ FROM Sales_CTE;
 // option statement
 SELECT ProductID, OrderQty, SUM(LineTotal) AS Total FROM Sales.SalesOrderDetail WHERE UnitPrice < 5.00 GROUP BY ProductID, OrderQty ORDER BY ProductID, OrderQty OPTION (HASH GROUP, FAST 10);
 SELECT * FROM FactResellerSales OPTION ( LABEL = 'q17' );  
+```
+### Delete statement
+```
+DELETE FROM Sales.SalesPersonQuotaHistory;  
+DELETE Production.ProductCostHistory WHERE StandardCost BETWEEN 12.00 AND 14.00 AND EndDate IS NULL;  
+DELETE FROM Sales.SalesPersonQuotaHistory WHERE BusinessEntityID IN (SELECT BusinessEntityID FROM Sales.SalesPerson WHERE SalesYTD > 2500000.00);
 ```
