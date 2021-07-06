@@ -78,6 +78,9 @@
 %token EQUAL
 %token INSERT
 %token DELETE
+%token VALUES
+%token DEFAULT
+%token USERVAR
 
 %union{
     char* strVal;
@@ -127,6 +130,7 @@ statement:
 /****  expressions  ****/
 expr:
     INTNUMBER           {printf("expression interger %d\n", $1);}
+    |USERVAR
     |'(' expr ')'       {printf("(expression)");}
     |expr '+' expr      {}
     |expr '-' expr      {}
@@ -146,6 +150,7 @@ expr:
     |expr NOT BETWEEN expr AND expr %prec BETWEEN
     |expr IS NULLX
     |expr IS NOT NULLX
+    |USERVAR EQUAL expr
     ;
 
 /****  function ****/    
@@ -177,7 +182,27 @@ object:
 
 /****  insert statement  ****/
 insert_statement:
-    opt_with INSERT top_options INTO object
+    opt_with INSERT top_options INTO object opt_column_name_list insert_options
+    |opt_with INSERT top_options object opt_column_name_list insert_options
+    ;
+insert_options:
+    VALUES values_list
+    |query_specification
+    |DEFAULT VALUES
+    ;
+values_list:
+    '(' values_options_list ')'
+    |values_list ',' '(' values_options_list ')'
+    ;
+values_options_list:
+    values_options
+    |values_options_list ',' values_options
+    ;
+values_options:
+    DEFAULT
+    |NULLX
+    |expr
+    |NAME STRING
     ;
 
 /****  select statement  ****/

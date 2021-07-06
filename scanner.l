@@ -55,7 +55,7 @@ loop|LOOP               {return LOOP;}
 merge|MERGE             {return MERGE;}
 force|FORCE             {return FORCE;}
 disable|DISABLE         {return DISABLE;}
-externalpushdown|EXTERNALPUSHDOWN {return EXTERNALPUSHDOWN;}
+externalpushdown|EXTERNALPUSHDOWN       {return EXTERNALPUSHDOWN;}
 concat|CONCAT           {return CONCAT;}
 ignore_nonclustered_columnstore_index|IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX   {return IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX;}
 keep|KEEP               {return KEEP;}
@@ -82,6 +82,8 @@ fast|FAST               {return FAST;}
 option|OPTION           {return OPTION;}
 insert|INSERT           {return INSERT;}
 delete|DELEDTE          {return DELETE;}
+values|VALUES           {return VALUES;}
+default|DEFAULT         {return DEFAULT;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -104,11 +106,21 @@ delete|DELEDTE          {return DELETE;}
                             return NAME;   
                         }
 	/* strings */
-'(\\.|''|[^'\n])*'   |
+'(\\.|''|[^'\n])*'      |
 \"(\\.|\"\"|[^"\n])*\"  { yylval.strVal = strdup(yytext); return STRING; }
 
 '(\\.|[^'\n])*$         { yyerror("Unterminated string"); }
-\"(\\.|[^"\n])*$        { yyerror("Unterminated string"); }             
+\"(\\.|[^"\n])*$        { yyerror("Unterminated string"); }    
+
+	/* user variables */
+@[0-9a-z_.$]+           |
+@\"[^"\n]+\"            |
+@`[^`\n]+`              |
+@'[^'\n]+'              { yylval.strVal = strdup(yytext+1); return USERVAR; }
+
+@\"[^"\n]*$             |
+@`[^`\n]*$              |
+@'[^'\n]*$              { yyerror("unterminated quoted user variable %s", yytext); }
 
     /* operators */
 [;,()-+*/\n.]           {return *yytext;}

@@ -65,12 +65,12 @@ SELECT LastName, FirstName FROM Person.Person WHERE LastName LIKE 'R%' ORDER BY 
 // joined table statement
 SELECT p.ProductID, v.BusinessEntityID FROM Production.Product AS p LEFT JOIN Purchasing.ProductVendor AS v ON (p.ProductID = v.ProductID);
 
-// union statement
+// 'union' statement
 SELECT LastName, FirstName,JobTitle FROM dbo.EmployeeOne UNION ALL  
 ( SELECT LastName, FirstName, JobTitle FROM dbo.EmployeeTwo UNION 
 SELECT LastName, FirstName,JobTitle FROM dbo.EmployeeThree);  
 
-// with ... as ... statement
+// 'with ... as ...' statement
 WITH Sales_CTE (SalesPersonID, NumberOfOrders)  
 AS  
 (  
@@ -82,7 +82,7 @@ AS
 SELECT AVG(NumberOfOrders) AS "Average Sales Per Person"  
 FROM Sales_CTE; 
 
-// option statement
+// 'option' statement
 SELECT ProductID, OrderQty, SUM(LineTotal) AS Total FROM Sales.SalesOrderDetail WHERE UnitPrice < 5.00 GROUP BY ProductID, OrderQty ORDER BY ProductID, OrderQty OPTION (HASH GROUP, FAST 10);
 SELECT * FROM FactResellerSales OPTION ( LABEL = 'q17' );  
 ```
@@ -91,4 +91,10 @@ SELECT * FROM FactResellerSales OPTION ( LABEL = 'q17' );
 DELETE FROM Sales.SalesPersonQuotaHistory;  
 DELETE Production.ProductCostHistory WHERE StandardCost BETWEEN 12.00 AND 14.00 AND EndDate IS NULL;  
 DELETE FROM Sales.SalesPersonQuotaHistory WHERE BusinessEntityID IN (SELECT BusinessEntityID FROM Sales.SalesPerson WHERE SalesYTD > 2500000.00);
+DELETE spqh FROM Sales.SalesPersonQuotaHistory AS spqh INNER JOIN Sales.SalesPerson AS sp ON spqh.BusinessEntityID = sp.BusinessEntityID WHERE sp.SalesYTD > 2500000;
+```
+### Insert statement
+```
+INSERT INTO Production.UnitMeasure VALUES (N'FT', N'Feet', '20080414');
+INSERT INTO Production.UnitMeasure VALUES (N'FT2', N'Square Feet ', '20080923'),(N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');
 ```
