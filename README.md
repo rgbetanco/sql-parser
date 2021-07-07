@@ -97,4 +97,42 @@ DELETE spqh FROM Sales.SalesPersonQuotaHistory AS spqh INNER JOIN Sales.SalesPer
 ```
 INSERT INTO Production.UnitMeasure VALUES (N'FT', N'Feet', '20080414');
 INSERT INTO Production.UnitMeasure VALUES (N'FT2', N'Square Feet ', '20080923'),(N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');
+INSERT TOP(5)INTO dbo.EmployeeSales  
+    OUTPUT inserted.EmployeeID, inserted.FirstName, 
+        inserted.LastName, inserted.YearlySales  
+    SELECT sp.BusinessEntityID, c.LastName, c.FirstName, sp.SalesYTD   
+    FROM Sales.SalesPerson AS sp  
+    INNER JOIN Person.Person AS c  
+        ON sp.BusinessEntityID = c.BusinessEntityID  
+    WHERE sp.SalesYTD > 250000.00  
+    ORDER BY sp.SalesYTD DESC;   
+```
+### Update statement
+```
+UPDATE Person.Address SET ModifiedDate = GETDATE();
+UPDATE Sales.SalesPerson SET Bonus = 6000, CommissionPct = .10, SalesQuota = NULL;  
+UPDATE Production.Product SET Color = N'Metallic Red' WHERE Name LIKE N'Road-250%' AND Color = N'Red';
+UPDATE TOP (10) HumanResources.Employee SET VacationHours = VacationHours * 1.25;
+
+// using with and update statement
+WITH Parts(AssemblyID, ComponentID, PerAssemblyQty, EndDate, ComponentLevel) AS  
+(  
+    SELECT b.ProductAssemblyID, b.ComponentID, b.PerAssemblyQty,  
+        b.EndDate, 0 AS ComponentLevel  
+    FROM Production.BillOfMaterials AS b  
+    WHERE b.ProductAssemblyID = 800  
+          AND b.EndDate IS NULL  
+    UNION ALL  
+    SELECT bom.ProductAssemblyID, bom.ComponentID, p.PerAssemblyQty,  
+        bom.EndDate, ComponentLevel + 1  
+    FROM Production.BillOfMaterials AS bom   
+        INNER JOIN Parts AS p  
+        ON bom.ProductAssemblyID = p.ComponentID  
+        AND bom.EndDate IS NULL  
+)  
+UPDATE Production.BillOfMaterials  
+SET PerAssemblyQty = c.PerAssemblyQty * 2  
+FROM Production.BillOfMaterials AS c  
+JOIN Parts AS d ON c.ProductAssemblyID = d.AssemblyID  
+WHERE d.ComponentLevel = 0;  
 ```

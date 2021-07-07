@@ -76,7 +76,7 @@ querytraceon|QUERYTRACEON               {return QUERYTRACEON;}
 recompile|RECOMPILE     {return RECOMPILE;}
 robust|ROBUST           {return ROBUST;}
 scaleoutexecution|SCALEOUTEXECUTION     {return SCALEOUTEXECUTION;}
-expand|EXPAND           {return EXPAND ;}
+expand|EXPAND           {return EXPAND;}
 views|VIEWS             {return VIEWS;}
 fast|FAST               {return FAST;}
 option|OPTION           {return OPTION;}
@@ -84,6 +84,12 @@ insert|INSERT           {return INSERT;}
 delete|DELEDTE          {return DELETE;}
 values|VALUES           {return VALUES;}
 default|DEFAULT         {return DEFAULT;}
+update|UPDATE           {return UPDATE;}
+set|SET                 {return SET;}
+current|CURRENT         {return CURRENT;}
+of|OF                   {return OF;}
+global|GLOBAL           {return GLOBAL;}
+exists|EXISTS           {return EXISTS;}
 
     /* interger numbers */
 -?[0-9]+                {
@@ -92,14 +98,14 @@ default|DEFAULT         {return DEFAULT;}
                         }
 
     /* approximate number */
-    /*-?[0-9]+.[0-9]* |
--?.[0-9]+ |
+-?[0-9]+\.[0-9]* |
+-?\.[0-9]+ |
 -?[0-9]+E[-+]?[0-9]+ |
--?[0-9]+.[0-9]*E[-+]?[0-9]+ |
--?.[0-9]+E[-+]?[0-9]+   {
+-?[0-9]+\.[0-9]*E[-+]?[0-9]+ |
+-?\.[0-9]+E[-+]?[0-9]+   {
                             yylval.floatVal = atof(yytext);
                             return APPROXNUM;
-                        }*/
+                        }
     /*name */
 [A-Za-z][A-Za-z0-9_]*   {
                             yylval.strVal = strdup(yytext);
@@ -113,14 +119,14 @@ default|DEFAULT         {return DEFAULT;}
 \"(\\.|[^"\n])*$        { yyerror("Unterminated string"); }    
 
 	/* user variables */
-@[0-9a-z_.$]+           |
+    /*@[0-9a-z_.$]+           |
 @\"[^"\n]+\"            |
 @`[^`\n]+`              |
 @'[^'\n]+'              { yylval.strVal = strdup(yytext+1); return USERVAR; }
 
 @\"[^"\n]*$             |
 @`[^`\n]*$              |
-@'[^'\n]*$              { yyerror("unterminated quoted user variable %s", yytext); }
+@'[^'\n]*$              { yyerror("unterminated quoted user variable %s", yytext); }*/
 
     /* operators */
 [;,()-+*/\n.]           {return *yytext;}

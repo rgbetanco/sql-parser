@@ -81,6 +81,12 @@
 %token VALUES
 %token DEFAULT
 %token USERVAR
+%token UPDATE
+%token SET
+%token CURRENT
+%token OF
+%token GLOBAL
+%token EXISTS
 
 %union{
     char* strVal;
@@ -102,7 +108,7 @@
 %left '*' '/' '%'
 %left '^'
 
-%type <strVal> NAME expr STRING
+%type <strVal> NAME STRING
 %type <intVal> INTNUMBER
 %type <floatVal> APPROXNUM
 
@@ -125,12 +131,15 @@ statement:
     select_statement
     |insert_statement
     |delete_statement
+    |update_statement
     ;
 
 /****  expressions  ****/
 expr:
     INTNUMBER           {printf("expression interger %d\n", $1);}
     |USERVAR
+    |APPROXNUM
+    |NAME STRING
     |'(' expr ')'       {printf("(expression)");}
     |expr '+' expr      {}
     |expr '-' expr      {}
@@ -146,6 +155,7 @@ expr:
     |expr LIKE expr
     |expr NOT LIKE expr
     |expr IN '(' val_list ')'
+    |expr NOT IN '(' val_list ')'
     |expr BETWEEN expr AND expr %prec BETWEEN
     |expr NOT BETWEEN expr AND expr %prec BETWEEN
     |expr IS NULLX
@@ -168,7 +178,25 @@ val_list:
     |query_specification
     ;
 
-/**** delete statement  ****/
+/****  update statement  ****/
+update_statement:
+    opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
+    ;
+update_set_list:
+    update_set
+    |update_set_list ',' update_set 
+    ;
+update_set:
+    NAME EQUAL expr
+    |NAME EQUAL DEFAULT
+    |NAME EQUAL NULLX
+    ;
+opt_current_of:
+        {}
+    |CURRENT OF NAME
+    |CURRENT OF GLOBAL NAME
+
+/****  delete statement  ****/
 delete_statement:
     opt_with DELETE top_options FROM object opt_from_list opt_where opt_option
     |opt_with DELETE top_options object opt_from_list opt_where opt_option
@@ -187,7 +215,7 @@ insert_statement:
     ;
 insert_options:
     VALUES values_list
-    |query_specification
+    |query_specification opt_orderby
     |DEFAULT VALUES
     ;
 values_list:
@@ -202,7 +230,6 @@ values_options:
     DEFAULT
     |NULLX
     |expr
-    |NAME STRING
     ;
 
 /****  select statement  ****/
@@ -380,6 +407,7 @@ cross_outer:
 opt_where:
         {}
     |WHERE expr
+    |WHERE EXISTS '(' query_expression ')'
     ;
 
 /****  group by statement  ****/
