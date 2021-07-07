@@ -87,6 +87,26 @@
 %token OF
 %token GLOBAL
 %token EXISTS
+%token CREATE
+%token TABLE
+%token FILESTREAM
+%token COLLATE
+%token SPARSE
+%token REPLICATION
+%token ROWGUIDCOL
+%token CONSTRAINT
+%token PRIMARY
+%token UNIQUE
+%token KEY
+%token CLUSTERED
+%token NONCLUSTERED
+%token FOREIGN
+%token REFERENCES
+%token NO
+%token ACTION
+%token CASCADE
+%token CHECK
+%token INDEX
 
 %union{
     char* strVal;
@@ -132,6 +152,11 @@ statement:
     |insert_statement
     |delete_statement
     |update_statement
+    |create_statement
+    ;
+create_statement:
+    CREATE TABLE object opt_as_alias '(' column_definition_list ')'
+    |CREATE TABLE object opt_as_alias '(' column_straint_list ')'
     ;
 
 /****  expressions  ****/
@@ -177,6 +202,97 @@ val_list:
     |expr ',' val_list
     |query_specification
     ;
+/****  create statement  ****/
+column_definition_list:
+    column_definition
+    |column_definition_list ',' column_definition
+    ;
+column_definition:
+    NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+    ;
+data_type:
+    NAME
+    |NAME '.' NAME
+    |NAME '(' INTNUMBER ')'
+    ;
+opt_filestream:
+        {}
+    |FILESTREAM
+    ;
+opt_collate:
+        {}
+    |COLLATE NAME
+    ;
+opt_sparse:
+        {}
+    |SPARSE
+    ;
+opt_not_for_replication:
+        {}
+    |NOT FOR REPLICATION
+    ;
+opt_null_or_not:
+        {}
+    |NULLX
+    |NOT NULLX
+    ;
+opt_rowguidcol:
+        {}
+    |ROWGUIDCOL
+    ;
+opt_column_constraint_list:
+        {}
+    |column_straint_list
+    ;
+column_straint_list:
+    column_straint 
+    |column_straint_list ',' column_straint 
+    ;
+column_straint:
+    opt_constraint primary_key
+    |opt_constraint foreign_key
+    |opt_constraint check
+    ;
+opt_constraint:
+        {}
+    |CONSTRAINT NAME
+    ;
+primary_key:
+    PRIMARY KEY opt_clustered opt_on
+    |UNIQUE opt_clustered opt_on
+    ;
+opt_clustered:
+        {}
+    |CLUSTERED 
+    |NONCLUSTERED 
+    ;
+opt_on:
+        {}
+    |ON NAME '(' NAME ')'
+foreign_key:
+    FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+    |REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+    ;
+opt_on_delete:
+    {}
+    |ON DELETE NO ACTION
+    |ON DELETE CASCADE
+    |ON DELETE SET NULLX
+    |ON DELETE SET DEFAULT
+    ;
+opt_on_update:
+    {}
+    |ON UPDATE NO ACTION
+    |ON UPDATE CASCADE
+    |ON UPDATE SET NULLX
+    |ON UPDATE SET DEFAULT
+    ;
+check:
+    CHECK opt_not_for_replication '(' expr ')'
+    ;
+opt_column_index:
+        {}
+    |INDEX NAME opt_clustered
 
 /****  update statement  ****/
 update_statement:
@@ -408,6 +524,7 @@ opt_where:
         {}
     |WHERE expr
     |WHERE EXISTS '(' query_expression ')'
+    |WHERE NOT EXISTS '(' query_expression ')'
     ;
 
 /****  group by statement  ****/

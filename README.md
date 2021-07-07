@@ -136,3 +136,13 @@ FROM Production.BillOfMaterials AS c
 JOIN Parts AS d ON c.ProductAssemblyID = d.AssemblyID  
 WHERE d.ComponentLevel = 0;  
 ```
+### Create statement
+```
+CREATE TABLE dbo.Employee (EmployeeID INT PRIMARY KEY CLUSTERED);
+CREATE TABLE dbo.Employee (
+    SalesPersonID INT NULL REFERENCES SalesPerson(SalesPersonID)
+);
+CREATE TABLE dbo.Employee (
+    FOREIGN KEY (SalesPersonID) REFERENCES SalesPerson(SalesPersonID)
+);
+```

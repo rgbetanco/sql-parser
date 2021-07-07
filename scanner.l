@@ -90,6 +90,26 @@ current|CURRENT         {return CURRENT;}
 of|OF                   {return OF;}
 global|GLOBAL           {return GLOBAL;}
 exists|EXISTS           {return EXISTS;}
+filestream|FILESTREAM   {return FILESTREAM;}
+collate|COLLATE         {return COLLATE;}
+sparse|SPARSE           {return SPARSE;}
+replication|REPLICATION {return REPLICATION;}
+rowguidcol|ROWGUIDCOL   {return ROWGUIDCOL;}
+constraint|CONSTRAINT   {return CONSTRAINT;}
+primary|PRIMARY         {return PRIMARY;}
+unique|UNIQUE           {return UNIQUE;}
+key|KEY                 {return KEY;}
+clustered|CLUSTERED     {return CLUSTERED;}
+nonclustered|NONCLUSTERED               {return NONCLUSTERED;}
+foreign|FOREIGN         {return FOREIGN;}
+references|REFERENCES   {return REFERENCES;}
+no|NO                   {return NO;}
+action|ACTION           {return ACTION;}
+cascade|CASCADE         {return CASCADE;}
+check|CHECK             {return CHECK;}
+index|INDEX             {return INDEX;}
+create|CREATE           {return CREATE;}
+table|TABLE             {return TABLE;}
 
     /* interger numbers */
 -?[0-9]+                {
