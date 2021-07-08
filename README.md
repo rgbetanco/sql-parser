@@ -138,11 +138,36 @@ WHERE d.ComponentLevel = 0;
 ```
 ### Create statement
 ```
+// basic statement
 CREATE TABLE dbo.Employee (EmployeeID INT PRIMARY KEY CLUSTERED);
+
+// foreign key constraint
 CREATE TABLE dbo.Employee (
     SalesPersonID INT NULL REFERENCES SalesPerson(SalesPersonID)
 );
 CREATE TABLE dbo.Employee (
     FOREIGN KEY (SalesPersonID) REFERENCES SalesPerson(SalesPersonID)
+);
+create table tablename (
+    CONSTRAINT FK_SpecialOfferProduct_SalesOrderDetail
+    FOREIGN KEY (ProductID, SpecialOfferID)
+    REFERENCES SpecialOfferProduct (ProductID, SpecialOfferID)
+);
+
+// unique constraint
+create table tablename (
+    Name NVARCHAR(100) NOT NULL
+    UNIQUE NONCLUSTERED
+);
+
+// DEFAULT definition
+create table (
+    name varchar(50) DEFAULT 'New Position - title not formalized yet',
+    data datetime DEFAULT (GETDATE())
+);
+
+// check constraint
+create table (
+    number int CHECK (CreditRating >= 1 and CreditRating <= 5)
 );
 ```

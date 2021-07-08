@@ -208,7 +208,7 @@ column_definition_list:
     |column_definition_list ',' column_definition
     ;
 column_definition:
-    NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+    NAME data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
     ;
 data_type:
     NAME
@@ -226,6 +226,10 @@ opt_collate:
 opt_sparse:
         {}
     |SPARSE
+    ;
+opt_default:
+        {}
+    |opt_constraint DEFAULT expr
     ;
 opt_not_for_replication:
         {}

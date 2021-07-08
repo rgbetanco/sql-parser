@@ -28,8 +28,9 @@ State 357 conflicts: 2 shift/reduce, 4 reduce/reduce
 State 365 conflicts: 5 shift/reduce, 4 reduce/reduce
 State 380 conflicts: 1 shift/reduce
 State 389 conflicts: 2 shift/reduce, 4 reduce/reduce
-State 423 conflicts: 1 shift/reduce
-State 454 conflicts: 1 shift/reduce
+State 425 conflicts: 1 shift/reduce
+State 440 conflicts: 1 shift/reduce
+State 457 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -86,7 +87,7 @@ Grammar
    42 column_definition_list: column_definition
    43                       | column_definition_list ',' column_definition
 
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
    45 data_type: NAME
    46          | NAME '.' NAME
@@ -101,279 +102,282 @@ Grammar
    52 opt_sparse: %empty
    53           | SPARSE
 
-   54 opt_not_for_replication: %empty
-   55                        | NOT FOR REPLICATION
+   54 opt_default: %empty
+   55            | opt_constraint DEFAULT expr
 
-   56 opt_null_or_not: %empty
-   57                | NULLX
-   58                | NOT NULLX
+   56 opt_not_for_replication: %empty
+   57                        | NOT FOR REPLICATION
 
-   59 opt_rowguidcol: %empty
-   60               | ROWGUIDCOL
+   58 opt_null_or_not: %empty
+   59                | NULLX
+   60                | NOT NULLX
 
-   61 opt_column_constraint_list: %empty
-   62                           | column_straint_list
+   61 opt_rowguidcol: %empty
+   62               | ROWGUIDCOL
 
-   63 column_straint_list: column_straint
-   64                    | column_straint_list ',' column_straint
+   63 opt_column_constraint_list: %empty
+   64                           | column_straint_list
 
-   65 column_straint: opt_constraint primary_key
-   66               | opt_constraint foreign_key
-   67               | opt_constraint check
+   65 column_straint_list: column_straint
+   66                    | column_straint_list ',' column_straint
 
-   68 opt_constraint: %empty
-   69               | CONSTRAINT NAME
+   67 column_straint: opt_constraint primary_key
+   68               | opt_constraint foreign_key
+   69               | opt_constraint check
 
-   70 primary_key: PRIMARY KEY opt_clustered opt_on
-   71            | UNIQUE opt_clustered opt_on
-
-   72 opt_clustered: %empty
-   73              | CLUSTERED
-   74              | NONCLUSTERED
-
-   75 opt_on: %empty
-   76       | ON NAME '(' NAME ')'
-
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
-   78            | REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
-
-   79 opt_on_delete: %empty
-   80              | ON DELETE NO ACTION
-   81              | ON DELETE CASCADE
-   82              | ON DELETE SET NULLX
-   83              | ON DELETE SET DEFAULT
-
-   84 opt_on_update: %empty
-   85              | ON UPDATE NO ACTION
-   86              | ON UPDATE CASCADE
-   87              | ON UPDATE SET NULLX
-   88              | ON UPDATE SET DEFAULT
-
-   89 check: CHECK opt_not_for_replication '(' expr ')'
-
-   90 opt_column_index: %empty
-   91                 | INDEX NAME opt_clustered
+   70 opt_constraint: %empty
+   71               | CONSTRAINT NAME
 
-   92 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
+   72 primary_key: PRIMARY KEY opt_clustered opt_on
+   73            | UNIQUE opt_clustered opt_on
 
-   93 update_set_list: update_set
-   94                | update_set_list ',' update_set
+   74 opt_clustered: %empty
+   75              | CLUSTERED
+   76              | NONCLUSTERED
+
+   77 opt_on: %empty
+   78       | ON NAME '(' NAME ')'
+
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   80            | REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+
+   81 opt_on_delete: %empty
+   82              | ON DELETE NO ACTION
+   83              | ON DELETE CASCADE
+   84              | ON DELETE SET NULLX
+   85              | ON DELETE SET DEFAULT
+
+   86 opt_on_update: %empty
+   87              | ON UPDATE NO ACTION
+   88              | ON UPDATE CASCADE
+   89              | ON UPDATE SET NULLX
+   90              | ON UPDATE SET DEFAULT
+
+   91 check: CHECK opt_not_for_replication '(' expr ')'
 
-   95 update_set: NAME EQUAL expr
-   96           | NAME EQUAL DEFAULT
-   97           | NAME EQUAL NULLX
+   92 opt_column_index: %empty
+   93                 | INDEX NAME opt_clustered
 
-   98 opt_current_of: %empty
-   99               | CURRENT OF NAME
-  100               | CURRENT OF GLOBAL NAME
+   94 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
 
-  101 delete_statement: opt_with DELETE top_options FROM object opt_from_list opt_where opt_option
-  102                 | opt_with DELETE top_options object opt_from_list opt_where opt_option
+   95 update_set_list: update_set
+   96                | update_set_list ',' update_set
 
-  103 object: NAME '.' NAME '.' NAME '.' NAME
-  104       | NAME '.' NAME '.' NAME
-  105       | NAME '.' NAME
-  106       | NAME
+   97 update_set: NAME EQUAL expr
+   98           | NAME EQUAL DEFAULT
+   99           | NAME EQUAL NULLX
 
-  107 insert_statement: opt_with INSERT top_options INTO object opt_column_name_list insert_options
-  108                 | opt_with INSERT top_options object opt_column_name_list insert_options
+  100 opt_current_of: %empty
+  101               | CURRENT OF NAME
+  102               | CURRENT OF GLOBAL NAME
 
-  109 insert_options: VALUES values_list
-  110               | query_specification opt_orderby
-  111               | DEFAULT VALUES
+  103 delete_statement: opt_with DELETE top_options FROM object opt_from_list opt_where opt_option
+  104                 | opt_with DELETE top_options object opt_from_list opt_where opt_option
 
-  112 values_list: '(' values_options_list ')'
-  113            | values_list ',' '(' values_options_list ')'
+  105 object: NAME '.' NAME '.' NAME '.' NAME
+  106       | NAME '.' NAME '.' NAME
+  107       | NAME '.' NAME
+  108       | NAME
 
-  114 values_options_list: values_options
-  115                    | values_options_list ',' values_options
+  109 insert_statement: opt_with INSERT top_options INTO object opt_column_name_list insert_options
+  110                 | opt_with INSERT top_options object opt_column_name_list insert_options
 
-  116 values_options: DEFAULT
-  117               | NULLX
-  118               | expr
+  111 insert_options: VALUES values_list
+  112               | query_specification opt_orderby
+  113               | DEFAULT VALUES
 
-  119 select_statement: opt_with query_expression opt_orderby opt_for opt_option opt_into
+  114 values_list: '(' values_options_list ')'
+  115            | values_list ',' '(' values_options_list ')'
 
-  120 opt_for: %empty
+  116 values_options_list: values_options
+  117                    | values_options_list ',' values_options
 
-  121 opt_option: %empty
-  122           | OPTION '(' query_option_list ')'
+  118 values_options: DEFAULT
+  119               | NULLX
+  120               | expr
 
-  123 query_option_list: query_option
-  124                  | query_option_list ',' query_option
+  121 select_statement: opt_with query_expression opt_orderby opt_for opt_option opt_into
 
-  125 query_option: LABEL EQUAL STRING
-  126             | query_hint
-
-  127 query_hint: HASH GROUP
-  128           | ORDER GROUP
-  129           | CONCAT UNION
-  130           | HASH UNION
-  131           | MERGE UNION
-  132           | LOOP JOIN
-  133           | MERGE JOIN
-  134           | HASH JOIN
-  135           | EXPAND VIEWS
-  136           | FAST INTNUMBER
-  137           | FORCE ORDER
-  138           | FORCE EXTERNALPUSHDOWN
-  139           | DISABLE EXTERNALPUSHDOWN
-  140           | FORCE SCALEOUTEXECUTION
-  141           | DISABLE SCALEOUTEXECUTION
-  142           | IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
-  143           | KEEP PLAN
-  144           | KEEPFIXED PLAN
-  145           | MAX_GRANT_PERCENT '=' INTNUMBER
-  146           | MIN_GRANT_PERCENT '=' INTNUMBER
-  147           | MAXDOP INTNUMBER
-  148           | MAXRECURSION INTNUMBER
-  149           | NO_PERFORMANCE_SPOOL
-  150           | OPTIMIZE FOR UNKNOWN
-  151           | PARAMETERIZATION SIMPLE
-  152           | PARAMETERIZATION FORCED
-  153           | QUERYTRACEON INTNUMBER
-  154           | RECOMPILE
-  155           | ROBUST PLAN
-
-  156 opt_with: %empty
-  157         | WITH common_table_expression_list AS '(' query_expression ')'
-
-  158 common_table_expression_list: common_table_expression
-  159                             | common_table_expression_list common_table_expression
-
-  160 common_table_expression: NAME opt_column_name_list
-
-  161 opt_column_name_list: %empty
-  162                     | '(' column_name_list ')'
-
-  163 column_name_list: NAME
-  164                 | column_name_list ',' NAME
-
-  165 query_expression: query_specification opt_query
-  166                 | '(' query_expression ')' opt_query
-
-  167 opt_query: %empty
-  168          | union_list
-
-  169 union_list: union_statement
-  170           | union_list union_statement
-
-  171 union_statement: opt_union query_specification
-  172                | opt_union '(' query_expression ')'
-
-  173 opt_union: UNION
-  174          | UNION ALL
-  175          | EXCEPT
-  176          | INTERSECT
-
-  177 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
-
-  178 select_options: %empty
-  179               | select_options ALL
-  180               | select_options DISTINCT
-
-  181 top_options: %empty
-  182            | top_options TOP expr PERCENT WITH TIES
-  183            | top_options TOP expr PERCENT
-  184            | top_options TOP expr WITH TIES
-  185            | top_options TOP expr
-
-  186 select_expr_list: select_expr
-  187                 | select_expr_list ',' select_expr
-
-  188 select_expr: '*'
-  189            | expr opt_as_alias
-  190            | NAME '=' expr
-
-  191 opt_as_alias: %empty
-  192             | AS NAME
-  193             | AS STRING
-  194             | NAME
-
-  195 opt_into: %empty
-  196         | INTO NAME
-
-  197 opt_from_list: %empty
-  198              | FROM opt_from
-
-  199 opt_from: from_statement
-  200         | opt_from ',' from_statement
-
-  201 from_statement: NAME opt_as_alias
-  202               | NAME '.' NAME opt_as_alias
-  203               | joined_table
-
-  204 joined_table: from_statement join_type from_statement ON expr
-  205             | from_statement CROSS JOIN from_statement
-  206             | NAME cross_outer APPLY NAME
-  207             | '(' joined_table ')'
-
-  208 join_type: opt_join_type opt_join_hint JOIN
-
-  209 opt_join_type: %empty
-  210              | INNER
-  211              | LEFT opt_outer
-  212              | RIGHT opt_outer
-  213              | FULL opt_outer
-
-  214 opt_outer: %empty
-  215          | OUTER
-
-  216 opt_join_hint: %empty
-  217              | REDUCE
-  218              | REPLICATE
-  219              | REDISTRIBUTE
-
-  220 cross_outer: CROSS
-  221            | OUTER
-
-  222 opt_where: %empty
-  223          | WHERE expr
-  224          | WHERE EXISTS '(' query_expression ')'
-  225          | WHERE NOT EXISTS '(' query_expression ')'
-
-  226 opt_groupby: %empty
-  227            | GROUP BY groupby_list
-
-  228 groupby_list: groupby_statement
-  229             | groupby_list ',' groupby_statement
-
-  230 groupby_statement: expr
-  231                  | ROLLUP '(' groupby_expr_list ')'
-  232                  | CUBE '(' groupby_expr_list ')'
-  233                  | GROUPING SETS '(' grouping_set ')'
-  234                  | '(' ')'
-
-  235 groupby_expr_list: groupby_expr
-  236                  | groupby_expr_list ',' groupby_expr
-
-  237 groupby_expr: expr
-  238             | '(' groupby_expr ',' expr ')'
-
-  239 grouping_set: '(' ')'
-  240             | grouping_set_item_list
-
-  241 grouping_set_item_list: grouping_set_item
-  242                       | grouping_set_item_list ',' grouping_set_item
-
-  243 grouping_set_item: groupby_expr
-  244                  | ROLLUP '(' groupby_expr_list ')'
-  245                  | CUBE '(' groupby_expr_list ')'
-
-  246 opt_having: %empty
-  247           | HAVING expr
-
-  248 opt_orderby: %empty
-  249            | ORDER BY orderby_statement_list
-
-  250 orderby_statement_list: orderby_statement
-  251                       | orderby_statement_list ',' orderby_statement
-
-  252 orderby_statement: expr opt_asc_desc
-
-  253 opt_asc_desc: %empty
-  254             | ASC
-  255             | DESC
+  122 opt_for: %empty
+
+  123 opt_option: %empty
+  124           | OPTION '(' query_option_list ')'
+
+  125 query_option_list: query_option
+  126                  | query_option_list ',' query_option
+
+  127 query_option: LABEL EQUAL STRING
+  128             | query_hint
+
+  129 query_hint: HASH GROUP
+  130           | ORDER GROUP
+  131           | CONCAT UNION
+  132           | HASH UNION
+  133           | MERGE UNION
+  134           | LOOP JOIN
+  135           | MERGE JOIN
+  136           | HASH JOIN
+  137           | EXPAND VIEWS
+  138           | FAST INTNUMBER
+  139           | FORCE ORDER
+  140           | FORCE EXTERNALPUSHDOWN
+  141           | DISABLE EXTERNALPUSHDOWN
+  142           | FORCE SCALEOUTEXECUTION
+  143           | DISABLE SCALEOUTEXECUTION
+  144           | IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
+  145           | KEEP PLAN
+  146           | KEEPFIXED PLAN
+  147           | MAX_GRANT_PERCENT '=' INTNUMBER
+  148           | MIN_GRANT_PERCENT '=' INTNUMBER
+  149           | MAXDOP INTNUMBER
+  150           | MAXRECURSION INTNUMBER
+  151           | NO_PERFORMANCE_SPOOL
+  152           | OPTIMIZE FOR UNKNOWN
+  153           | PARAMETERIZATION SIMPLE
+  154           | PARAMETERIZATION FORCED
+  155           | QUERYTRACEON INTNUMBER
+  156           | RECOMPILE
+  157           | ROBUST PLAN
+
+  158 opt_with: %empty
+  159         | WITH common_table_expression_list AS '(' query_expression ')'
+
+  160 common_table_expression_list: common_table_expression
+  161                             | common_table_expression_list common_table_expression
+
+  162 common_table_expression: NAME opt_column_name_list
+
+  163 opt_column_name_list: %empty
+  164                     | '(' column_name_list ')'
+
+  165 column_name_list: NAME
+  166                 | column_name_list ',' NAME
+
+  167 query_expression: query_specification opt_query
+  168                 | '(' query_expression ')' opt_query
+
+  169 opt_query: %empty
+  170          | union_list
+
+  171 union_list: union_statement
+  172           | union_list union_statement
+
+  173 union_statement: opt_union query_specification
+  174                | opt_union '(' query_expression ')'
+
+  175 opt_union: UNION
+  176          | UNION ALL
+  177          | EXCEPT
+  178          | INTERSECT
+
+  179 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
+
+  180 select_options: %empty
+  181               | select_options ALL
+  182               | select_options DISTINCT
+
+  183 top_options: %empty
+  184            | top_options TOP expr PERCENT WITH TIES
+  185            | top_options TOP expr PERCENT
+  186            | top_options TOP expr WITH TIES
+  187            | top_options TOP expr
+
+  188 select_expr_list: select_expr
+  189                 | select_expr_list ',' select_expr
+
+  190 select_expr: '*'
+  191            | expr opt_as_alias
+  192            | NAME '=' expr
+
+  193 opt_as_alias: %empty
+  194             | AS NAME
+  195             | AS STRING
+  196             | NAME
+
+  197 opt_into: %empty
+  198         | INTO NAME
+
+  199 opt_from_list: %empty
+  200              | FROM opt_from
+
+  201 opt_from: from_statement
+  202         | opt_from ',' from_statement
+
+  203 from_statement: NAME opt_as_alias
+  204               | NAME '.' NAME opt_as_alias
+  205               | joined_table
+
+  206 joined_table: from_statement join_type from_statement ON expr
+  207             | from_statement CROSS JOIN from_statement
+  208             | NAME cross_outer APPLY NAME
+  209             | '(' joined_table ')'
+
+  210 join_type: opt_join_type opt_join_hint JOIN
+
+  211 opt_join_type: %empty
+  212              | INNER
+  213              | LEFT opt_outer
+  214              | RIGHT opt_outer
+  215              | FULL opt_outer
+
+  216 opt_outer: %empty
+  217          | OUTER
+
+  218 opt_join_hint: %empty
+  219              | REDUCE
+  220              | REPLICATE
+  221              | REDISTRIBUTE
+
+  222 cross_outer: CROSS
+  223            | OUTER
+
+  224 opt_where: %empty
+  225          | WHERE expr
+  226          | WHERE EXISTS '(' query_expression ')'
+  227          | WHERE NOT EXISTS '(' query_expression ')'
+
+  228 opt_groupby: %empty
+  229            | GROUP BY groupby_list
+
+  230 groupby_list: groupby_statement
+  231             | groupby_list ',' groupby_statement
+
+  232 groupby_statement: expr
+  233                  | ROLLUP '(' groupby_expr_list ')'
+  234                  | CUBE '(' groupby_expr_list ')'
+  235                  | GROUPING SETS '(' grouping_set ')'
+  236                  | '(' ')'
+
+  237 groupby_expr_list: groupby_expr
+  238                  | groupby_expr_list ',' groupby_expr
+
+  239 groupby_expr: expr
+  240             | '(' groupby_expr ',' expr ')'
+
+  241 grouping_set: '(' ')'
+  242             | grouping_set_item_list
+
+  243 grouping_set_item_list: grouping_set_item
+  244                       | grouping_set_item_list ',' grouping_set_item
+
+  245 grouping_set_item: groupby_expr
+  246                  | ROLLUP '(' groupby_expr_list ')'
+  247                  | CUBE '(' groupby_expr_list ')'
+
+  248 opt_having: %empty
+  249           | HAVING expr
+
+  250 opt_orderby: %empty
+  251            | ORDER BY orderby_statement_list
+
+  252 orderby_statement_list: orderby_statement
+  253                       | orderby_statement_list ',' orderby_statement
+
+  254 orderby_statement: expr opt_asc_desc
+
+  255 opt_asc_desc: %empty
+  256             | ASC
+  257             | DESC
 
 
 Terminals, with rules where they appear
@@ -383,132 +387,132 @@ $end (0) 0
 '!' (33)
 '%' (37)
 '&' (38)
-'(' (40) 8 9 14 28 29 35 47 76 89 112 113 122 157 162 166 172 207 224
-    225 231 232 233 234 238 239 244 245
-')' (41) 8 9 14 28 29 35 47 76 89 112 113 122 157 162 166 172 207 224
-    225 231 232 233 234 238 239 244 245
-'*' (42) 17 39 188
+'(' (40) 8 9 14 28 29 35 47 78 91 114 115 124 159 164 168 174 209 226
+    227 233 234 235 236 240 241 246 247
+')' (41) 8 9 14 28 29 35 47 78 91 114 115 124 159 164 168 174 209 226
+    227 233 234 235 236 240 241 246 247
+'*' (42) 17 39 190
 '+' (43) 15
-',' (44) 40 43 64 94 113 115 124 164 187 200 229 236 238 242 251
+',' (44) 40 43 66 96 115 117 126 166 189 202 231 238 240 244 253
 '-' (45) 16
-'.' (46) 24 46 103 104 105 202
+'.' (46) 24 46 105 106 107 204
 '/' (47) 18
 ';' (59) 1
-'=' (61) 145 146 190
+'=' (61) 147 148 192
 '^' (94)
 '|' (124)
 error (256)
-NAME (258) 13 23 24 35 44 45 46 47 51 69 76 91 95 96 97 99 100 103
-    104 105 106 160 163 164 190 192 194 196 201 202 206
-INTNUMBER (259) 10 47 136 145 146 147 148 153
+NAME (258) 13 23 24 35 44 45 46 47 51 71 78 93 97 98 99 101 102 105
+    106 107 108 162 165 166 192 194 196 198 203 204 208
+INTNUMBER (259) 10 47 138 147 148 149 150 155
 APPROXNUM (260) 12
-STRING (261) 13 25 125 193
-SELECT (262) 177
-FROM (263) 101 198
-ALL (264) 174 179
-DISTINCT (265) 180
-TOP (266) 182 183 184 185
-PERCENT (267) 182 183
-AS (268) 157 192 193
-WITH (269) 157 182 184
-TIES (270) 182 184
-INTO (271) 107 196
-WHERE (272) 223 224 225
+STRING (261) 13 25 127 195
+SELECT (262) 179
+FROM (263) 103 200
+ALL (264) 176 181
+DISTINCT (265) 182
+TOP (266) 184 185 186 187
+PERCENT (267) 184 185
+AS (268) 159 194 195
+WITH (269) 159 184 186
+TIES (270) 184 186
+INTO (271) 109 198
+WHERE (272) 225 226 227
 LIKE (273) 26 27
 AND (274) 21 30 31
 OR (275) 22
 IN (276) 28 29
-GROUP (277) 127 128 227
-BY (278) 227 249
-ROLLUP (279) 231 244
-CUBE (280) 232 245
-GROUPING (281) 233
-SETS (282) 233
-HAVING (283) 247
-ON (284) 76 80 81 82 83 85 86 87 88 204
-JOIN (285) 132 133 134 205 208
-INNER (286) 210
-OUTER (287) 215 221
-RIGHT (288) 212
-LEFT (289) 211
-FULL (290) 213
-REDUCE (291) 217
-REPLICATE (292) 218
-REDISTRIBUTE (293) 219
-CROSS (294) 205 220
-APPLY (295) 206
-ORDER (296) 128 137 249
-ASC (297) 254
-DESC (298) 255
-UNION (299) 129 130 131 173 174
-INTERSECT (300) 176
-EXCEPT (301) 175
+GROUP (277) 129 130 229
+BY (278) 229 251
+ROLLUP (279) 233 246
+CUBE (280) 234 247
+GROUPING (281) 235
+SETS (282) 235
+HAVING (283) 249
+ON (284) 78 82 83 84 85 87 88 89 90 206
+JOIN (285) 134 135 136 207 210
+INNER (286) 212
+OUTER (287) 217 223
+RIGHT (288) 214
+LEFT (289) 213
+FULL (290) 215
+REDUCE (291) 219
+REPLICATE (292) 220
+REDISTRIBUTE (293) 221
+CROSS (294) 207 222
+APPLY (295) 208
+ORDER (296) 130 139 251
+ASC (297) 256
+DESC (298) 257
+UNION (299) 131 132 133 175 176
+INTERSECT (300) 178
+EXCEPT (301) 177
 IS (302) 32 33
-NOT (303) 27 29 31 33 55 58 225
-NULLX (304) 32 33 57 58 82 87 97 117
-LABEL (305) 125
-HASH (306) 127 130 134
-LOOP (307) 132
-MERGE (308) 131 133
-FORCE (309) 137 138 140
-DISABLE (310) 139 141
-EXTERNALPUSHDOWN (311) 138 139
-CONCAT (312) 129
-IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX (313) 142
-KEEP (314) 143
-KEEPFIXED (315) 144
-PLAN (316) 143 144 155
-MAX_GRANT_PERCENT (317) 145
-MIN_GRANT_PERCENT (318) 146
-MAXDOP (319) 147
-MAXRECURSION (320) 148
-NO_PERFORMANCE_SPOOL (321) 149
-OPTIMIZE (322) 150
-FOR (323) 55 150
-UNKNOWN (324) 150
-PARAMETERIZATION (325) 151 152
-SIMPLE (326) 151
-FORCED (327) 152
-QUERYTRACEON (328) 153
-RECOMPILE (329) 154
-ROBUST (330) 155
-SCALEOUTEXECUTION (331) 140 141
-EXPAND (332) 135
-VIEWS (333) 135
-FAST (334) 136
-OPTION (335) 122
-EQUAL (336) 20 34 95 96 97 125
-INSERT (337) 107 108
-DELETE (338) 80 81 82 83 101 102
-VALUES (339) 109 111
-DEFAULT (340) 83 88 96 111 116
+NOT (303) 27 29 31 33 57 60 227
+NULLX (304) 32 33 59 60 84 89 99 119
+LABEL (305) 127
+HASH (306) 129 132 136
+LOOP (307) 134
+MERGE (308) 133 135
+FORCE (309) 139 140 142
+DISABLE (310) 141 143
+EXTERNALPUSHDOWN (311) 140 141
+CONCAT (312) 131
+IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX (313) 144
+KEEP (314) 145
+KEEPFIXED (315) 146
+PLAN (316) 145 146 157
+MAX_GRANT_PERCENT (317) 147
+MIN_GRANT_PERCENT (318) 148
+MAXDOP (319) 149
+MAXRECURSION (320) 150
+NO_PERFORMANCE_SPOOL (321) 151
+OPTIMIZE (322) 152
+FOR (323) 57 152
+UNKNOWN (324) 152
+PARAMETERIZATION (325) 153 154
+SIMPLE (326) 153
+FORCED (327) 154
+QUERYTRACEON (328) 155
+RECOMPILE (329) 156
+ROBUST (330) 157
+SCALEOUTEXECUTION (331) 142 143
+EXPAND (332) 137
+VIEWS (333) 137
+FAST (334) 138
+OPTION (335) 124
+EQUAL (336) 20 34 97 98 99 127
+INSERT (337) 109 110
+DELETE (338) 82 83 84 85 103 104
+VALUES (339) 111 113
+DEFAULT (340) 55 85 90 98 113 118
 USERVAR (341) 11 34
-UPDATE (342) 85 86 87 88 92
-SET (343) 82 83 87 88 92
-CURRENT (344) 99 100
-OF (345) 99 100
-GLOBAL (346) 100
-EXISTS (347) 224 225
+UPDATE (342) 87 88 89 90 94
+SET (343) 84 85 89 90 94
+CURRENT (344) 101 102
+OF (345) 101 102
+GLOBAL (346) 102
+EXISTS (347) 226 227
 CREATE (348) 8 9
 TABLE (349) 8 9
 FILESTREAM (350) 49
 COLLATE (351) 51
 SPARSE (352) 53
-REPLICATION (353) 55
-ROWGUIDCOL (354) 60
-CONSTRAINT (355) 69
-PRIMARY (356) 70
-UNIQUE (357) 71
-KEY (358) 70 77
-CLUSTERED (359) 73
-NONCLUSTERED (360) 74
-FOREIGN (361) 77
-REFERENCES (362) 77 78
-NO (363) 80 85
-ACTION (364) 80 85
-CASCADE (365) 81 86
-CHECK (366) 89
-INDEX (367) 91
+REPLICATION (353) 57
+ROWGUIDCOL (354) 62
+CONSTRAINT (355) 71
+PRIMARY (356) 72
+UNIQUE (357) 73
+KEY (358) 72 79
+CLUSTERED (359) 75
+NONCLUSTERED (360) 76
+FOREIGN (361) 79
+REFERENCES (362) 79 80
+NO (363) 82 87
+ACTION (364) 82 87
+CASCADE (365) 83 88
+CHECK (366) 91
+INDEX (367) 93
 BETWEEN (368) 30 31
 COMPARISON (369) 19
 
@@ -526,8 +530,8 @@ create_statement (134)
 expr (135)
     on left: 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
     28 29 30 31 32 33 34 35, on right: 14 15 16 17 18 19 20 21 22 26
-    27 28 29 30 31 32 33 34 38 40 89 95 118 182 183 184 185 189 190
-    204 223 230 237 238 247 252
+    27 28 29 30 31 32 33 34 38 40 55 91 97 120 184 185 186 187 191
+    192 206 225 232 239 240 249 254
 opt_val_list (136)
     on left: 36 37, on right: 35
 val_list (137)
@@ -544,153 +548,155 @@ opt_collate (142)
     on left: 50 51, on right: 44
 opt_sparse (143)
     on left: 52 53, on right: 44
-opt_not_for_replication (144)
-    on left: 54 55, on right: 44 77 78 89
-opt_null_or_not (145)
-    on left: 56 57 58, on right: 44
-opt_rowguidcol (146)
-    on left: 59 60, on right: 44
-opt_column_constraint_list (147)
+opt_default (144)
+    on left: 54 55, on right: 44
+opt_not_for_replication (145)
+    on left: 56 57, on right: 79 80 91
+opt_null_or_not (146)
+    on left: 58 59 60, on right: 44
+opt_rowguidcol (147)
     on left: 61 62, on right: 44
-column_straint_list (148)
-    on left: 63 64, on right: 9 62 64
-column_straint (149)
-    on left: 65 66 67, on right: 63 64
-opt_constraint (150)
-    on left: 68 69, on right: 65 66 67
-primary_key (151)
-    on left: 70 71, on right: 65
-opt_clustered (152)
-    on left: 72 73 74, on right: 70 71 91
-opt_on (153)
-    on left: 75 76, on right: 70 71
-foreign_key (154)
-    on left: 77 78, on right: 66
-opt_on_delete (155)
-    on left: 79 80 81 82 83, on right: 77 78
-opt_on_update (156)
-    on left: 84 85 86 87 88, on right: 77 78
-check (157)
-    on left: 89, on right: 67
-opt_column_index (158)
-    on left: 90 91, on right: 44
-update_statement (159)
-    on left: 92, on right: 6
-update_set_list (160)
-    on left: 93 94, on right: 92 94
-update_set (161)
-    on left: 95 96 97, on right: 93 94
-opt_current_of (162)
-    on left: 98 99 100, on right: 92
-delete_statement (163)
-    on left: 101 102, on right: 5
-object (164)
-    on left: 103 104 105 106, on right: 8 9 77 78 92 101 102 107 108
-insert_statement (165)
-    on left: 107 108, on right: 4
-insert_options (166)
-    on left: 109 110 111, on right: 107 108
-values_list (167)
-    on left: 112 113, on right: 109 113
-values_options_list (168)
-    on left: 114 115, on right: 112 113 115
-values_options (169)
-    on left: 116 117 118, on right: 114 115
-select_statement (170)
-    on left: 119, on right: 3
-opt_for (171)
-    on left: 120, on right: 119
-opt_option (172)
-    on left: 121 122, on right: 92 101 102 119
-query_option_list (173)
-    on left: 123 124, on right: 122 124
-query_option (174)
-    on left: 125 126, on right: 123 124
-query_hint (175)
-    on left: 127 128 129 130 131 132 133 134 135 136 137 138 139 140
-    141 142 143 144 145 146 147 148 149 150 151 152 153 154 155, on right:
-    126
-opt_with (176)
-    on left: 156 157, on right: 92 101 102 107 108 119
-common_table_expression_list (177)
-    on left: 158 159, on right: 157 159
-common_table_expression (178)
-    on left: 160, on right: 158 159
-opt_column_name_list (179)
-    on left: 161 162, on right: 77 78 107 108 160
-column_name_list (180)
-    on left: 163 164, on right: 162 164
-query_expression (181)
-    on left: 165 166, on right: 119 157 166 172 224 225
-opt_query (182)
-    on left: 167 168, on right: 165 166
-union_list (183)
-    on left: 169 170, on right: 168 170
-union_statement (184)
-    on left: 171 172, on right: 169 170
-opt_union (185)
-    on left: 173 174 175 176, on right: 171 172
-query_specification (186)
-    on left: 177, on right: 41 110 165 171
-select_options (187)
-    on left: 178 179 180, on right: 177 179 180
-top_options (188)
-    on left: 181 182 183 184 185, on right: 92 101 102 107 108 177
-    182 183 184 185
-select_expr_list (189)
-    on left: 186 187, on right: 177 187
-select_expr (190)
-    on left: 188 189 190, on right: 186 187
-opt_as_alias (191)
-    on left: 191 192 193 194, on right: 8 9 189 201 202
-opt_into (192)
-    on left: 195 196, on right: 119 177
-opt_from_list (193)
-    on left: 197 198, on right: 92 101 102 177
-opt_from (194)
-    on left: 199 200, on right: 198 200
-from_statement (195)
-    on left: 201 202 203, on right: 199 200 204 205
-joined_table (196)
-    on left: 204 205 206 207, on right: 203 207
-join_type (197)
-    on left: 208, on right: 204
-opt_join_type (198)
-    on left: 209 210 211 212 213, on right: 208
-opt_outer (199)
-    on left: 214 215, on right: 211 212 213
-opt_join_hint (200)
-    on left: 216 217 218 219, on right: 208
-cross_outer (201)
-    on left: 220 221, on right: 206
-opt_where (202)
-    on left: 222 223 224 225, on right: 92 101 102 177
-opt_groupby (203)
-    on left: 226 227, on right: 177
-groupby_list (204)
-    on left: 228 229, on right: 227 229
-groupby_statement (205)
-    on left: 230 231 232 233 234, on right: 228 229
-groupby_expr_list (206)
-    on left: 235 236, on right: 231 232 236 244 245
-groupby_expr (207)
-    on left: 237 238, on right: 235 236 238 243
-grouping_set (208)
-    on left: 239 240, on right: 233
-grouping_set_item_list (209)
-    on left: 241 242, on right: 240 242
-grouping_set_item (210)
-    on left: 243 244 245, on right: 241 242
-opt_having (211)
-    on left: 246 247, on right: 177
-opt_orderby (212)
-    on left: 248 249, on right: 110 119
-orderby_statement_list (213)
-    on left: 250 251, on right: 249 251
-orderby_statement (214)
-    on left: 252, on right: 250 251
-opt_asc_desc (215)
-    on left: 253 254 255, on right: 252
+opt_column_constraint_list (148)
+    on left: 63 64, on right: 44
+column_straint_list (149)
+    on left: 65 66, on right: 9 64 66
+column_straint (150)
+    on left: 67 68 69, on right: 65 66
+opt_constraint (151)
+    on left: 70 71, on right: 55 67 68 69
+primary_key (152)
+    on left: 72 73, on right: 67
+opt_clustered (153)
+    on left: 74 75 76, on right: 72 73 93
+opt_on (154)
+    on left: 77 78, on right: 72 73
+foreign_key (155)
+    on left: 79 80, on right: 68
+opt_on_delete (156)
+    on left: 81 82 83 84 85, on right: 79 80
+opt_on_update (157)
+    on left: 86 87 88 89 90, on right: 79 80
+check (158)
+    on left: 91, on right: 69
+opt_column_index (159)
+    on left: 92 93, on right: 44
+update_statement (160)
+    on left: 94, on right: 6
+update_set_list (161)
+    on left: 95 96, on right: 94 96
+update_set (162)
+    on left: 97 98 99, on right: 95 96
+opt_current_of (163)
+    on left: 100 101 102, on right: 94
+delete_statement (164)
+    on left: 103 104, on right: 5
+object (165)
+    on left: 105 106 107 108, on right: 8 9 79 80 94 103 104 109 110
+insert_statement (166)
+    on left: 109 110, on right: 4
+insert_options (167)
+    on left: 111 112 113, on right: 109 110
+values_list (168)
+    on left: 114 115, on right: 111 115
+values_options_list (169)
+    on left: 116 117, on right: 114 115 117
+values_options (170)
+    on left: 118 119 120, on right: 116 117
+select_statement (171)
+    on left: 121, on right: 3
+opt_for (172)
+    on left: 122, on right: 121
+opt_option (173)
+    on left: 123 124, on right: 94 103 104 121
+query_option_list (174)
+    on left: 125 126, on right: 124 126
+query_option (175)
+    on left: 127 128, on right: 125 126
+query_hint (176)
+    on left: 129 130 131 132 133 134 135 136 137 138 139 140 141 142
+    143 144 145 146 147 148 149 150 151 152 153 154 155 156 157, on right:
+    128
+opt_with (177)
+    on left: 158 159, on right: 94 103 104 109 110 121
+common_table_expression_list (178)
+    on left: 160 161, on right: 159 161
+common_table_expression (179)
+    on left: 162, on right: 160 161
+opt_column_name_list (180)
+    on left: 163 164, on right: 79 80 109 110 162
+column_name_list (181)
+    on left: 165 166, on right: 164 166
+query_expression (182)
+    on left: 167 168, on right: 121 159 168 174 226 227
+opt_query (183)
+    on left: 169 170, on right: 167 168
+union_list (184)
+    on left: 171 172, on right: 170 172
+union_statement (185)
+    on left: 173 174, on right: 171 172
+opt_union (186)
+    on left: 175 176 177 178, on right: 173 174
+query_specification (187)
+    on left: 179, on right: 41 112 167 173
+select_options (188)
+    on left: 180 181 182, on right: 179 181 182
+top_options (189)
+    on left: 183 184 185 186 187, on right: 94 103 104 109 110 179
+    184 185 186 187
+select_expr_list (190)
+    on left: 188 189, on right: 179 189
+select_expr (191)
+    on left: 190 191 192, on right: 188 189
+opt_as_alias (192)
+    on left: 193 194 195 196, on right: 8 9 191 203 204
+opt_into (193)
+    on left: 197 198, on right: 121 179
+opt_from_list (194)
+    on left: 199 200, on right: 94 103 104 179
+opt_from (195)
+    on left: 201 202, on right: 200 202
+from_statement (196)
+    on left: 203 204 205, on right: 201 202 206 207
+joined_table (197)
+    on left: 206 207 208 209, on right: 205 209
+join_type (198)
+    on left: 210, on right: 206
+opt_join_type (199)
+    on left: 211 212 213 214 215, on right: 210
+opt_outer (200)
+    on left: 216 217, on right: 213 214 215
+opt_join_hint (201)
+    on left: 218 219 220 221, on right: 210
+cross_outer (202)
+    on left: 222 223, on right: 208
+opt_where (203)
+    on left: 224 225 226 227, on right: 94 103 104 179
+opt_groupby (204)
+    on left: 228 229, on right: 179
+groupby_list (205)
+    on left: 230 231, on right: 229 231
+groupby_statement (206)
+    on left: 232 233 234 235 236, on right: 230 231
+groupby_expr_list (207)
+    on left: 237 238, on right: 233 234 238 246 247
+groupby_expr (208)
+    on left: 239 240, on right: 237 238 240 245
+grouping_set (209)
+    on left: 241 242, on right: 235
+grouping_set_item_list (210)
+    on left: 243 244, on right: 242 244
+grouping_set_item (211)
+    on left: 245 246 247, on right: 243 244
+opt_having (212)
+    on left: 248 249, on right: 179
+opt_orderby (213)
+    on left: 250 251, on right: 112 121
+orderby_statement_list (214)
+    on left: 252 253, on right: 251 253
+orderby_statement (215)
+    on left: 254, on right: 252 253
+opt_asc_desc (216)
+    on left: 255 256 257, on right: 254
 
 
 State 0
@@ -711,7 +717,7 @@ State 1
     WITH    shift, and go to state 3
     CREATE  shift, and go to state 4
 
-    $default  reduce using rule 156 (opt_with)
+    $default  reduce using rule 158 (opt_with)
 
     statement         go to state 5
     create_statement  go to state 6
@@ -731,7 +737,7 @@ State 2
 
 State 3
 
-  157 opt_with: WITH . common_table_expression_list AS '(' query_expression ')'
+  159 opt_with: WITH . common_table_expression_list AS '(' query_expression ')'
 
     NAME  shift, and go to state 12
 
@@ -791,12 +797,12 @@ State 10
 
 State 11
 
-   92 update_statement: opt_with . UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
-  101 delete_statement: opt_with . DELETE top_options FROM object opt_from_list opt_where opt_option
-  102                 | opt_with . DELETE top_options object opt_from_list opt_where opt_option
-  107 insert_statement: opt_with . INSERT top_options INTO object opt_column_name_list insert_options
-  108                 | opt_with . INSERT top_options object opt_column_name_list insert_options
-  119 select_statement: opt_with . query_expression opt_orderby opt_for opt_option opt_into
+   94 update_statement: opt_with . UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
+  103 delete_statement: opt_with . DELETE top_options FROM object opt_from_list opt_where opt_option
+  104                 | opt_with . DELETE top_options object opt_from_list opt_where opt_option
+  109 insert_statement: opt_with . INSERT top_options INTO object opt_column_name_list insert_options
+  110                 | opt_with . INSERT top_options object opt_column_name_list insert_options
+  121 select_statement: opt_with . query_expression opt_orderby opt_for opt_option opt_into
 
     SELECT  shift, and go to state 17
     INSERT  shift, and go to state 18
@@ -810,19 +816,19 @@ State 11
 
 State 12
 
-  160 common_table_expression: NAME . opt_column_name_list
+  162 common_table_expression: NAME . opt_column_name_list
 
     '('  shift, and go to state 24
 
-    $default  reduce using rule 161 (opt_column_name_list)
+    $default  reduce using rule 163 (opt_column_name_list)
 
     opt_column_name_list  go to state 25
 
 
 State 13
 
-  157 opt_with: WITH common_table_expression_list . AS '(' query_expression ')'
-  159 common_table_expression_list: common_table_expression_list . common_table_expression
+  159 opt_with: WITH common_table_expression_list . AS '(' query_expression ')'
+  161 common_table_expression_list: common_table_expression_list . common_table_expression
 
     NAME  shift, and go to state 12
     AS    shift, and go to state 26
@@ -832,9 +838,9 @@ State 13
 
 State 14
 
-  158 common_table_expression_list: common_table_expression .
+  160 common_table_expression_list: common_table_expression .
 
-    $default  reduce using rule 158 (common_table_expression_list)
+    $default  reduce using rule 160 (common_table_expression_list)
 
 
 State 15
@@ -856,45 +862,45 @@ State 16
 
 State 17
 
-  177 query_specification: SELECT . select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
+  179 query_specification: SELECT . select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
 
-    $default  reduce using rule 178 (select_options)
+    $default  reduce using rule 180 (select_options)
 
     select_options  go to state 31
 
 
 State 18
 
-  107 insert_statement: opt_with INSERT . top_options INTO object opt_column_name_list insert_options
-  108                 | opt_with INSERT . top_options object opt_column_name_list insert_options
+  109 insert_statement: opt_with INSERT . top_options INTO object opt_column_name_list insert_options
+  110                 | opt_with INSERT . top_options object opt_column_name_list insert_options
 
-    $default  reduce using rule 181 (top_options)
+    $default  reduce using rule 183 (top_options)
 
     top_options  go to state 32
 
 
 State 19
 
-  101 delete_statement: opt_with DELETE . top_options FROM object opt_from_list opt_where opt_option
-  102                 | opt_with DELETE . top_options object opt_from_list opt_where opt_option
+  103 delete_statement: opt_with DELETE . top_options FROM object opt_from_list opt_where opt_option
+  104                 | opt_with DELETE . top_options object opt_from_list opt_where opt_option
 
-    $default  reduce using rule 181 (top_options)
+    $default  reduce using rule 183 (top_options)
 
     top_options  go to state 33
 
 
 State 20
 
-   92 update_statement: opt_with UPDATE . top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
+   94 update_statement: opt_with UPDATE . top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option
 
-    $default  reduce using rule 181 (top_options)
+    $default  reduce using rule 183 (top_options)
 
     top_options  go to state 34
 
 
 State 21
 
-  166 query_expression: '(' . query_expression ')' opt_query
+  168 query_expression: '(' . query_expression ')' opt_query
 
     SELECT  shift, and go to state 17
     '('     shift, and go to state 21
@@ -905,24 +911,24 @@ State 21
 
 State 22
 
-  119 select_statement: opt_with query_expression . opt_orderby opt_for opt_option opt_into
+  121 select_statement: opt_with query_expression . opt_orderby opt_for opt_option opt_into
 
     ORDER  shift, and go to state 36
 
-    $default  reduce using rule 248 (opt_orderby)
+    $default  reduce using rule 250 (opt_orderby)
 
     opt_orderby  go to state 37
 
 
 State 23
 
-  165 query_expression: query_specification . opt_query
+  167 query_expression: query_specification . opt_query
 
     UNION      shift, and go to state 38
     INTERSECT  shift, and go to state 39
     EXCEPT     shift, and go to state 40
 
-    $default  reduce using rule 167 (opt_query)
+    $default  reduce using rule 169 (opt_query)
 
     opt_query        go to state 41
     union_list       go to state 42
@@ -932,7 +938,7 @@ State 23
 
 State 24
 
-  162 opt_column_name_list: '(' . column_name_list ')'
+  164 opt_column_name_list: '(' . column_name_list ')'
 
     NAME  shift, and go to state 45
 
@@ -941,35 +947,35 @@ State 24
 
 State 25
 
-  160 common_table_expression: NAME opt_column_name_list .
+  162 common_table_expression: NAME opt_column_name_list .
 
-    $default  reduce using rule 160 (common_table_expression)
+    $default  reduce using rule 162 (common_table_expression)
 
 
 State 26
 
-  157 opt_with: WITH common_table_expression_list AS . '(' query_expression ')'
+  159 opt_with: WITH common_table_expression_list AS . '(' query_expression ')'
 
     '('  shift, and go to state 47
 
 
 State 27
 
-  159 common_table_expression_list: common_table_expression_list common_table_expression .
+  161 common_table_expression_list: common_table_expression_list common_table_expression .
 
-    $default  reduce using rule 159 (common_table_expression_list)
+    $default  reduce using rule 161 (common_table_expression_list)
 
 
 State 28
 
-  103 object: NAME . '.' NAME '.' NAME '.' NAME
-  104       | NAME . '.' NAME '.' NAME
-  105       | NAME . '.' NAME
-  106       | NAME .
+  105 object: NAME . '.' NAME '.' NAME '.' NAME
+  106       | NAME . '.' NAME '.' NAME
+  107       | NAME . '.' NAME
+  108       | NAME .
 
     '.'  shift, and go to state 48
 
-    $default  reduce using rule 106 (object)
+    $default  reduce using rule 108 (object)
 
 
 State 29
@@ -980,7 +986,7 @@ State 29
     NAME  shift, and go to state 49
     AS    shift, and go to state 50
 
-    $default  reduce using rule 191 (opt_as_alias)
+    $default  reduce using rule 193 (opt_as_alias)
 
     opt_as_alias  go to state 51
 
@@ -994,26 +1000,26 @@ State 30
 
 State 31
 
-  177 query_specification: SELECT select_options . top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
-  179 select_options: select_options . ALL
-  180               | select_options . DISTINCT
+  179 query_specification: SELECT select_options . top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
+  181 select_options: select_options . ALL
+  182               | select_options . DISTINCT
 
     ALL       shift, and go to state 52
     DISTINCT  shift, and go to state 53
 
-    $default  reduce using rule 181 (top_options)
+    $default  reduce using rule 183 (top_options)
 
     top_options  go to state 54
 
 
 State 32
 
-  107 insert_statement: opt_with INSERT top_options . INTO object opt_column_name_list insert_options
-  108                 | opt_with INSERT top_options . object opt_column_name_list insert_options
-  182 top_options: top_options . TOP expr PERCENT WITH TIES
-  183            | top_options . TOP expr PERCENT
-  184            | top_options . TOP expr WITH TIES
-  185            | top_options . TOP expr
+  109 insert_statement: opt_with INSERT top_options . INTO object opt_column_name_list insert_options
+  110                 | opt_with INSERT top_options . object opt_column_name_list insert_options
+  184 top_options: top_options . TOP expr PERCENT WITH TIES
+  185            | top_options . TOP expr PERCENT
+  186            | top_options . TOP expr WITH TIES
+  187            | top_options . TOP expr
 
     NAME  shift, and go to state 28
     TOP   shift, and go to state 55
@@ -1024,12 +1030,12 @@ State 32
 
 State 33
 
-  101 delete_statement: opt_with DELETE top_options . FROM object opt_from_list opt_where opt_option
-  102                 | opt_with DELETE top_options . object opt_from_list opt_where opt_option
-  182 top_options: top_options . TOP expr PERCENT WITH TIES
-  183            | top_options . TOP expr PERCENT
-  184            | top_options . TOP expr WITH TIES
-  185            | top_options . TOP expr
+  103 delete_statement: opt_with DELETE top_options . FROM object opt_from_list opt_where opt_option
+  104                 | opt_with DELETE top_options . object opt_from_list opt_where opt_option
+  184 top_options: top_options . TOP expr PERCENT WITH TIES
+  185            | top_options . TOP expr PERCENT
+  186            | top_options . TOP expr WITH TIES
+  187            | top_options . TOP expr
 
     NAME  shift, and go to state 28
     FROM  shift, and go to state 58
@@ -1040,11 +1046,11 @@ State 33
 
 State 34
 
-   92 update_statement: opt_with UPDATE top_options . object SET update_set_list opt_from_list opt_where opt_current_of opt_option
-  182 top_options: top_options . TOP expr PERCENT WITH TIES
-  183            | top_options . TOP expr PERCENT
-  184            | top_options . TOP expr WITH TIES
-  185            | top_options . TOP expr
+   94 update_statement: opt_with UPDATE top_options . object SET update_set_list opt_from_list opt_where opt_current_of opt_option
+  184 top_options: top_options . TOP expr PERCENT WITH TIES
+  185            | top_options . TOP expr PERCENT
+  186            | top_options . TOP expr WITH TIES
+  187            | top_options . TOP expr
 
     NAME  shift, and go to state 28
     TOP   shift, and go to state 55
@@ -1054,68 +1060,68 @@ State 34
 
 State 35
 
-  166 query_expression: '(' query_expression . ')' opt_query
+  168 query_expression: '(' query_expression . ')' opt_query
 
     ')'  shift, and go to state 61
 
 
 State 36
 
-  249 opt_orderby: ORDER . BY orderby_statement_list
+  251 opt_orderby: ORDER . BY orderby_statement_list
 
     BY  shift, and go to state 62
 
 
 State 37
 
-  119 select_statement: opt_with query_expression opt_orderby . opt_for opt_option opt_into
+  121 select_statement: opt_with query_expression opt_orderby . opt_for opt_option opt_into
 
-    $default  reduce using rule 120 (opt_for)
+    $default  reduce using rule 122 (opt_for)
 
     opt_for  go to state 63
 
 
 State 38
 
-  173 opt_union: UNION .
-  174          | UNION . ALL
+  175 opt_union: UNION .
+  176          | UNION . ALL
 
     ALL  shift, and go to state 64
-
-    $default  reduce using rule 173 (opt_union)
-
-
-State 39
-
-  176 opt_union: INTERSECT .
-
-    $default  reduce using rule 176 (opt_union)
-
-
-State 40
-
-  175 opt_union: EXCEPT .
 
     $default  reduce using rule 175 (opt_union)
 
 
+State 39
+
+  178 opt_union: INTERSECT .
+
+    $default  reduce using rule 178 (opt_union)
+
+
+State 40
+
+  177 opt_union: EXCEPT .
+
+    $default  reduce using rule 177 (opt_union)
+
+
 State 41
 
-  165 query_expression: query_specification opt_query .
+  167 query_expression: query_specification opt_query .
 
-    $default  reduce using rule 165 (query_expression)
+    $default  reduce using rule 167 (query_expression)
 
 
 State 42
 
-  168 opt_query: union_list .
-  170 union_list: union_list . union_statement
+  170 opt_query: union_list .
+  172 union_list: union_list . union_statement
 
     UNION      shift, and go to state 38
     INTERSECT  shift, and go to state 39
     EXCEPT     shift, and go to state 40
 
-    $default  reduce using rule 168 (opt_query)
+    $default  reduce using rule 170 (opt_query)
 
     union_statement  go to state 65
     opt_union        go to state 44
@@ -1123,15 +1129,15 @@ State 42
 
 State 43
 
-  169 union_list: union_statement .
+  171 union_list: union_statement .
 
-    $default  reduce using rule 169 (union_list)
+    $default  reduce using rule 171 (union_list)
 
 
 State 44
 
-  171 union_statement: opt_union . query_specification
-  172                | opt_union . '(' query_expression ')'
+  173 union_statement: opt_union . query_specification
+  174                | opt_union . '(' query_expression ')'
 
     SELECT  shift, and go to state 17
     '('     shift, and go to state 66
@@ -1141,15 +1147,15 @@ State 44
 
 State 45
 
-  163 column_name_list: NAME .
+  165 column_name_list: NAME .
 
-    $default  reduce using rule 163 (column_name_list)
+    $default  reduce using rule 165 (column_name_list)
 
 
 State 46
 
-  162 opt_column_name_list: '(' column_name_list . ')'
-  164 column_name_list: column_name_list . ',' NAME
+  164 opt_column_name_list: '(' column_name_list . ')'
+  166 column_name_list: column_name_list . ',' NAME
 
     ')'  shift, and go to state 68
     ','  shift, and go to state 69
@@ -1157,7 +1163,7 @@ State 46
 
 State 47
 
-  157 opt_with: WITH common_table_expression_list AS '(' . query_expression ')'
+  159 opt_with: WITH common_table_expression_list AS '(' . query_expression ')'
 
     SELECT  shift, and go to state 17
     '('     shift, and go to state 21
@@ -1168,24 +1174,24 @@ State 47
 
 State 48
 
-  103 object: NAME '.' . NAME '.' NAME '.' NAME
-  104       | NAME '.' . NAME '.' NAME
-  105       | NAME '.' . NAME
+  105 object: NAME '.' . NAME '.' NAME '.' NAME
+  106       | NAME '.' . NAME '.' NAME
+  107       | NAME '.' . NAME
 
     NAME  shift, and go to state 71
 
 
 State 49
 
-  194 opt_as_alias: NAME .
+  196 opt_as_alias: NAME .
 
-    $default  reduce using rule 194 (opt_as_alias)
+    $default  reduce using rule 196 (opt_as_alias)
 
 
 State 50
 
-  192 opt_as_alias: AS . NAME
-  193             | AS . STRING
+  194 opt_as_alias: AS . NAME
+  195             | AS . STRING
 
     NAME    shift, and go to state 72
     STRING  shift, and go to state 73
@@ -1201,25 +1207,25 @@ State 51
 
 State 52
 
-  179 select_options: select_options ALL .
+  181 select_options: select_options ALL .
 
-    $default  reduce using rule 179 (select_options)
+    $default  reduce using rule 181 (select_options)
 
 
 State 53
 
-  180 select_options: select_options DISTINCT .
+  182 select_options: select_options DISTINCT .
 
-    $default  reduce using rule 180 (select_options)
+    $default  reduce using rule 182 (select_options)
 
 
 State 54
 
-  177 query_specification: SELECT select_options top_options . select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
-  182 top_options: top_options . TOP expr PERCENT WITH TIES
-  183            | top_options . TOP expr PERCENT
-  184            | top_options . TOP expr WITH TIES
-  185            | top_options . TOP expr
+  179 query_specification: SELECT select_options top_options . select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having
+  184 top_options: top_options . TOP expr PERCENT WITH TIES
+  185            | top_options . TOP expr PERCENT
+  186            | top_options . TOP expr WITH TIES
+  187            | top_options . TOP expr
 
     NAME       shift, and go to state 75
     INTNUMBER  shift, and go to state 76
@@ -1237,10 +1243,10 @@ State 54
 
 State 55
 
-  182 top_options: top_options TOP . expr PERCENT WITH TIES
-  183            | top_options TOP . expr PERCENT
-  184            | top_options TOP . expr WITH TIES
-  185            | top_options TOP . expr
+  184 top_options: top_options TOP . expr PERCENT WITH TIES
+  185            | top_options TOP . expr PERCENT
+  186            | top_options TOP . expr WITH TIES
+  187            | top_options TOP . expr
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -1254,7 +1260,7 @@ State 55
 
 State 56
 
-  107 insert_statement: opt_with INSERT top_options INTO . object opt_column_name_list insert_options
+  109 insert_statement: opt_with INSERT top_options INTO . object opt_column_name_list insert_options
 
     NAME  shift, and go to state 28
 
@@ -1263,18 +1269,18 @@ State 56
 
 State 57
 
-  108 insert_statement: opt_with INSERT top_options object . opt_column_name_list insert_options
+  110 insert_statement: opt_with INSERT top_options object . opt_column_name_list insert_options
 
     '('  shift, and go to state 24
 
-    $default  reduce using rule 161 (opt_column_name_list)
+    $default  reduce using rule 163 (opt_column_name_list)
 
     opt_column_name_list  go to state 88
 
 
 State 58
 
-  101 delete_statement: opt_with DELETE top_options FROM . object opt_from_list opt_where opt_option
+  103 delete_statement: opt_with DELETE top_options FROM . object opt_from_list opt_where opt_option
 
     NAME  shift, and go to state 28
 
@@ -1283,31 +1289,31 @@ State 58
 
 State 59
 
-  102 delete_statement: opt_with DELETE top_options object . opt_from_list opt_where opt_option
+  104 delete_statement: opt_with DELETE top_options object . opt_from_list opt_where opt_option
 
     FROM  shift, and go to state 90
 
-    $default  reduce using rule 197 (opt_from_list)
+    $default  reduce using rule 199 (opt_from_list)
 
     opt_from_list  go to state 91
 
 
 State 60
 
-   92 update_statement: opt_with UPDATE top_options object . SET update_set_list opt_from_list opt_where opt_current_of opt_option
+   94 update_statement: opt_with UPDATE top_options object . SET update_set_list opt_from_list opt_where opt_current_of opt_option
 
     SET  shift, and go to state 92
 
 
 State 61
 
-  166 query_expression: '(' query_expression ')' . opt_query
+  168 query_expression: '(' query_expression ')' . opt_query
 
     UNION      shift, and go to state 38
     INTERSECT  shift, and go to state 39
     EXCEPT     shift, and go to state 40
 
-    $default  reduce using rule 167 (opt_query)
+    $default  reduce using rule 169 (opt_query)
 
     opt_query        go to state 93
     union_list       go to state 42
@@ -1317,7 +1323,7 @@ State 61
 
 State 62
 
-  249 opt_orderby: ORDER BY . orderby_statement_list
+  251 opt_orderby: ORDER BY . orderby_statement_list
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -1333,32 +1339,32 @@ State 62
 
 State 63
 
-  119 select_statement: opt_with query_expression opt_orderby opt_for . opt_option opt_into
+  121 select_statement: opt_with query_expression opt_orderby opt_for . opt_option opt_into
 
     OPTION  shift, and go to state 97
 
-    $default  reduce using rule 121 (opt_option)
+    $default  reduce using rule 123 (opt_option)
 
     opt_option  go to state 98
 
 
 State 64
 
-  174 opt_union: UNION ALL .
+  176 opt_union: UNION ALL .
 
-    $default  reduce using rule 174 (opt_union)
+    $default  reduce using rule 176 (opt_union)
 
 
 State 65
 
-  170 union_list: union_list union_statement .
+  172 union_list: union_list union_statement .
 
-    $default  reduce using rule 170 (union_list)
+    $default  reduce using rule 172 (union_list)
 
 
 State 66
 
-  172 union_statement: opt_union '(' . query_expression ')'
+  174 union_statement: opt_union '(' . query_expression ')'
 
     SELECT  shift, and go to state 17
     '('     shift, and go to state 21
@@ -1369,55 +1375,55 @@ State 66
 
 State 67
 
-  171 union_statement: opt_union query_specification .
+  173 union_statement: opt_union query_specification .
 
-    $default  reduce using rule 171 (union_statement)
+    $default  reduce using rule 173 (union_statement)
 
 
 State 68
 
-  162 opt_column_name_list: '(' column_name_list ')' .
+  164 opt_column_name_list: '(' column_name_list ')' .
 
-    $default  reduce using rule 162 (opt_column_name_list)
+    $default  reduce using rule 164 (opt_column_name_list)
 
 
 State 69
 
-  164 column_name_list: column_name_list ',' . NAME
+  166 column_name_list: column_name_list ',' . NAME
 
     NAME  shift, and go to state 100
 
 
 State 70
 
-  157 opt_with: WITH common_table_expression_list AS '(' query_expression . ')'
+  159 opt_with: WITH common_table_expression_list AS '(' query_expression . ')'
 
     ')'  shift, and go to state 101
 
 
 State 71
 
-  103 object: NAME '.' NAME . '.' NAME '.' NAME
-  104       | NAME '.' NAME . '.' NAME
-  105       | NAME '.' NAME .
+  105 object: NAME '.' NAME . '.' NAME '.' NAME
+  106       | NAME '.' NAME . '.' NAME
+  107       | NAME '.' NAME .
 
     '.'  shift, and go to state 102
 
-    $default  reduce using rule 105 (object)
+    $default  reduce using rule 107 (object)
 
 
 State 72
 
-  192 opt_as_alias: AS NAME .
+  194 opt_as_alias: AS NAME .
 
-    $default  reduce using rule 192 (opt_as_alias)
+    $default  reduce using rule 194 (opt_as_alias)
 
 
 State 73
 
-  193 opt_as_alias: AS STRING .
+  195 opt_as_alias: AS STRING .
 
-    $default  reduce using rule 193 (opt_as_alias)
+    $default  reduce using rule 195 (opt_as_alias)
 
 
 State 74
@@ -1428,7 +1434,7 @@ State 74
     NAME        shift, and go to state 103
     CONSTRAINT  shift, and go to state 104
 
-    $default  reduce using rule 68 (opt_constraint)
+    $default  reduce using rule 70 (opt_constraint)
 
     column_definition_list  go to state 105
     column_definition       go to state 106
@@ -1443,7 +1449,7 @@ State 75
    23     | NAME .
    24     | NAME . '.' NAME
    35     | NAME . '(' opt_val_list ')'
-  190 select_expr: NAME . '=' expr
+  192 select_expr: NAME . '=' expr
 
     STRING  shift, and go to state 110
     '('     shift, and go to state 111
@@ -1487,9 +1493,9 @@ State 79
 
 State 80
 
-  188 select_expr: '*' .
+  190 select_expr: '*' .
 
-    $default  reduce using rule 188 (select_expr)
+    $default  reduce using rule 190 (select_expr)
 
 
 State 81
@@ -1524,7 +1530,7 @@ State 82
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  189 select_expr: expr . opt_as_alias
+  191 select_expr: expr . opt_as_alias
 
     NAME        shift, and go to state 49
     AS          shift, and go to state 50
@@ -1542,30 +1548,30 @@ State 82
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 191 (opt_as_alias)
+    $default  reduce using rule 193 (opt_as_alias)
 
     opt_as_alias  go to state 129
 
 
 State 83
 
-  177 query_specification: SELECT select_options top_options select_expr_list . opt_into opt_from_list opt_where opt_groupby opt_having
-  187 select_expr_list: select_expr_list . ',' select_expr
+  179 query_specification: SELECT select_options top_options select_expr_list . opt_into opt_from_list opt_where opt_groupby opt_having
+  189 select_expr_list: select_expr_list . ',' select_expr
 
     INTO  shift, and go to state 130
     ','   shift, and go to state 131
 
-    INTO      [reduce using rule 195 (opt_into)]
-    $default  reduce using rule 195 (opt_into)
+    INTO      [reduce using rule 197 (opt_into)]
+    $default  reduce using rule 197 (opt_into)
 
     opt_into  go to state 132
 
 
 State 84
 
-  186 select_expr_list: select_expr .
+  188 select_expr_list: select_expr .
 
-    $default  reduce using rule 186 (select_expr_list)
+    $default  reduce using rule 188 (select_expr_list)
 
 
 State 85
@@ -1602,10 +1608,10 @@ State 86
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  182 top_options: top_options TOP expr . PERCENT WITH TIES
-  183            | top_options TOP expr . PERCENT
-  184            | top_options TOP expr . WITH TIES
-  185            | top_options TOP expr .
+  184 top_options: top_options TOP expr . PERCENT WITH TIES
+  185            | top_options TOP expr . PERCENT
+  186            | top_options TOP expr . WITH TIES
+  187            | top_options TOP expr .
 
     PERCENT     shift, and go to state 133
     WITH        shift, and go to state 134
@@ -1623,24 +1629,24 @@ State 86
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    '*'       [reduce using rule 185 (top_options)]
-    $default  reduce using rule 185 (top_options)
+    '*'       [reduce using rule 187 (top_options)]
+    $default  reduce using rule 187 (top_options)
 
 
 State 87
 
-  107 insert_statement: opt_with INSERT top_options INTO object . opt_column_name_list insert_options
+  109 insert_statement: opt_with INSERT top_options INTO object . opt_column_name_list insert_options
 
     '('  shift, and go to state 24
 
-    $default  reduce using rule 161 (opt_column_name_list)
+    $default  reduce using rule 163 (opt_column_name_list)
 
     opt_column_name_list  go to state 135
 
 
 State 88
 
-  108 insert_statement: opt_with INSERT top_options object opt_column_name_list . insert_options
+  110 insert_statement: opt_with INSERT top_options object opt_column_name_list . insert_options
 
     SELECT   shift, and go to state 17
     VALUES   shift, and go to state 136
@@ -1652,18 +1658,18 @@ State 88
 
 State 89
 
-  101 delete_statement: opt_with DELETE top_options FROM object . opt_from_list opt_where opt_option
+  103 delete_statement: opt_with DELETE top_options FROM object . opt_from_list opt_where opt_option
 
     FROM  shift, and go to state 90
 
-    $default  reduce using rule 197 (opt_from_list)
+    $default  reduce using rule 199 (opt_from_list)
 
     opt_from_list  go to state 140
 
 
 State 90
 
-  198 opt_from_list: FROM . opt_from
+  200 opt_from_list: FROM . opt_from
 
     NAME  shift, and go to state 141
     '('   shift, and go to state 142
@@ -1675,18 +1681,18 @@ State 90
 
 State 91
 
-  102 delete_statement: opt_with DELETE top_options object opt_from_list . opt_where opt_option
+  104 delete_statement: opt_with DELETE top_options object opt_from_list . opt_where opt_option
 
     WHERE  shift, and go to state 146
 
-    $default  reduce using rule 222 (opt_where)
+    $default  reduce using rule 224 (opt_where)
 
     opt_where  go to state 147
 
 
 State 92
 
-   92 update_statement: opt_with UPDATE top_options object SET . update_set_list opt_from_list opt_where opt_current_of opt_option
+   94 update_statement: opt_with UPDATE top_options object SET . update_set_list opt_from_list opt_where opt_current_of opt_option
 
     NAME  shift, and go to state 148
 
@@ -1696,9 +1702,9 @@ State 92
 
 State 93
 
-  166 query_expression: '(' query_expression ')' opt_query .
+  168 query_expression: '(' query_expression ')' opt_query .
 
-    $default  reduce using rule 166 (query_expression)
+    $default  reduce using rule 168 (query_expression)
 
 
 State 94
@@ -1719,7 +1725,7 @@ State 94
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  252 orderby_statement: expr . opt_asc_desc
+  254 orderby_statement: expr . opt_asc_desc
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -1737,78 +1743,78 @@ State 94
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 253 (opt_asc_desc)
+    $default  reduce using rule 255 (opt_asc_desc)
 
     opt_asc_desc  go to state 153
 
 
 State 95
 
-  249 opt_orderby: ORDER BY orderby_statement_list .
-  251 orderby_statement_list: orderby_statement_list . ',' orderby_statement
+  251 opt_orderby: ORDER BY orderby_statement_list .
+  253 orderby_statement_list: orderby_statement_list . ',' orderby_statement
 
     ','  shift, and go to state 154
 
-    $default  reduce using rule 249 (opt_orderby)
+    $default  reduce using rule 251 (opt_orderby)
 
 
 State 96
 
-  250 orderby_statement_list: orderby_statement .
+  252 orderby_statement_list: orderby_statement .
 
-    $default  reduce using rule 250 (orderby_statement_list)
+    $default  reduce using rule 252 (orderby_statement_list)
 
 
 State 97
 
-  122 opt_option: OPTION . '(' query_option_list ')'
+  124 opt_option: OPTION . '(' query_option_list ')'
 
     '('  shift, and go to state 155
 
 
 State 98
 
-  119 select_statement: opt_with query_expression opt_orderby opt_for opt_option . opt_into
+  121 select_statement: opt_with query_expression opt_orderby opt_for opt_option . opt_into
 
     INTO  shift, and go to state 130
 
-    $default  reduce using rule 195 (opt_into)
+    $default  reduce using rule 197 (opt_into)
 
     opt_into  go to state 156
 
 
 State 99
 
-  172 union_statement: opt_union '(' query_expression . ')'
+  174 union_statement: opt_union '(' query_expression . ')'
 
     ')'  shift, and go to state 157
 
 
 State 100
 
-  164 column_name_list: column_name_list ',' NAME .
+  166 column_name_list: column_name_list ',' NAME .
 
-    $default  reduce using rule 164 (column_name_list)
+    $default  reduce using rule 166 (column_name_list)
 
 
 State 101
 
-  157 opt_with: WITH common_table_expression_list AS '(' query_expression ')' .
+  159 opt_with: WITH common_table_expression_list AS '(' query_expression ')' .
 
-    $default  reduce using rule 157 (opt_with)
+    $default  reduce using rule 159 (opt_with)
 
 
 State 102
 
-  103 object: NAME '.' NAME '.' . NAME '.' NAME
-  104       | NAME '.' NAME '.' . NAME
+  105 object: NAME '.' NAME '.' . NAME '.' NAME
+  106       | NAME '.' NAME '.' . NAME
 
     NAME  shift, and go to state 158
 
 
 State 103
 
-   44 column_definition: NAME . data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME . data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
     NAME  shift, and go to state 159
 
@@ -1817,7 +1823,7 @@ State 103
 
 State 104
 
-   69 opt_constraint: CONSTRAINT . NAME
+   71 opt_constraint: CONSTRAINT . NAME
 
     NAME  shift, and go to state 161
 
@@ -1841,7 +1847,7 @@ State 106
 State 107
 
     9 create_statement: CREATE TABLE object opt_as_alias '(' column_straint_list . ')'
-   64 column_straint_list: column_straint_list . ',' column_straint
+   66 column_straint_list: column_straint_list . ',' column_straint
 
     ')'  shift, and go to state 164
     ','  shift, and go to state 165
@@ -1849,16 +1855,16 @@ State 107
 
 State 108
 
-   63 column_straint_list: column_straint .
+   65 column_straint_list: column_straint .
 
-    $default  reduce using rule 63 (column_straint_list)
+    $default  reduce using rule 65 (column_straint_list)
 
 
 State 109
 
-   65 column_straint: opt_constraint . primary_key
-   66               | opt_constraint . foreign_key
-   67               | opt_constraint . check
+   67 column_straint: opt_constraint . primary_key
+   68               | opt_constraint . foreign_key
+   69               | opt_constraint . check
 
     PRIMARY     shift, and go to state 166
     UNIQUE      shift, and go to state 167
@@ -1908,7 +1914,7 @@ State 112
 
 State 113
 
-  190 select_expr: NAME '=' . expr
+  192 select_expr: NAME '=' . expr
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -2139,21 +2145,21 @@ State 128
 
 State 129
 
-  189 select_expr: expr opt_as_alias .
+  191 select_expr: expr opt_as_alias .
 
-    $default  reduce using rule 189 (select_expr)
+    $default  reduce using rule 191 (select_expr)
 
 
 State 130
 
-  196 opt_into: INTO . NAME
+  198 opt_into: INTO . NAME
 
     NAME  shift, and go to state 199
 
 
 State 131
 
-  187 select_expr_list: select_expr_list ',' . select_expr
+  189 select_expr_list: select_expr_list ',' . select_expr
 
     NAME       shift, and go to state 75
     INTNUMBER  shift, and go to state 76
@@ -2169,35 +2175,35 @@ State 131
 
 State 132
 
-  177 query_specification: SELECT select_options top_options select_expr_list opt_into . opt_from_list opt_where opt_groupby opt_having
+  179 query_specification: SELECT select_options top_options select_expr_list opt_into . opt_from_list opt_where opt_groupby opt_having
 
     FROM  shift, and go to state 90
 
-    $default  reduce using rule 197 (opt_from_list)
+    $default  reduce using rule 199 (opt_from_list)
 
     opt_from_list  go to state 201
 
 
 State 133
 
-  182 top_options: top_options TOP expr PERCENT . WITH TIES
-  183            | top_options TOP expr PERCENT .
+  184 top_options: top_options TOP expr PERCENT . WITH TIES
+  185            | top_options TOP expr PERCENT .
 
     WITH  shift, and go to state 202
 
-    $default  reduce using rule 183 (top_options)
+    $default  reduce using rule 185 (top_options)
 
 
 State 134
 
-  184 top_options: top_options TOP expr WITH . TIES
+  186 top_options: top_options TOP expr WITH . TIES
 
     TIES  shift, and go to state 203
 
 
 State 135
 
-  107 insert_statement: opt_with INSERT top_options INTO object opt_column_name_list . insert_options
+  109 insert_statement: opt_with INSERT top_options INTO object opt_column_name_list . insert_options
 
     SELECT   shift, and go to state 17
     VALUES   shift, and go to state 136
@@ -2209,7 +2215,7 @@ State 135
 
 State 136
 
-  109 insert_options: VALUES . values_list
+  111 insert_options: VALUES . values_list
 
     '('  shift, and go to state 205
 
@@ -2218,45 +2224,45 @@ State 136
 
 State 137
 
-  111 insert_options: DEFAULT . VALUES
+  113 insert_options: DEFAULT . VALUES
 
     VALUES  shift, and go to state 207
 
 
 State 138
 
-  108 insert_statement: opt_with INSERT top_options object opt_column_name_list insert_options .
+  110 insert_statement: opt_with INSERT top_options object opt_column_name_list insert_options .
 
-    $default  reduce using rule 108 (insert_statement)
+    $default  reduce using rule 110 (insert_statement)
 
 
 State 139
 
-  110 insert_options: query_specification . opt_orderby
+  112 insert_options: query_specification . opt_orderby
 
     ORDER  shift, and go to state 36
 
-    $default  reduce using rule 248 (opt_orderby)
+    $default  reduce using rule 250 (opt_orderby)
 
     opt_orderby  go to state 208
 
 
 State 140
 
-  101 delete_statement: opt_with DELETE top_options FROM object opt_from_list . opt_where opt_option
+  103 delete_statement: opt_with DELETE top_options FROM object opt_from_list . opt_where opt_option
 
     WHERE  shift, and go to state 146
 
-    $default  reduce using rule 222 (opt_where)
+    $default  reduce using rule 224 (opt_where)
 
     opt_where  go to state 209
 
 
 State 141
 
-  201 from_statement: NAME . opt_as_alias
-  202               | NAME . '.' NAME opt_as_alias
-  206 joined_table: NAME . cross_outer APPLY NAME
+  203 from_statement: NAME . opt_as_alias
+  204               | NAME . '.' NAME opt_as_alias
+  208 joined_table: NAME . cross_outer APPLY NAME
 
     NAME   shift, and go to state 49
     AS     shift, and go to state 50
@@ -2264,8 +2270,8 @@ State 141
     CROSS  shift, and go to state 211
     '.'    shift, and go to state 212
 
-    CROSS     [reduce using rule 191 (opt_as_alias)]
-    $default  reduce using rule 191 (opt_as_alias)
+    CROSS     [reduce using rule 193 (opt_as_alias)]
+    $default  reduce using rule 193 (opt_as_alias)
 
     opt_as_alias  go to state 213
     cross_outer   go to state 214
@@ -2273,7 +2279,7 @@ State 141
 
 State 142
 
-  207 joined_table: '(' . joined_table ')'
+  209 joined_table: '(' . joined_table ')'
 
     NAME  shift, and go to state 141
     '('   shift, and go to state 142
@@ -2284,19 +2290,19 @@ State 142
 
 State 143
 
-  198 opt_from_list: FROM opt_from .
-  200 opt_from: opt_from . ',' from_statement
+  200 opt_from_list: FROM opt_from .
+  202 opt_from: opt_from . ',' from_statement
 
     ','  shift, and go to state 217
 
-    $default  reduce using rule 198 (opt_from_list)
+    $default  reduce using rule 200 (opt_from_list)
 
 
 State 144
 
-  199 opt_from: from_statement .
-  204 joined_table: from_statement . join_type from_statement ON expr
-  205             | from_statement . CROSS JOIN from_statement
+  201 opt_from: from_statement .
+  206 joined_table: from_statement . join_type from_statement ON expr
+  207             | from_statement . CROSS JOIN from_statement
 
     INNER  shift, and go to state 218
     RIGHT  shift, and go to state 219
@@ -2304,11 +2310,11 @@ State 144
     FULL   shift, and go to state 221
     CROSS  shift, and go to state 222
 
-    JOIN          reduce using rule 209 (opt_join_type)
-    REDUCE        reduce using rule 209 (opt_join_type)
-    REPLICATE     reduce using rule 209 (opt_join_type)
-    REDISTRIBUTE  reduce using rule 209 (opt_join_type)
-    $default      reduce using rule 199 (opt_from)
+    JOIN          reduce using rule 211 (opt_join_type)
+    REDUCE        reduce using rule 211 (opt_join_type)
+    REPLICATE     reduce using rule 211 (opt_join_type)
+    REDISTRIBUTE  reduce using rule 211 (opt_join_type)
+    $default      reduce using rule 201 (opt_from)
 
     join_type      go to state 223
     opt_join_type  go to state 224
@@ -2316,16 +2322,16 @@ State 144
 
 State 145
 
-  203 from_statement: joined_table .
+  205 from_statement: joined_table .
 
-    $default  reduce using rule 203 (from_statement)
+    $default  reduce using rule 205 (from_statement)
 
 
 State 146
 
-  223 opt_where: WHERE . expr
-  224          | WHERE . EXISTS '(' query_expression ')'
-  225          | WHERE . NOT EXISTS '(' query_expression ')'
+  225 opt_where: WHERE . expr
+  226          | WHERE . EXISTS '(' query_expression ')'
+  227          | WHERE . NOT EXISTS '(' query_expression ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -2341,68 +2347,68 @@ State 146
 
 State 147
 
-  102 delete_statement: opt_with DELETE top_options object opt_from_list opt_where . opt_option
+  104 delete_statement: opt_with DELETE top_options object opt_from_list opt_where . opt_option
 
     OPTION  shift, and go to state 97
 
-    $default  reduce using rule 121 (opt_option)
+    $default  reduce using rule 123 (opt_option)
 
     opt_option  go to state 228
 
 
 State 148
 
-   95 update_set: NAME . EQUAL expr
-   96           | NAME . EQUAL DEFAULT
-   97           | NAME . EQUAL NULLX
+   97 update_set: NAME . EQUAL expr
+   98           | NAME . EQUAL DEFAULT
+   99           | NAME . EQUAL NULLX
 
     EQUAL  shift, and go to state 229
 
 
 State 149
 
-   92 update_statement: opt_with UPDATE top_options object SET update_set_list . opt_from_list opt_where opt_current_of opt_option
-   94 update_set_list: update_set_list . ',' update_set
+   94 update_statement: opt_with UPDATE top_options object SET update_set_list . opt_from_list opt_where opt_current_of opt_option
+   96 update_set_list: update_set_list . ',' update_set
 
     FROM  shift, and go to state 90
     ','   shift, and go to state 230
 
-    $default  reduce using rule 197 (opt_from_list)
+    $default  reduce using rule 199 (opt_from_list)
 
     opt_from_list  go to state 231
 
 
 State 150
 
-   93 update_set_list: update_set .
+   95 update_set_list: update_set .
 
-    $default  reduce using rule 93 (update_set_list)
+    $default  reduce using rule 95 (update_set_list)
 
 
 State 151
 
-  254 opt_asc_desc: ASC .
+  256 opt_asc_desc: ASC .
 
-    $default  reduce using rule 254 (opt_asc_desc)
+    $default  reduce using rule 256 (opt_asc_desc)
 
 
 State 152
 
-  255 opt_asc_desc: DESC .
+  257 opt_asc_desc: DESC .
 
-    $default  reduce using rule 255 (opt_asc_desc)
+    $default  reduce using rule 257 (opt_asc_desc)
 
 
 State 153
 
-  252 orderby_statement: expr opt_asc_desc .
+  254 orderby_statement: expr opt_asc_desc .
 
-    $default  reduce using rule 252 (orderby_statement)
+    $default  reduce using rule 254 (orderby_statement)
 
 
 State 154
 
-  251 orderby_statement_list: orderby_statement_list ',' . orderby_statement
+  253 orderby_statement_list: orderby_statement_list ',' . orderby_statement
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -2417,7 +2423,7 @@ State 154
 
 State 155
 
-  122 opt_option: OPTION '(' . query_option_list ')'
+  124 opt_option: OPTION '(' . query_option_list ')'
 
     ORDER                                  shift, and go to state 233
     LABEL                                  shift, and go to state 234
@@ -2450,26 +2456,26 @@ State 155
 
 State 156
 
-  119 select_statement: opt_with query_expression opt_orderby opt_for opt_option opt_into .
+  121 select_statement: opt_with query_expression opt_orderby opt_for opt_option opt_into .
 
-    $default  reduce using rule 119 (select_statement)
+    $default  reduce using rule 121 (select_statement)
 
 
 State 157
 
-  172 union_statement: opt_union '(' query_expression ')' .
+  174 union_statement: opt_union '(' query_expression ')' .
 
-    $default  reduce using rule 172 (union_statement)
+    $default  reduce using rule 174 (union_statement)
 
 
 State 158
 
-  103 object: NAME '.' NAME '.' NAME . '.' NAME
-  104       | NAME '.' NAME '.' NAME .
+  105 object: NAME '.' NAME '.' NAME . '.' NAME
+  106       | NAME '.' NAME '.' NAME .
 
     '.'  shift, and go to state 259
 
-    $default  reduce using rule 104 (object)
+    $default  reduce using rule 106 (object)
 
 
 State 159
@@ -2486,7 +2492,7 @@ State 159
 
 State 160
 
-   44 column_definition: NAME data_type . opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME data_type . opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
     FILESTREAM  shift, and go to state 262
 
@@ -2497,9 +2503,9 @@ State 160
 
 State 161
 
-   69 opt_constraint: CONSTRAINT NAME .
+   71 opt_constraint: CONSTRAINT NAME .
 
-    $default  reduce using rule 69 (opt_constraint)
+    $default  reduce using rule 71 (opt_constraint)
 
 
 State 162
@@ -2527,11 +2533,11 @@ State 164
 
 State 165
 
-   64 column_straint_list: column_straint_list ',' . column_straint
+   66 column_straint_list: column_straint_list ',' . column_straint
 
     CONSTRAINT  shift, and go to state 104
 
-    $default  reduce using rule 68 (opt_constraint)
+    $default  reduce using rule 70 (opt_constraint)
 
     column_straint  go to state 265
     opt_constraint  go to state 109
@@ -2539,33 +2545,33 @@ State 165
 
 State 166
 
-   70 primary_key: PRIMARY . KEY opt_clustered opt_on
+   72 primary_key: PRIMARY . KEY opt_clustered opt_on
 
     KEY  shift, and go to state 266
 
 
 State 167
 
-   71 primary_key: UNIQUE . opt_clustered opt_on
+   73 primary_key: UNIQUE . opt_clustered opt_on
 
     CLUSTERED     shift, and go to state 267
     NONCLUSTERED  shift, and go to state 268
 
-    $default  reduce using rule 72 (opt_clustered)
+    $default  reduce using rule 74 (opt_clustered)
 
     opt_clustered  go to state 269
 
 
 State 168
 
-   77 foreign_key: FOREIGN . KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   79 foreign_key: FOREIGN . KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
     KEY  shift, and go to state 270
 
 
 State 169
 
-   78 foreign_key: REFERENCES . object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   80 foreign_key: REFERENCES . object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
     NAME  shift, and go to state 28
 
@@ -2574,34 +2580,34 @@ State 169
 
 State 170
 
-   89 check: CHECK . opt_not_for_replication '(' expr ')'
+   91 check: CHECK . opt_not_for_replication '(' expr ')'
 
     NOT  shift, and go to state 272
 
-    $default  reduce using rule 54 (opt_not_for_replication)
+    $default  reduce using rule 56 (opt_not_for_replication)
 
     opt_not_for_replication  go to state 273
 
 
 State 171
 
-   65 column_straint: opt_constraint primary_key .
+   67 column_straint: opt_constraint primary_key .
 
-    $default  reduce using rule 65 (column_straint)
+    $default  reduce using rule 67 (column_straint)
 
 
 State 172
 
-   66 column_straint: opt_constraint foreign_key .
+   68 column_straint: opt_constraint foreign_key .
 
-    $default  reduce using rule 66 (column_straint)
+    $default  reduce using rule 68 (column_straint)
 
 
 State 173
 
-   67 column_straint: opt_constraint check .
+   69 column_straint: opt_constraint check .
 
-    $default  reduce using rule 67 (column_straint)
+    $default  reduce using rule 69 (column_straint)
 
 
 State 174
@@ -2696,7 +2702,7 @@ State 180
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  190 select_expr: NAME '=' expr .
+  192 select_expr: NAME '=' expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -2712,7 +2718,7 @@ State 180
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 190 (select_expr)
+    $default  reduce using rule 192 (select_expr)
 
 
 State 181
@@ -3151,53 +3157,53 @@ State 198
 
 State 199
 
-  196 opt_into: INTO NAME .
+  198 opt_into: INTO NAME .
 
-    $default  reduce using rule 196 (opt_into)
+    $default  reduce using rule 198 (opt_into)
 
 
 State 200
 
-  187 select_expr_list: select_expr_list ',' select_expr .
+  189 select_expr_list: select_expr_list ',' select_expr .
 
-    $default  reduce using rule 187 (select_expr_list)
+    $default  reduce using rule 189 (select_expr_list)
 
 
 State 201
 
-  177 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list . opt_where opt_groupby opt_having
+  179 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list . opt_where opt_groupby opt_having
 
     WHERE  shift, and go to state 146
 
-    $default  reduce using rule 222 (opt_where)
+    $default  reduce using rule 224 (opt_where)
 
     opt_where  go to state 282
 
 
 State 202
 
-  182 top_options: top_options TOP expr PERCENT WITH . TIES
+  184 top_options: top_options TOP expr PERCENT WITH . TIES
 
     TIES  shift, and go to state 283
 
 
 State 203
 
-  184 top_options: top_options TOP expr WITH TIES .
+  186 top_options: top_options TOP expr WITH TIES .
 
-    $default  reduce using rule 184 (top_options)
+    $default  reduce using rule 186 (top_options)
 
 
 State 204
 
-  107 insert_statement: opt_with INSERT top_options INTO object opt_column_name_list insert_options .
+  109 insert_statement: opt_with INSERT top_options INTO object opt_column_name_list insert_options .
 
-    $default  reduce using rule 107 (insert_statement)
+    $default  reduce using rule 109 (insert_statement)
 
 
 State 205
 
-  112 values_list: '(' . values_options_list ')'
+  114 values_list: '(' . values_options_list ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -3215,78 +3221,78 @@ State 205
 
 State 206
 
-  109 insert_options: VALUES values_list .
-  113 values_list: values_list . ',' '(' values_options_list ')'
+  111 insert_options: VALUES values_list .
+  115 values_list: values_list . ',' '(' values_options_list ')'
 
     ','  shift, and go to state 289
-
-    $default  reduce using rule 109 (insert_options)
-
-
-State 207
-
-  111 insert_options: DEFAULT VALUES .
 
     $default  reduce using rule 111 (insert_options)
 
 
+State 207
+
+  113 insert_options: DEFAULT VALUES .
+
+    $default  reduce using rule 113 (insert_options)
+
+
 State 208
 
-  110 insert_options: query_specification opt_orderby .
+  112 insert_options: query_specification opt_orderby .
 
-    $default  reduce using rule 110 (insert_options)
+    $default  reduce using rule 112 (insert_options)
 
 
 State 209
 
-  101 delete_statement: opt_with DELETE top_options FROM object opt_from_list opt_where . opt_option
+  103 delete_statement: opt_with DELETE top_options FROM object opt_from_list opt_where . opt_option
 
     OPTION  shift, and go to state 97
 
-    $default  reduce using rule 121 (opt_option)
+    $default  reduce using rule 123 (opt_option)
 
     opt_option  go to state 290
 
 
 State 210
 
-  221 cross_outer: OUTER .
+  223 cross_outer: OUTER .
 
-    $default  reduce using rule 221 (cross_outer)
+    $default  reduce using rule 223 (cross_outer)
 
 
 State 211
 
-  220 cross_outer: CROSS .
+  222 cross_outer: CROSS .
 
-    $default  reduce using rule 220 (cross_outer)
+    $default  reduce using rule 222 (cross_outer)
 
 
 State 212
 
-  202 from_statement: NAME '.' . NAME opt_as_alias
+  204 from_statement: NAME '.' . NAME opt_as_alias
 
     NAME  shift, and go to state 291
 
 
 State 213
 
-  201 from_statement: NAME opt_as_alias .
+  203 from_statement: NAME opt_as_alias .
 
-    $default  reduce using rule 201 (from_statement)
+    $default  reduce using rule 203 (from_statement)
 
 
 State 214
 
-  206 joined_table: NAME cross_outer . APPLY NAME
+  208 joined_table: NAME cross_outer . APPLY NAME
 
     APPLY  shift, and go to state 292
 
 
 State 215
 
-  204 joined_table: from_statement . join_type from_statement ON expr
-  205             | from_statement . CROSS JOIN from_statement
+  206 joined_table: from_statement . join_type from_statement ON expr
+  207             | from_statement . CROSS JOIN from_statement
 
     INNER  shift, and go to state 218
     RIGHT  shift, and go to state 219
@@ -3294,7 +3300,7 @@ State 215
     FULL   shift, and go to state 221
     CROSS  shift, and go to state 222
 
-    $default  reduce using rule 209 (opt_join_type)
+    $default  reduce using rule 211 (opt_join_type)
 
     join_type      go to state 223
     opt_join_type  go to state 224
@@ -3302,17 +3308,17 @@ State 215
 
 State 216
 
-  203 from_statement: joined_table .
-  207 joined_table: '(' joined_table . ')'
+  205 from_statement: joined_table .
+  209 joined_table: '(' joined_table . ')'
 
     ')'  shift, and go to state 293
 
-    $default  reduce using rule 203 (from_statement)
+    $default  reduce using rule 205 (from_statement)
 
 
 State 217
 
-  200 opt_from: opt_from ',' . from_statement
+  202 opt_from: opt_from ',' . from_statement
 
     NAME  shift, and go to state 141
     '('   shift, and go to state 142
@@ -3323,54 +3329,54 @@ State 217
 
 State 218
 
-  210 opt_join_type: INNER .
+  212 opt_join_type: INNER .
 
-    $default  reduce using rule 210 (opt_join_type)
+    $default  reduce using rule 212 (opt_join_type)
 
 
 State 219
 
-  212 opt_join_type: RIGHT . opt_outer
+  214 opt_join_type: RIGHT . opt_outer
 
     OUTER  shift, and go to state 295
 
-    $default  reduce using rule 214 (opt_outer)
+    $default  reduce using rule 216 (opt_outer)
 
     opt_outer  go to state 296
 
 
 State 220
 
-  211 opt_join_type: LEFT . opt_outer
+  213 opt_join_type: LEFT . opt_outer
 
     OUTER  shift, and go to state 295
 
-    $default  reduce using rule 214 (opt_outer)
+    $default  reduce using rule 216 (opt_outer)
 
     opt_outer  go to state 297
 
 
 State 221
 
-  213 opt_join_type: FULL . opt_outer
+  215 opt_join_type: FULL . opt_outer
 
     OUTER  shift, and go to state 295
 
-    $default  reduce using rule 214 (opt_outer)
+    $default  reduce using rule 216 (opt_outer)
 
     opt_outer  go to state 298
 
 
 State 222
 
-  205 joined_table: from_statement CROSS . JOIN from_statement
+  207 joined_table: from_statement CROSS . JOIN from_statement
 
     JOIN  shift, and go to state 299
 
 
 State 223
 
-  204 joined_table: from_statement join_type . from_statement ON expr
+  206 joined_table: from_statement join_type . from_statement ON expr
 
     NAME  shift, and go to state 141
     '('   shift, and go to state 142
@@ -3381,27 +3387,27 @@ State 223
 
 State 224
 
-  208 join_type: opt_join_type . opt_join_hint JOIN
+  210 join_type: opt_join_type . opt_join_hint JOIN
 
     REDUCE        shift, and go to state 301
     REPLICATE     shift, and go to state 302
     REDISTRIBUTE  shift, and go to state 303
 
-    $default  reduce using rule 216 (opt_join_hint)
+    $default  reduce using rule 218 (opt_join_hint)
 
     opt_join_hint  go to state 304
 
 
 State 225
 
-  225 opt_where: WHERE NOT . EXISTS '(' query_expression ')'
+  227 opt_where: WHERE NOT . EXISTS '(' query_expression ')'
 
     EXISTS  shift, and go to state 305
 
 
 State 226
 
-  224 opt_where: WHERE EXISTS . '(' query_expression ')'
+  226 opt_where: WHERE EXISTS . '(' query_expression ')'
 
     '('  shift, and go to state 306
 
@@ -3424,7 +3430,7 @@ State 227
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  223 opt_where: WHERE expr .
+  225 opt_where: WHERE expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -3440,21 +3446,21 @@ State 227
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 223 (opt_where)
+    $default  reduce using rule 225 (opt_where)
 
 
 State 228
 
-  102 delete_statement: opt_with DELETE top_options object opt_from_list opt_where opt_option .
+  104 delete_statement: opt_with DELETE top_options object opt_from_list opt_where opt_option .
 
-    $default  reduce using rule 102 (delete_statement)
+    $default  reduce using rule 104 (delete_statement)
 
 
 State 229
 
-   95 update_set: NAME EQUAL . expr
-   96           | NAME EQUAL . DEFAULT
-   97           | NAME EQUAL . NULLX
+   97 update_set: NAME EQUAL . expr
+   98           | NAME EQUAL . DEFAULT
+   99           | NAME EQUAL . NULLX
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -3470,7 +3476,7 @@ State 229
 
 State 230
 
-   94 update_set_list: update_set_list ',' . update_set
+   96 update_set_list: update_set_list ',' . update_set
 
     NAME  shift, and go to state 148
 
@@ -3479,41 +3485,41 @@ State 230
 
 State 231
 
-   92 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list . opt_where opt_current_of opt_option
+   94 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list . opt_where opt_current_of opt_option
 
     WHERE  shift, and go to state 146
 
-    $default  reduce using rule 222 (opt_where)
+    $default  reduce using rule 224 (opt_where)
 
     opt_where  go to state 311
 
 
 State 232
 
-  251 orderby_statement_list: orderby_statement_list ',' orderby_statement .
+  253 orderby_statement_list: orderby_statement_list ',' orderby_statement .
 
-    $default  reduce using rule 251 (orderby_statement_list)
+    $default  reduce using rule 253 (orderby_statement_list)
 
 
 State 233
 
-  128 query_hint: ORDER . GROUP
+  130 query_hint: ORDER . GROUP
 
     GROUP  shift, and go to state 312
 
 
 State 234
 
-  125 query_option: LABEL . EQUAL STRING
+  127 query_option: LABEL . EQUAL STRING
 
     EQUAL  shift, and go to state 313
 
 
 State 235
 
-  127 query_hint: HASH . GROUP
-  130           | HASH . UNION
-  134           | HASH . JOIN
+  129 query_hint: HASH . GROUP
+  132           | HASH . UNION
+  136           | HASH . JOIN
 
     GROUP  shift, and go to state 314
     JOIN   shift, and go to state 315
@@ -3522,15 +3528,15 @@ State 235
 
 State 236
 
-  132 query_hint: LOOP . JOIN
+  134 query_hint: LOOP . JOIN
 
     JOIN  shift, and go to state 317
 
 
 State 237
 
-  131 query_hint: MERGE . UNION
-  133           | MERGE . JOIN
+  133 query_hint: MERGE . UNION
+  135           | MERGE . JOIN
 
     JOIN   shift, and go to state 318
     UNION  shift, and go to state 319
@@ -3538,9 +3544,9 @@ State 237
 
 State 238
 
-  137 query_hint: FORCE . ORDER
-  138           | FORCE . EXTERNALPUSHDOWN
-  140           | FORCE . SCALEOUTEXECUTION
+  139 query_hint: FORCE . ORDER
+  140           | FORCE . EXTERNALPUSHDOWN
+  142           | FORCE . SCALEOUTEXECUTION
 
     ORDER              shift, and go to state 320
     EXTERNALPUSHDOWN   shift, and go to state 321
@@ -3549,8 +3555,8 @@ State 238
 
 State 239
 
-  139 query_hint: DISABLE . EXTERNALPUSHDOWN
-  141           | DISABLE . SCALEOUTEXECUTION
+  141 query_hint: DISABLE . EXTERNALPUSHDOWN
+  143           | DISABLE . SCALEOUTEXECUTION
 
     EXTERNALPUSHDOWN   shift, and go to state 323
     SCALEOUTEXECUTION  shift, and go to state 324
@@ -3558,78 +3564,78 @@ State 239
 
 State 240
 
-  129 query_hint: CONCAT . UNION
+  131 query_hint: CONCAT . UNION
 
     UNION  shift, and go to state 325
 
 
 State 241
 
-  142 query_hint: IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX .
+  144 query_hint: IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX .
 
-    $default  reduce using rule 142 (query_hint)
+    $default  reduce using rule 144 (query_hint)
 
 
 State 242
 
-  143 query_hint: KEEP . PLAN
+  145 query_hint: KEEP . PLAN
 
     PLAN  shift, and go to state 326
 
 
 State 243
 
-  144 query_hint: KEEPFIXED . PLAN
+  146 query_hint: KEEPFIXED . PLAN
 
     PLAN  shift, and go to state 327
 
 
 State 244
 
-  145 query_hint: MAX_GRANT_PERCENT . '=' INTNUMBER
+  147 query_hint: MAX_GRANT_PERCENT . '=' INTNUMBER
 
     '='  shift, and go to state 328
 
 
 State 245
 
-  146 query_hint: MIN_GRANT_PERCENT . '=' INTNUMBER
+  148 query_hint: MIN_GRANT_PERCENT . '=' INTNUMBER
 
     '='  shift, and go to state 329
 
 
 State 246
 
-  147 query_hint: MAXDOP . INTNUMBER
+  149 query_hint: MAXDOP . INTNUMBER
 
     INTNUMBER  shift, and go to state 330
 
 
 State 247
 
-  148 query_hint: MAXRECURSION . INTNUMBER
+  150 query_hint: MAXRECURSION . INTNUMBER
 
     INTNUMBER  shift, and go to state 331
 
 
 State 248
 
-  149 query_hint: NO_PERFORMANCE_SPOOL .
+  151 query_hint: NO_PERFORMANCE_SPOOL .
 
-    $default  reduce using rule 149 (query_hint)
+    $default  reduce using rule 151 (query_hint)
 
 
 State 249
 
-  150 query_hint: OPTIMIZE . FOR UNKNOWN
+  152 query_hint: OPTIMIZE . FOR UNKNOWN
 
     FOR  shift, and go to state 332
 
 
 State 250
 
-  151 query_hint: PARAMETERIZATION . SIMPLE
-  152           | PARAMETERIZATION . FORCED
+  153 query_hint: PARAMETERIZATION . SIMPLE
+  154           | PARAMETERIZATION . FORCED
 
     SIMPLE  shift, and go to state 333
     FORCED  shift, and go to state 334
@@ -3637,43 +3643,43 @@ State 250
 
 State 251
 
-  153 query_hint: QUERYTRACEON . INTNUMBER
+  155 query_hint: QUERYTRACEON . INTNUMBER
 
     INTNUMBER  shift, and go to state 335
 
 
 State 252
 
-  154 query_hint: RECOMPILE .
+  156 query_hint: RECOMPILE .
 
-    $default  reduce using rule 154 (query_hint)
+    $default  reduce using rule 156 (query_hint)
 
 
 State 253
 
-  155 query_hint: ROBUST . PLAN
+  157 query_hint: ROBUST . PLAN
 
     PLAN  shift, and go to state 336
 
 
 State 254
 
-  135 query_hint: EXPAND . VIEWS
+  137 query_hint: EXPAND . VIEWS
 
     VIEWS  shift, and go to state 337
 
 
 State 255
 
-  136 query_hint: FAST . INTNUMBER
+  138 query_hint: FAST . INTNUMBER
 
     INTNUMBER  shift, and go to state 338
 
 
 State 256
 
-  122 opt_option: OPTION '(' query_option_list . ')'
-  124 query_option_list: query_option_list . ',' query_option
+  124 opt_option: OPTION '(' query_option_list . ')'
+  126 query_option_list: query_option_list . ',' query_option
 
     ')'  shift, and go to state 339
     ','  shift, and go to state 340
@@ -3681,21 +3687,21 @@ State 256
 
 State 257
 
-  123 query_option_list: query_option .
+  125 query_option_list: query_option .
 
-    $default  reduce using rule 123 (query_option_list)
+    $default  reduce using rule 125 (query_option_list)
 
 
 State 258
 
-  126 query_option: query_hint .
+  128 query_option: query_hint .
 
-    $default  reduce using rule 126 (query_option)
+    $default  reduce using rule 128 (query_option)
 
 
 State 259
 
-  103 object: NAME '.' NAME '.' NAME '.' . NAME
+  105 object: NAME '.' NAME '.' NAME '.' . NAME
 
     NAME  shift, and go to state 341
 
@@ -3723,7 +3729,7 @@ State 262
 
 State 263
 
-   44 column_definition: NAME data_type opt_filestream . opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME data_type opt_filestream . opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
     COLLATE  shift, and go to state 344
 
@@ -3741,80 +3747,80 @@ State 264
 
 State 265
 
-   64 column_straint_list: column_straint_list ',' column_straint .
+   66 column_straint_list: column_straint_list ',' column_straint .
 
-    $default  reduce using rule 64 (column_straint_list)
+    $default  reduce using rule 66 (column_straint_list)
 
 
 State 266
 
-   70 primary_key: PRIMARY KEY . opt_clustered opt_on
+   72 primary_key: PRIMARY KEY . opt_clustered opt_on
 
     CLUSTERED     shift, and go to state 267
     NONCLUSTERED  shift, and go to state 268
 
-    $default  reduce using rule 72 (opt_clustered)
+    $default  reduce using rule 74 (opt_clustered)
 
     opt_clustered  go to state 346
 
 
 State 267
 
-   73 opt_clustered: CLUSTERED .
+   75 opt_clustered: CLUSTERED .
 
-    $default  reduce using rule 73 (opt_clustered)
+    $default  reduce using rule 75 (opt_clustered)
 
 
 State 268
 
-   74 opt_clustered: NONCLUSTERED .
+   76 opt_clustered: NONCLUSTERED .
 
-    $default  reduce using rule 74 (opt_clustered)
+    $default  reduce using rule 76 (opt_clustered)
 
 
 State 269
 
-   71 primary_key: UNIQUE opt_clustered . opt_on
+   73 primary_key: UNIQUE opt_clustered . opt_on
 
     ON  shift, and go to state 347
 
-    $default  reduce using rule 75 (opt_on)
+    $default  reduce using rule 77 (opt_on)
 
     opt_on  go to state 348
 
 
 State 270
 
-   77 foreign_key: FOREIGN KEY . opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   79 foreign_key: FOREIGN KEY . opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
     '('  shift, and go to state 24
 
-    $default  reduce using rule 161 (opt_column_name_list)
+    $default  reduce using rule 163 (opt_column_name_list)
 
     opt_column_name_list  go to state 349
 
 
 State 271
 
-   78 foreign_key: REFERENCES object . opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   80 foreign_key: REFERENCES object . opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
     '('  shift, and go to state 24
 
-    $default  reduce using rule 161 (opt_column_name_list)
+    $default  reduce using rule 163 (opt_column_name_list)
 
     opt_column_name_list  go to state 350
 
 
 State 272
 
-   55 opt_not_for_replication: NOT . FOR REPLICATION
+   57 opt_not_for_replication: NOT . FOR REPLICATION
 
     FOR  shift, and go to state 351
 
 
 State 273
 
-   89 check: CHECK opt_not_for_replication . '(' expr ')'
+   91 check: CHECK opt_not_for_replication . '(' expr ')'
 
     '('  shift, and go to state 352
 
@@ -3966,34 +3972,34 @@ State 281
 
 State 282
 
-  177 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where . opt_groupby opt_having
+  179 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where . opt_groupby opt_having
 
     GROUP  shift, and go to state 358
 
-    $default  reduce using rule 226 (opt_groupby)
+    $default  reduce using rule 228 (opt_groupby)
 
     opt_groupby  go to state 359
 
 
 State 283
 
-  182 top_options: top_options TOP expr PERCENT WITH TIES .
+  184 top_options: top_options TOP expr PERCENT WITH TIES .
 
-    $default  reduce using rule 182 (top_options)
+    $default  reduce using rule 184 (top_options)
 
 
 State 284
 
-  117 values_options: NULLX .
+  119 values_options: NULLX .
 
-    $default  reduce using rule 117 (values_options)
+    $default  reduce using rule 119 (values_options)
 
 
 State 285
 
-  116 values_options: DEFAULT .
+  118 values_options: DEFAULT .
 
-    $default  reduce using rule 116 (values_options)
+    $default  reduce using rule 118 (values_options)
 
 
 State 286
@@ -4014,7 +4020,7 @@ State 286
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  118 values_options: expr .
+  120 values_options: expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -4030,13 +4036,13 @@ State 286
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 118 (values_options)
+    $default  reduce using rule 120 (values_options)
 
 
 State 287
 
-  112 values_list: '(' values_options_list . ')'
-  115 values_options_list: values_options_list . ',' values_options
+  114 values_list: '(' values_options_list . ')'
+  117 values_options_list: values_options_list . ',' values_options
 
     ')'  shift, and go to state 360
     ','  shift, and go to state 361
@@ -4044,56 +4050,56 @@ State 287
 
 State 288
 
-  114 values_options_list: values_options .
+  116 values_options_list: values_options .
 
-    $default  reduce using rule 114 (values_options_list)
+    $default  reduce using rule 116 (values_options_list)
 
 
 State 289
 
-  113 values_list: values_list ',' . '(' values_options_list ')'
+  115 values_list: values_list ',' . '(' values_options_list ')'
 
     '('  shift, and go to state 362
 
 
 State 290
 
-  101 delete_statement: opt_with DELETE top_options FROM object opt_from_list opt_where opt_option .
+  103 delete_statement: opt_with DELETE top_options FROM object opt_from_list opt_where opt_option .
 
-    $default  reduce using rule 101 (delete_statement)
+    $default  reduce using rule 103 (delete_statement)
 
 
 State 291
 
-  202 from_statement: NAME '.' NAME . opt_as_alias
+  204 from_statement: NAME '.' NAME . opt_as_alias
 
     NAME  shift, and go to state 49
     AS    shift, and go to state 50
 
-    $default  reduce using rule 191 (opt_as_alias)
+    $default  reduce using rule 193 (opt_as_alias)
 
     opt_as_alias  go to state 363
 
 
 State 292
 
-  206 joined_table: NAME cross_outer APPLY . NAME
+  208 joined_table: NAME cross_outer APPLY . NAME
 
     NAME  shift, and go to state 364
 
 
 State 293
 
-  207 joined_table: '(' joined_table ')' .
+  209 joined_table: '(' joined_table ')' .
 
-    $default  reduce using rule 207 (joined_table)
+    $default  reduce using rule 209 (joined_table)
 
 
 State 294
 
-  200 opt_from: opt_from ',' from_statement .
-  204 joined_table: from_statement . join_type from_statement ON expr
-  205             | from_statement . CROSS JOIN from_statement
+  202 opt_from: opt_from ',' from_statement .
+  206 joined_table: from_statement . join_type from_statement ON expr
+  207             | from_statement . CROSS JOIN from_statement
 
     INNER  shift, and go to state 218
     RIGHT  shift, and go to state 219
@@ -4101,11 +4107,11 @@ State 294
     FULL   shift, and go to state 221
     CROSS  shift, and go to state 222
 
-    JOIN          reduce using rule 209 (opt_join_type)
-    REDUCE        reduce using rule 209 (opt_join_type)
-    REPLICATE     reduce using rule 209 (opt_join_type)
-    REDISTRIBUTE  reduce using rule 209 (opt_join_type)
-    $default      reduce using rule 200 (opt_from)
+    JOIN          reduce using rule 211 (opt_join_type)
+    REDUCE        reduce using rule 211 (opt_join_type)
+    REPLICATE     reduce using rule 211 (opt_join_type)
+    REDISTRIBUTE  reduce using rule 211 (opt_join_type)
+    $default      reduce using rule 202 (opt_from)
 
     join_type      go to state 223
     opt_join_type  go to state 224
@@ -4113,35 +4119,35 @@ State 294
 
 State 295
 
-  215 opt_outer: OUTER .
+  217 opt_outer: OUTER .
 
-    $default  reduce using rule 215 (opt_outer)
+    $default  reduce using rule 217 (opt_outer)
 
 
 State 296
 
-  212 opt_join_type: RIGHT opt_outer .
+  214 opt_join_type: RIGHT opt_outer .
 
-    $default  reduce using rule 212 (opt_join_type)
+    $default  reduce using rule 214 (opt_join_type)
 
 
 State 297
 
-  211 opt_join_type: LEFT opt_outer .
-
-    $default  reduce using rule 211 (opt_join_type)
-
-
-State 298
-
-  213 opt_join_type: FULL opt_outer .
+  213 opt_join_type: LEFT opt_outer .
 
     $default  reduce using rule 213 (opt_join_type)
 
 
+State 298
+
+  215 opt_join_type: FULL opt_outer .
+
+    $default  reduce using rule 215 (opt_join_type)
+
+
 State 299
 
-  205 joined_table: from_statement CROSS JOIN . from_statement
+  207 joined_table: from_statement CROSS JOIN . from_statement
 
     NAME  shift, and go to state 141
     '('   shift, and go to state 142
@@ -4152,9 +4158,9 @@ State 299
 
 State 300
 
-  204 joined_table: from_statement . join_type from_statement ON expr
-  204             | from_statement join_type from_statement . ON expr
-  205             | from_statement . CROSS JOIN from_statement
+  206 joined_table: from_statement . join_type from_statement ON expr
+  206             | from_statement join_type from_statement . ON expr
+  207             | from_statement . CROSS JOIN from_statement
 
     ON     shift, and go to state 366
     INNER  shift, and go to state 218
@@ -4163,7 +4169,7 @@ State 300
     FULL   shift, and go to state 221
     CROSS  shift, and go to state 222
 
-    $default  reduce using rule 209 (opt_join_type)
+    $default  reduce using rule 211 (opt_join_type)
 
     join_type      go to state 223
     opt_join_type  go to state 224
@@ -4171,42 +4177,42 @@ State 300
 
 State 301
 
-  217 opt_join_hint: REDUCE .
-
-    $default  reduce using rule 217 (opt_join_hint)
-
-
-State 302
-
-  218 opt_join_hint: REPLICATE .
-
-    $default  reduce using rule 218 (opt_join_hint)
-
-
-State 303
-
-  219 opt_join_hint: REDISTRIBUTE .
+  219 opt_join_hint: REDUCE .
 
     $default  reduce using rule 219 (opt_join_hint)
 
 
+State 302
+
+  220 opt_join_hint: REPLICATE .
+
+    $default  reduce using rule 220 (opt_join_hint)
+
+
+State 303
+
+  221 opt_join_hint: REDISTRIBUTE .
+
+    $default  reduce using rule 221 (opt_join_hint)
+
+
 State 304
 
-  208 join_type: opt_join_type opt_join_hint . JOIN
+  210 join_type: opt_join_type opt_join_hint . JOIN
 
     JOIN  shift, and go to state 367
 
 
 State 305
 
-  225 opt_where: WHERE NOT EXISTS . '(' query_expression ')'
+  227 opt_where: WHERE NOT EXISTS . '(' query_expression ')'
 
     '('  shift, and go to state 368
 
 
 State 306
 
-  224 opt_where: WHERE EXISTS '(' . query_expression ')'
+  226 opt_where: WHERE EXISTS '(' . query_expression ')'
 
     SELECT  shift, and go to state 17
     '('     shift, and go to state 21
@@ -4217,16 +4223,16 @@ State 306
 
 State 307
 
-   97 update_set: NAME EQUAL NULLX .
+   99 update_set: NAME EQUAL NULLX .
 
-    $default  reduce using rule 97 (update_set)
+    $default  reduce using rule 99 (update_set)
 
 
 State 308
 
-   96 update_set: NAME EQUAL DEFAULT .
+   98 update_set: NAME EQUAL DEFAULT .
 
-    $default  reduce using rule 96 (update_set)
+    $default  reduce using rule 98 (update_set)
 
 
 State 309
@@ -4247,7 +4253,7 @@ State 309
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-   95 update_set: NAME EQUAL expr .
+   97 update_set: NAME EQUAL expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -4263,226 +4269,226 @@ State 309
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 95 (update_set)
+    $default  reduce using rule 97 (update_set)
 
 
 State 310
 
-   94 update_set_list: update_set_list ',' update_set .
+   96 update_set_list: update_set_list ',' update_set .
 
-    $default  reduce using rule 94 (update_set_list)
+    $default  reduce using rule 96 (update_set_list)
 
 
 State 311
 
-   92 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where . opt_current_of opt_option
+   94 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where . opt_current_of opt_option
 
     CURRENT  shift, and go to state 370
 
-    $default  reduce using rule 98 (opt_current_of)
+    $default  reduce using rule 100 (opt_current_of)
 
     opt_current_of  go to state 371
 
 
 State 312
 
-  128 query_hint: ORDER GROUP .
+  130 query_hint: ORDER GROUP .
 
-    $default  reduce using rule 128 (query_hint)
+    $default  reduce using rule 130 (query_hint)
 
 
 State 313
 
-  125 query_option: LABEL EQUAL . STRING
+  127 query_option: LABEL EQUAL . STRING
 
     STRING  shift, and go to state 372
 
 
 State 314
 
-  127 query_hint: HASH GROUP .
-
-    $default  reduce using rule 127 (query_hint)
-
-
-State 315
-
-  134 query_hint: HASH JOIN .
-
-    $default  reduce using rule 134 (query_hint)
-
-
-State 316
-
-  130 query_hint: HASH UNION .
-
-    $default  reduce using rule 130 (query_hint)
-
-
-State 317
-
-  132 query_hint: LOOP JOIN .
-
-    $default  reduce using rule 132 (query_hint)
-
-
-State 318
-
-  133 query_hint: MERGE JOIN .
-
-    $default  reduce using rule 133 (query_hint)
-
-
-State 319
-
-  131 query_hint: MERGE UNION .
-
-    $default  reduce using rule 131 (query_hint)
-
-
-State 320
-
-  137 query_hint: FORCE ORDER .
-
-    $default  reduce using rule 137 (query_hint)
-
-
-State 321
-
-  138 query_hint: FORCE EXTERNALPUSHDOWN .
-
-    $default  reduce using rule 138 (query_hint)
-
-
-State 322
-
-  140 query_hint: FORCE SCALEOUTEXECUTION .
-
-    $default  reduce using rule 140 (query_hint)
-
-
-State 323
-
-  139 query_hint: DISABLE EXTERNALPUSHDOWN .
-
-    $default  reduce using rule 139 (query_hint)
-
-
-State 324
-
-  141 query_hint: DISABLE SCALEOUTEXECUTION .
-
-    $default  reduce using rule 141 (query_hint)
-
-
-State 325
-
-  129 query_hint: CONCAT UNION .
+  129 query_hint: HASH GROUP .
 
     $default  reduce using rule 129 (query_hint)
 
 
-State 326
+State 315
 
-  143 query_hint: KEEP PLAN .
+  136 query_hint: HASH JOIN .
+
+    $default  reduce using rule 136 (query_hint)
+
+
+State 316
+
+  132 query_hint: HASH UNION .
+
+    $default  reduce using rule 132 (query_hint)
+
+
+State 317
+
+  134 query_hint: LOOP JOIN .
+
+    $default  reduce using rule 134 (query_hint)
+
+
+State 318
+
+  135 query_hint: MERGE JOIN .
+
+    $default  reduce using rule 135 (query_hint)
+
+
+State 319
+
+  133 query_hint: MERGE UNION .
+
+    $default  reduce using rule 133 (query_hint)
+
+
+State 320
+
+  139 query_hint: FORCE ORDER .
+
+    $default  reduce using rule 139 (query_hint)
+
+
+State 321
+
+  140 query_hint: FORCE EXTERNALPUSHDOWN .
+
+    $default  reduce using rule 140 (query_hint)
+
+
+State 322
+
+  142 query_hint: FORCE SCALEOUTEXECUTION .
+
+    $default  reduce using rule 142 (query_hint)
+
+
+State 323
+
+  141 query_hint: DISABLE EXTERNALPUSHDOWN .
+
+    $default  reduce using rule 141 (query_hint)
+
+
+State 324
+
+  143 query_hint: DISABLE SCALEOUTEXECUTION .
 
     $default  reduce using rule 143 (query_hint)
 
 
+State 325
+
+  131 query_hint: CONCAT UNION .
+
+    $default  reduce using rule 131 (query_hint)
+
+
+State 326
+
+  145 query_hint: KEEP PLAN .
+
+    $default  reduce using rule 145 (query_hint)
+
+
 State 327
 
-  144 query_hint: KEEPFIXED PLAN .
+  146 query_hint: KEEPFIXED PLAN .
 
-    $default  reduce using rule 144 (query_hint)
+    $default  reduce using rule 146 (query_hint)
 
 
 State 328
 
-  145 query_hint: MAX_GRANT_PERCENT '=' . INTNUMBER
+  147 query_hint: MAX_GRANT_PERCENT '=' . INTNUMBER
 
     INTNUMBER  shift, and go to state 373
 
 
 State 329
 
-  146 query_hint: MIN_GRANT_PERCENT '=' . INTNUMBER
+  148 query_hint: MIN_GRANT_PERCENT '=' . INTNUMBER
 
     INTNUMBER  shift, and go to state 374
 
 
 State 330
 
-  147 query_hint: MAXDOP INTNUMBER .
+  149 query_hint: MAXDOP INTNUMBER .
 
-    $default  reduce using rule 147 (query_hint)
+    $default  reduce using rule 149 (query_hint)
 
 
 State 331
 
-  148 query_hint: MAXRECURSION INTNUMBER .
+  150 query_hint: MAXRECURSION INTNUMBER .
 
-    $default  reduce using rule 148 (query_hint)
+    $default  reduce using rule 150 (query_hint)
 
 
 State 332
 
-  150 query_hint: OPTIMIZE FOR . UNKNOWN
+  152 query_hint: OPTIMIZE FOR . UNKNOWN
 
     UNKNOWN  shift, and go to state 375
 
 
 State 333
 
-  151 query_hint: PARAMETERIZATION SIMPLE .
-
-    $default  reduce using rule 151 (query_hint)
-
-
-State 334
-
-  152 query_hint: PARAMETERIZATION FORCED .
-
-    $default  reduce using rule 152 (query_hint)
-
-
-State 335
-
-  153 query_hint: QUERYTRACEON INTNUMBER .
+  153 query_hint: PARAMETERIZATION SIMPLE .
 
     $default  reduce using rule 153 (query_hint)
 
 
-State 336
+State 334
 
-  155 query_hint: ROBUST PLAN .
+  154 query_hint: PARAMETERIZATION FORCED .
+
+    $default  reduce using rule 154 (query_hint)
+
+
+State 335
+
+  155 query_hint: QUERYTRACEON INTNUMBER .
 
     $default  reduce using rule 155 (query_hint)
 
 
+State 336
+
+  157 query_hint: ROBUST PLAN .
+
+    $default  reduce using rule 157 (query_hint)
+
+
 State 337
 
-  135 query_hint: EXPAND VIEWS .
+  137 query_hint: EXPAND VIEWS .
 
-    $default  reduce using rule 135 (query_hint)
+    $default  reduce using rule 137 (query_hint)
 
 
 State 338
 
-  136 query_hint: FAST INTNUMBER .
+  138 query_hint: FAST INTNUMBER .
 
-    $default  reduce using rule 136 (query_hint)
+    $default  reduce using rule 138 (query_hint)
 
 
 State 339
 
-  122 opt_option: OPTION '(' query_option_list ')' .
+  124 opt_option: OPTION '(' query_option_list ')' .
 
-    $default  reduce using rule 122 (opt_option)
+    $default  reduce using rule 124 (opt_option)
 
 
 State 340
 
-  124 query_option_list: query_option_list ',' . query_option
+  126 query_option_list: query_option_list ',' . query_option
 
     ORDER                                  shift, and go to state 233
     LABEL                                  shift, and go to state 234
@@ -4514,9 +4520,9 @@ State 340
 
 State 341
 
-  103 object: NAME '.' NAME '.' NAME '.' NAME .
+  105 object: NAME '.' NAME '.' NAME '.' NAME .
 
-    $default  reduce using rule 103 (object)
+    $default  reduce using rule 105 (object)
 
 
 State 342
@@ -4542,7 +4548,7 @@ State 344
 
 State 345
 
-   44 column_definition: NAME data_type opt_filestream opt_collate . opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME data_type opt_filestream opt_collate . opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
     SPARSE  shift, and go to state 379
 
@@ -4553,58 +4559,58 @@ State 345
 
 State 346
 
-   70 primary_key: PRIMARY KEY opt_clustered . opt_on
+   72 primary_key: PRIMARY KEY opt_clustered . opt_on
 
     ON  shift, and go to state 347
 
-    $default  reduce using rule 75 (opt_on)
+    $default  reduce using rule 77 (opt_on)
 
     opt_on  go to state 381
 
 
 State 347
 
-   76 opt_on: ON . NAME '(' NAME ')'
+   78 opt_on: ON . NAME '(' NAME ')'
 
     NAME  shift, and go to state 382
 
 
 State 348
 
-   71 primary_key: UNIQUE opt_clustered opt_on .
+   73 primary_key: UNIQUE opt_clustered opt_on .
 
-    $default  reduce using rule 71 (primary_key)
+    $default  reduce using rule 73 (primary_key)
 
 
 State 349
 
-   77 foreign_key: FOREIGN KEY opt_column_name_list . REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   79 foreign_key: FOREIGN KEY opt_column_name_list . REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
     REFERENCES  shift, and go to state 383
 
 
 State 350
 
-   78 foreign_key: REFERENCES object opt_column_name_list . opt_on_delete opt_on_update opt_not_for_replication
+   80 foreign_key: REFERENCES object opt_column_name_list . opt_on_delete opt_on_update opt_not_for_replication
 
     ON  shift, and go to state 384
 
-    ON        [reduce using rule 79 (opt_on_delete)]
-    $default  reduce using rule 79 (opt_on_delete)
+    ON        [reduce using rule 81 (opt_on_delete)]
+    $default  reduce using rule 81 (opt_on_delete)
 
     opt_on_delete  go to state 385
 
 
 State 351
 
-   55 opt_not_for_replication: NOT FOR . REPLICATION
+   57 opt_not_for_replication: NOT FOR . REPLICATION
 
     REPLICATION  shift, and go to state 386
 
 
 State 352
 
-   89 check: CHECK opt_not_for_replication '(' . expr ')'
+   91 check: CHECK opt_not_for_replication '(' . expr ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -4695,32 +4701,32 @@ State 357
 
 State 358
 
-  227 opt_groupby: GROUP . BY groupby_list
+  229 opt_groupby: GROUP . BY groupby_list
 
     BY  shift, and go to state 390
 
 
 State 359
 
-  177 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby . opt_having
+  179 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby . opt_having
 
     HAVING  shift, and go to state 391
 
-    $default  reduce using rule 246 (opt_having)
+    $default  reduce using rule 248 (opt_having)
 
     opt_having  go to state 392
 
 
 State 360
 
-  112 values_list: '(' values_options_list ')' .
+  114 values_list: '(' values_options_list ')' .
 
-    $default  reduce using rule 112 (values_list)
+    $default  reduce using rule 114 (values_list)
 
 
 State 361
 
-  115 values_options_list: values_options_list ',' . values_options
+  117 values_options_list: values_options_list ',' . values_options
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -4737,7 +4743,7 @@ State 361
 
 State 362
 
-  113 values_list: values_list ',' '(' . values_options_list ')'
+  115 values_list: values_list ',' '(' . values_options_list ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -4755,23 +4761,23 @@ State 362
 
 State 363
 
-  202 from_statement: NAME '.' NAME opt_as_alias .
+  204 from_statement: NAME '.' NAME opt_as_alias .
 
-    $default  reduce using rule 202 (from_statement)
+    $default  reduce using rule 204 (from_statement)
 
 
 State 364
 
-  206 joined_table: NAME cross_outer APPLY NAME .
+  208 joined_table: NAME cross_outer APPLY NAME .
 
-    $default  reduce using rule 206 (joined_table)
+    $default  reduce using rule 208 (joined_table)
 
 
 State 365
 
-  204 joined_table: from_statement . join_type from_statement ON expr
-  205             | from_statement . CROSS JOIN from_statement
-  205             | from_statement CROSS JOIN from_statement .
+  206 joined_table: from_statement . join_type from_statement ON expr
+  207             | from_statement . CROSS JOIN from_statement
+  207             | from_statement CROSS JOIN from_statement .
 
     INNER  shift, and go to state 218
     RIGHT  shift, and go to state 219
@@ -4779,20 +4785,20 @@ State 365
     FULL   shift, and go to state 221
     CROSS  shift, and go to state 222
 
-    JOIN          reduce using rule 205 (joined_table)
-    JOIN          [reduce using rule 209 (opt_join_type)]
-    INNER         [reduce using rule 205 (joined_table)]
-    RIGHT         [reduce using rule 205 (joined_table)]
-    LEFT          [reduce using rule 205 (joined_table)]
-    FULL          [reduce using rule 205 (joined_table)]
-    REDUCE        reduce using rule 205 (joined_table)
-    REDUCE        [reduce using rule 209 (opt_join_type)]
-    REPLICATE     reduce using rule 205 (joined_table)
-    REPLICATE     [reduce using rule 209 (opt_join_type)]
-    REDISTRIBUTE  reduce using rule 205 (joined_table)
-    REDISTRIBUTE  [reduce using rule 209 (opt_join_type)]
-    CROSS         [reduce using rule 205 (joined_table)]
-    $default      reduce using rule 205 (joined_table)
+    JOIN          reduce using rule 207 (joined_table)
+    JOIN          [reduce using rule 211 (opt_join_type)]
+    INNER         [reduce using rule 207 (joined_table)]
+    RIGHT         [reduce using rule 207 (joined_table)]
+    LEFT          [reduce using rule 207 (joined_table)]
+    FULL          [reduce using rule 207 (joined_table)]
+    REDUCE        reduce using rule 207 (joined_table)
+    REDUCE        [reduce using rule 211 (opt_join_type)]
+    REPLICATE     reduce using rule 207 (joined_table)
+    REPLICATE     [reduce using rule 211 (opt_join_type)]
+    REDISTRIBUTE  reduce using rule 207 (joined_table)
+    REDISTRIBUTE  [reduce using rule 211 (opt_join_type)]
+    CROSS         [reduce using rule 207 (joined_table)]
+    $default      reduce using rule 207 (joined_table)
 
     join_type      go to state 223
     opt_join_type  go to state 224
@@ -4800,7 +4806,7 @@ State 365
 
 State 366
 
-  204 joined_table: from_statement join_type from_statement ON . expr
+  206 joined_table: from_statement join_type from_statement ON . expr
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -4814,14 +4820,14 @@ State 366
 
 State 367
 
-  208 join_type: opt_join_type opt_join_hint JOIN .
+  210 join_type: opt_join_type opt_join_hint JOIN .
 
-    $default  reduce using rule 208 (join_type)
+    $default  reduce using rule 210 (join_type)
 
 
 State 368
 
-  225 opt_where: WHERE NOT EXISTS '(' . query_expression ')'
+  227 opt_where: WHERE NOT EXISTS '(' . query_expression ')'
 
     SELECT  shift, and go to state 17
     '('     shift, and go to state 21
@@ -4832,63 +4838,63 @@ State 368
 
 State 369
 
-  224 opt_where: WHERE EXISTS '(' query_expression . ')'
+  226 opt_where: WHERE EXISTS '(' query_expression . ')'
 
     ')'  shift, and go to state 397
 
 
 State 370
 
-   99 opt_current_of: CURRENT . OF NAME
-  100               | CURRENT . OF GLOBAL NAME
+  101 opt_current_of: CURRENT . OF NAME
+  102               | CURRENT . OF GLOBAL NAME
 
     OF  shift, and go to state 398
 
 
 State 371
 
-   92 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of . opt_option
+   94 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of . opt_option
 
     OPTION  shift, and go to state 97
 
-    $default  reduce using rule 121 (opt_option)
+    $default  reduce using rule 123 (opt_option)
 
     opt_option  go to state 399
 
 
 State 372
 
-  125 query_option: LABEL EQUAL STRING .
+  127 query_option: LABEL EQUAL STRING .
 
-    $default  reduce using rule 125 (query_option)
+    $default  reduce using rule 127 (query_option)
 
 
 State 373
 
-  145 query_hint: MAX_GRANT_PERCENT '=' INTNUMBER .
+  147 query_hint: MAX_GRANT_PERCENT '=' INTNUMBER .
 
-    $default  reduce using rule 145 (query_hint)
+    $default  reduce using rule 147 (query_hint)
 
 
 State 374
 
-  146 query_hint: MIN_GRANT_PERCENT '=' INTNUMBER .
+  148 query_hint: MIN_GRANT_PERCENT '=' INTNUMBER .
 
-    $default  reduce using rule 146 (query_hint)
+    $default  reduce using rule 148 (query_hint)
 
 
 State 375
 
-  150 query_hint: OPTIMIZE FOR UNKNOWN .
+  152 query_hint: OPTIMIZE FOR UNKNOWN .
 
-    $default  reduce using rule 150 (query_hint)
+    $default  reduce using rule 152 (query_hint)
 
 
 State 376
 
-  124 query_option_list: query_option_list ',' query_option .
+  126 query_option_list: query_option_list ',' query_option .
 
-    $default  reduce using rule 124 (query_option_list)
+    $default  reduce using rule 126 (query_option_list)
 
 
 State 377
@@ -4914,65 +4920,67 @@ State 379
 
 State 380
 
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse . opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse . opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
-    NOT  shift, and go to state 272
+    CONSTRAINT  shift, and go to state 104
 
-    NOT       [reduce using rule 54 (opt_not_for_replication)]
-    $default  reduce using rule 54 (opt_not_for_replication)
+    DEFAULT     reduce using rule 70 (opt_constraint)
+    CONSTRAINT  [reduce using rule 54 (opt_default)]
+    $default    reduce using rule 54 (opt_default)
 
-    opt_not_for_replication  go to state 400
+    opt_default     go to state 400
+    opt_constraint  go to state 401
 
 
 State 381
 
-   70 primary_key: PRIMARY KEY opt_clustered opt_on .
+   72 primary_key: PRIMARY KEY opt_clustered opt_on .
 
-    $default  reduce using rule 70 (primary_key)
+    $default  reduce using rule 72 (primary_key)
 
 
 State 382
 
-   76 opt_on: ON NAME . '(' NAME ')'
+   78 opt_on: ON NAME . '(' NAME ')'
 
-    '('  shift, and go to state 401
+    '('  shift, and go to state 402
 
 
 State 383
 
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES . object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES . object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
     NAME  shift, and go to state 28
 
-    object  go to state 402
+    object  go to state 403
 
 
 State 384
 
-   80 opt_on_delete: ON . DELETE NO ACTION
-   81              | ON . DELETE CASCADE
-   82              | ON . DELETE SET NULLX
-   83              | ON . DELETE SET DEFAULT
+   82 opt_on_delete: ON . DELETE NO ACTION
+   83              | ON . DELETE CASCADE
+   84              | ON . DELETE SET NULLX
+   85              | ON . DELETE SET DEFAULT
 
-    DELETE  shift, and go to state 403
+    DELETE  shift, and go to state 404
 
 
 State 385
 
-   78 foreign_key: REFERENCES object opt_column_name_list opt_on_delete . opt_on_update opt_not_for_replication
+   80 foreign_key: REFERENCES object opt_column_name_list opt_on_delete . opt_on_update opt_not_for_replication
 
-    ON  shift, and go to state 404
+    ON  shift, and go to state 405
 
-    $default  reduce using rule 84 (opt_on_update)
+    $default  reduce using rule 86 (opt_on_update)
 
-    opt_on_update  go to state 405
+    opt_on_update  go to state 406
 
 
 State 386
 
-   55 opt_not_for_replication: NOT FOR REPLICATION .
+   57 opt_not_for_replication: NOT FOR REPLICATION .
 
-    $default  reduce using rule 55 (opt_not_for_replication)
+    $default  reduce using rule 57 (opt_not_for_replication)
 
 
 State 387
@@ -4993,7 +5001,7 @@ State 387
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-   89 check: CHECK opt_not_for_replication '(' expr . ')'
+   91 check: CHECK opt_not_for_replication '(' expr . ')'
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -5008,7 +5016,7 @@ State 387
     '-'         shift, and go to state 126
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
-    ')'         shift, and go to state 406
+    ')'         shift, and go to state 407
 
 
 State 388
@@ -5061,26 +5069,26 @@ State 389
 
 State 390
 
-  227 opt_groupby: GROUP BY . groupby_list
+  229 opt_groupby: GROUP BY . groupby_list
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
     APPROXNUM  shift, and go to state 77
     STRING     shift, and go to state 78
-    ROLLUP     shift, and go to state 407
-    CUBE       shift, and go to state 408
-    GROUPING   shift, and go to state 409
+    ROLLUP     shift, and go to state 408
+    CUBE       shift, and go to state 409
+    GROUPING   shift, and go to state 410
     USERVAR    shift, and go to state 79
-    '('        shift, and go to state 410
+    '('        shift, and go to state 411
 
-    expr               go to state 411
-    groupby_list       go to state 412
-    groupby_statement  go to state 413
+    expr               go to state 412
+    groupby_list       go to state 413
+    groupby_statement  go to state 414
 
 
 State 391
 
-  247 opt_having: HAVING . expr
+  249 opt_having: HAVING . expr
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -5089,29 +5097,29 @@ State 391
     USERVAR    shift, and go to state 79
     '('        shift, and go to state 81
 
-    expr  go to state 414
+    expr  go to state 415
 
 
 State 392
 
-  177 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having .
+  179 query_specification: SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having .
 
-    $default  reduce using rule 177 (query_specification)
+    $default  reduce using rule 179 (query_specification)
 
 
 State 393
 
-  115 values_options_list: values_options_list ',' values_options .
+  117 values_options_list: values_options_list ',' values_options .
 
-    $default  reduce using rule 115 (values_options_list)
+    $default  reduce using rule 117 (values_options_list)
 
 
 State 394
 
-  113 values_list: values_list ',' '(' values_options_list . ')'
-  115 values_options_list: values_options_list . ',' values_options
+  115 values_list: values_list ',' '(' values_options_list . ')'
+  117 values_options_list: values_options_list . ',' values_options
 
-    ')'  shift, and go to state 415
+    ')'  shift, and go to state 416
     ','  shift, and go to state 361
 
 
@@ -5133,7 +5141,7 @@ State 395
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  204 joined_table: from_statement join_type from_statement ON expr .
+  206 joined_table: from_statement join_type from_statement ON expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -5149,134 +5157,141 @@ State 395
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 204 (joined_table)
+    $default  reduce using rule 206 (joined_table)
 
 
 State 396
 
-  225 opt_where: WHERE NOT EXISTS '(' query_expression . ')'
+  227 opt_where: WHERE NOT EXISTS '(' query_expression . ')'
 
-    ')'  shift, and go to state 416
+    ')'  shift, and go to state 417
 
 
 State 397
 
-  224 opt_where: WHERE EXISTS '(' query_expression ')' .
+  226 opt_where: WHERE EXISTS '(' query_expression ')' .
 
-    $default  reduce using rule 224 (opt_where)
+    $default  reduce using rule 226 (opt_where)
 
 
 State 398
 
-   99 opt_current_of: CURRENT OF . NAME
-  100               | CURRENT OF . GLOBAL NAME
+  101 opt_current_of: CURRENT OF . NAME
+  102               | CURRENT OF . GLOBAL NAME
 
-    NAME    shift, and go to state 417
-    GLOBAL  shift, and go to state 418
+    NAME    shift, and go to state 418
+    GLOBAL  shift, and go to state 419
 
 
 State 399
 
-   92 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option .
+   94 update_statement: opt_with UPDATE top_options object SET update_set_list opt_from_list opt_where opt_current_of opt_option .
 
-    $default  reduce using rule 92 (update_statement)
+    $default  reduce using rule 94 (update_statement)
 
 
 State 400
 
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication . opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_default . opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index
 
-    NOT    shift, and go to state 419
-    NULLX  shift, and go to state 420
+    NOT    shift, and go to state 420
+    NULLX  shift, and go to state 421
 
-    $default  reduce using rule 56 (opt_null_or_not)
+    $default  reduce using rule 58 (opt_null_or_not)
 
-    opt_null_or_not  go to state 421
+    opt_null_or_not  go to state 422
 
 
 State 401
 
-   76 opt_on: ON NAME '(' . NAME ')'
+   55 opt_default: opt_constraint . DEFAULT expr
 
-    NAME  shift, and go to state 422
+    DEFAULT  shift, and go to state 423
 
 
 State 402
 
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object . opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
+   78 opt_on: ON NAME '(' . NAME ')'
 
-    '('  shift, and go to state 24
-
-    $default  reduce using rule 161 (opt_column_name_list)
-
-    opt_column_name_list  go to state 423
+    NAME  shift, and go to state 424
 
 
 State 403
 
-   80 opt_on_delete: ON DELETE . NO ACTION
-   81              | ON DELETE . CASCADE
-   82              | ON DELETE . SET NULLX
-   83              | ON DELETE . SET DEFAULT
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object . opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication
 
-    SET      shift, and go to state 424
-    NO       shift, and go to state 425
-    CASCADE  shift, and go to state 426
+    '('  shift, and go to state 24
+
+    $default  reduce using rule 163 (opt_column_name_list)
+
+    opt_column_name_list  go to state 425
 
 
 State 404
 
-   85 opt_on_update: ON . UPDATE NO ACTION
-   86              | ON . UPDATE CASCADE
-   87              | ON . UPDATE SET NULLX
-   88              | ON . UPDATE SET DEFAULT
+   82 opt_on_delete: ON DELETE . NO ACTION
+   83              | ON DELETE . CASCADE
+   84              | ON DELETE . SET NULLX
+   85              | ON DELETE . SET DEFAULT
 
-    UPDATE  shift, and go to state 427
+    SET      shift, and go to state 426
+    NO       shift, and go to state 427
+    CASCADE  shift, and go to state 428
 
 
 State 405
 
-   78 foreign_key: REFERENCES object opt_column_name_list opt_on_delete opt_on_update . opt_not_for_replication
+   87 opt_on_update: ON . UPDATE NO ACTION
+   88              | ON . UPDATE CASCADE
+   89              | ON . UPDATE SET NULLX
+   90              | ON . UPDATE SET DEFAULT
 
-    NOT  shift, and go to state 272
-
-    $default  reduce using rule 54 (opt_not_for_replication)
-
-    opt_not_for_replication  go to state 428
+    UPDATE  shift, and go to state 429
 
 
 State 406
 
-   89 check: CHECK opt_not_for_replication '(' expr ')' .
+   80 foreign_key: REFERENCES object opt_column_name_list opt_on_delete opt_on_update . opt_not_for_replication
 
-    $default  reduce using rule 89 (check)
+    NOT  shift, and go to state 272
+
+    $default  reduce using rule 56 (opt_not_for_replication)
+
+    opt_not_for_replication  go to state 430
 
 
 State 407
 
-  231 groupby_statement: ROLLUP . '(' groupby_expr_list ')'
+   91 check: CHECK opt_not_for_replication '(' expr ')' .
 
-    '('  shift, and go to state 429
+    $default  reduce using rule 91 (check)
 
 
 State 408
 
-  232 groupby_statement: CUBE . '(' groupby_expr_list ')'
+  233 groupby_statement: ROLLUP . '(' groupby_expr_list ')'
 
-    '('  shift, and go to state 430
+    '('  shift, and go to state 431
 
 
 State 409
 
-  233 groupby_statement: GROUPING . SETS '(' grouping_set ')'
+  234 groupby_statement: CUBE . '(' groupby_expr_list ')'
 
-    SETS  shift, and go to state 431
+    '('  shift, and go to state 432
 
 
 State 410
 
+  235 groupby_statement: GROUPING . SETS '(' grouping_set ')'
+
+    SETS  shift, and go to state 433
+
+
+State 411
+
    14 expr: '(' . expr ')'
-  234 groupby_statement: '(' . ')'
+  236 groupby_statement: '(' . ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -5284,12 +5299,12 @@ State 410
     STRING     shift, and go to state 78
     USERVAR    shift, and go to state 79
     '('        shift, and go to state 81
-    ')'        shift, and go to state 432
+    ')'        shift, and go to state 434
 
     expr  go to state 115
 
 
-State 411
+State 412
 
    15 expr: expr . '+' expr
    16     | expr . '-' expr
@@ -5307,7 +5322,7 @@ State 411
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  230 groupby_statement: expr .
+  232 groupby_statement: expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -5323,358 +5338,294 @@ State 411
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 230 (groupby_statement)
-
-
-State 412
-
-  227 opt_groupby: GROUP BY groupby_list .
-  229 groupby_list: groupby_list . ',' groupby_statement
-
-    ','  shift, and go to state 433
-
-    $default  reduce using rule 227 (opt_groupby)
+    $default  reduce using rule 232 (groupby_statement)
 
 
 State 413
 
-  228 groupby_list: groupby_statement .
+  229 opt_groupby: GROUP BY groupby_list .
+  231 groupby_list: groupby_list . ',' groupby_statement
 
-    $default  reduce using rule 228 (groupby_list)
+    ','  shift, and go to state 435
+
+    $default  reduce using rule 229 (opt_groupby)
 
 
 State 414
 
-   15 expr: expr . '+' expr
-   16     | expr . '-' expr
-   17     | expr . '*' expr
-   18     | expr . '/' expr
-   19     | expr . COMPARISON expr
-   20     | expr . EQUAL expr
-   21     | expr . AND expr
-   22     | expr . OR expr
-   26     | expr . LIKE expr
-   27     | expr . NOT LIKE expr
-   28     | expr . IN '(' val_list ')'
-   29     | expr . NOT IN '(' val_list ')'
-   30     | expr . BETWEEN expr AND expr
-   31     | expr . NOT BETWEEN expr AND expr
-   32     | expr . IS NULLX
-   33     | expr . IS NOT NULLX
-  247 opt_having: HAVING expr .
+  230 groupby_list: groupby_statement .
 
-    LIKE        shift, and go to state 116
-    AND         shift, and go to state 117
-    OR          shift, and go to state 118
-    IN          shift, and go to state 119
-    IS          shift, and go to state 120
-    NOT         shift, and go to state 121
-    EQUAL       shift, and go to state 122
-    BETWEEN     shift, and go to state 123
-    COMPARISON  shift, and go to state 124
-    '+'         shift, and go to state 125
-    '-'         shift, and go to state 126
-    '*'         shift, and go to state 127
-    '/'         shift, and go to state 128
-
-    $default  reduce using rule 247 (opt_having)
+    $default  reduce using rule 230 (groupby_list)
 
 
 State 415
 
-  113 values_list: values_list ',' '(' values_options_list ')' .
+   15 expr: expr . '+' expr
+   16     | expr . '-' expr
+   17     | expr . '*' expr
+   18     | expr . '/' expr
+   19     | expr . COMPARISON expr
+   20     | expr . EQUAL expr
+   21     | expr . AND expr
+   22     | expr . OR expr
+   26     | expr . LIKE expr
+   27     | expr . NOT LIKE expr
+   28     | expr . IN '(' val_list ')'
+   29     | expr . NOT IN '(' val_list ')'
+   30     | expr . BETWEEN expr AND expr
+   31     | expr . NOT BETWEEN expr AND expr
+   32     | expr . IS NULLX
+   33     | expr . IS NOT NULLX
+  249 opt_having: HAVING expr .
 
-    $default  reduce using rule 113 (values_list)
+    LIKE        shift, and go to state 116
+    AND         shift, and go to state 117
+    OR          shift, and go to state 118
+    IN          shift, and go to state 119
+    IS          shift, and go to state 120
+    NOT         shift, and go to state 121
+    EQUAL       shift, and go to state 122
+    BETWEEN     shift, and go to state 123
+    COMPARISON  shift, and go to state 124
+    '+'         shift, and go to state 125
+    '-'         shift, and go to state 126
+    '*'         shift, and go to state 127
+    '/'         shift, and go to state 128
+
+    $default  reduce using rule 249 (opt_having)
 
 
 State 416
 
-  225 opt_where: WHERE NOT EXISTS '(' query_expression ')' .
+  115 values_list: values_list ',' '(' values_options_list ')' .
 
-    $default  reduce using rule 225 (opt_where)
+    $default  reduce using rule 115 (values_list)
 
 
 State 417
 
-   99 opt_current_of: CURRENT OF NAME .
+  227 opt_where: WHERE NOT EXISTS '(' query_expression ')' .
 
-    $default  reduce using rule 99 (opt_current_of)
+    $default  reduce using rule 227 (opt_where)
 
 
 State 418
 
-  100 opt_current_of: CURRENT OF GLOBAL . NAME
+  101 opt_current_of: CURRENT OF NAME .
 
-    NAME  shift, and go to state 434
+    $default  reduce using rule 101 (opt_current_of)
 
 
 State 419
 
-   58 opt_null_or_not: NOT . NULLX
+  102 opt_current_of: CURRENT OF GLOBAL . NAME
 
-    NULLX  shift, and go to state 435
+    NAME  shift, and go to state 436
 
 
 State 420
 
-   57 opt_null_or_not: NULLX .
+   60 opt_null_or_not: NOT . NULLX
 
-    $default  reduce using rule 57 (opt_null_or_not)
+    NULLX  shift, and go to state 437
 
 
 State 421
 
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not . opt_rowguidcol opt_column_constraint_list opt_column_index
+   59 opt_null_or_not: NULLX .
 
-    ROWGUIDCOL  shift, and go to state 436
-
-    $default  reduce using rule 59 (opt_rowguidcol)
-
-    opt_rowguidcol  go to state 437
+    $default  reduce using rule 59 (opt_null_or_not)
 
 
 State 422
 
-   76 opt_on: ON NAME '(' NAME . ')'
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not . opt_rowguidcol opt_column_constraint_list opt_column_index
 
-    ')'  shift, and go to state 438
+    ROWGUIDCOL  shift, and go to state 438
+
+    $default  reduce using rule 61 (opt_rowguidcol)
+
+    opt_rowguidcol  go to state 439
 
 
 State 423
 
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list . opt_on_delete opt_on_update opt_not_for_replication
+   55 opt_default: opt_constraint DEFAULT . expr
 
-    ON  shift, and go to state 384
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 81
 
-    ON        [reduce using rule 79 (opt_on_delete)]
-    $default  reduce using rule 79 (opt_on_delete)
-
-    opt_on_delete  go to state 439
+    expr  go to state 440
 
 
 State 424
 
-   82 opt_on_delete: ON DELETE SET . NULLX
-   83              | ON DELETE SET . DEFAULT
+   78 opt_on: ON NAME '(' NAME . ')'
 
-    NULLX    shift, and go to state 440
-    DEFAULT  shift, and go to state 441
+    ')'  shift, and go to state 441
 
 
 State 425
 
-   80 opt_on_delete: ON DELETE NO . ACTION
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list . opt_on_delete opt_on_update opt_not_for_replication
 
-    ACTION  shift, and go to state 442
+    ON  shift, and go to state 384
+
+    ON        [reduce using rule 81 (opt_on_delete)]
+    $default  reduce using rule 81 (opt_on_delete)
+
+    opt_on_delete  go to state 442
 
 
 State 426
 
-   81 opt_on_delete: ON DELETE CASCADE .
+   84 opt_on_delete: ON DELETE SET . NULLX
+   85              | ON DELETE SET . DEFAULT
 
-    $default  reduce using rule 81 (opt_on_delete)
+    NULLX    shift, and go to state 443
+    DEFAULT  shift, and go to state 444
 
 
 State 427
 
-   85 opt_on_update: ON UPDATE . NO ACTION
-   86              | ON UPDATE . CASCADE
-   87              | ON UPDATE . SET NULLX
-   88              | ON UPDATE . SET DEFAULT
+   82 opt_on_delete: ON DELETE NO . ACTION
 
-    SET      shift, and go to state 443
-    NO       shift, and go to state 444
-    CASCADE  shift, and go to state 445
+    ACTION  shift, and go to state 445
 
 
 State 428
 
-   78 foreign_key: REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication .
-
-    $default  reduce using rule 78 (foreign_key)
-
-
-State 429
-
-  231 groupby_statement: ROLLUP '(' . groupby_expr_list ')'
-
-    NAME       shift, and go to state 85
-    INTNUMBER  shift, and go to state 76
-    APPROXNUM  shift, and go to state 77
-    STRING     shift, and go to state 78
-    USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
-
-    expr               go to state 447
-    groupby_expr_list  go to state 448
-    groupby_expr       go to state 449
-
-
-State 430
-
-  232 groupby_statement: CUBE '(' . groupby_expr_list ')'
-
-    NAME       shift, and go to state 85
-    INTNUMBER  shift, and go to state 76
-    APPROXNUM  shift, and go to state 77
-    STRING     shift, and go to state 78
-    USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
-
-    expr               go to state 447
-    groupby_expr_list  go to state 450
-    groupby_expr       go to state 449
-
-
-State 431
-
-  233 groupby_statement: GROUPING SETS . '(' grouping_set ')'
-
-    '('  shift, and go to state 451
-
-
-State 432
-
-  234 groupby_statement: '(' ')' .
-
-    $default  reduce using rule 234 (groupby_statement)
-
-
-State 433
-
-  229 groupby_list: groupby_list ',' . groupby_statement
-
-    NAME       shift, and go to state 85
-    INTNUMBER  shift, and go to state 76
-    APPROXNUM  shift, and go to state 77
-    STRING     shift, and go to state 78
-    ROLLUP     shift, and go to state 407
-    CUBE       shift, and go to state 408
-    GROUPING   shift, and go to state 409
-    USERVAR    shift, and go to state 79
-    '('        shift, and go to state 410
-
-    expr               go to state 411
-    groupby_statement  go to state 452
-
-
-State 434
-
-  100 opt_current_of: CURRENT OF GLOBAL NAME .
-
-    $default  reduce using rule 100 (opt_current_of)
-
-
-State 435
-
-   58 opt_null_or_not: NOT NULLX .
-
-    $default  reduce using rule 58 (opt_null_or_not)
-
-
-State 436
-
-   60 opt_rowguidcol: ROWGUIDCOL .
-
-    $default  reduce using rule 60 (opt_rowguidcol)
-
-
-State 437
-
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol . opt_column_constraint_list opt_column_index
-
-    CONSTRAINT  shift, and go to state 104
-
-    INDEX     reduce using rule 61 (opt_column_constraint_list)
-    ')'       reduce using rule 61 (opt_column_constraint_list)
-    ','       reduce using rule 61 (opt_column_constraint_list)
-    $default  reduce using rule 68 (opt_constraint)
-
-    opt_column_constraint_list  go to state 453
-    column_straint_list         go to state 454
-    column_straint              go to state 108
-    opt_constraint              go to state 109
-
-
-State 438
-
-   76 opt_on: ON NAME '(' NAME ')' .
-
-    $default  reduce using rule 76 (opt_on)
-
-
-State 439
-
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete . opt_on_update opt_not_for_replication
-
-    ON  shift, and go to state 404
-
-    $default  reduce using rule 84 (opt_on_update)
-
-    opt_on_update  go to state 455
-
-
-State 440
-
-   82 opt_on_delete: ON DELETE SET NULLX .
-
-    $default  reduce using rule 82 (opt_on_delete)
-
-
-State 441
-
-   83 opt_on_delete: ON DELETE SET DEFAULT .
+   83 opt_on_delete: ON DELETE CASCADE .
 
     $default  reduce using rule 83 (opt_on_delete)
 
 
-State 442
+State 429
 
-   80 opt_on_delete: ON DELETE NO ACTION .
+   87 opt_on_update: ON UPDATE . NO ACTION
+   88              | ON UPDATE . CASCADE
+   89              | ON UPDATE . SET NULLX
+   90              | ON UPDATE . SET DEFAULT
 
-    $default  reduce using rule 80 (opt_on_delete)
-
-
-State 443
-
-   87 opt_on_update: ON UPDATE SET . NULLX
-   88              | ON UPDATE SET . DEFAULT
-
-    NULLX    shift, and go to state 456
-    DEFAULT  shift, and go to state 457
+    SET      shift, and go to state 446
+    NO       shift, and go to state 447
+    CASCADE  shift, and go to state 448
 
 
-State 444
+State 430
 
-   85 opt_on_update: ON UPDATE NO . ACTION
+   80 foreign_key: REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication .
 
-    ACTION  shift, and go to state 458
-
-
-State 445
-
-   86 opt_on_update: ON UPDATE CASCADE .
-
-    $default  reduce using rule 86 (opt_on_update)
+    $default  reduce using rule 80 (foreign_key)
 
 
-State 446
+State 431
 
-   14 expr: '(' . expr ')'
-  238 groupby_expr: '(' . groupby_expr ',' expr ')'
+  233 groupby_statement: ROLLUP '(' . groupby_expr_list ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
     APPROXNUM  shift, and go to state 77
     STRING     shift, and go to state 78
     USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
+    '('        shift, and go to state 449
 
-    expr          go to state 459
-    groupby_expr  go to state 460
+    expr               go to state 450
+    groupby_expr_list  go to state 451
+    groupby_expr       go to state 452
 
 
-State 447
+State 432
+
+  234 groupby_statement: CUBE '(' . groupby_expr_list ')'
+
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 449
+
+    expr               go to state 450
+    groupby_expr_list  go to state 453
+    groupby_expr       go to state 452
+
+
+State 433
+
+  235 groupby_statement: GROUPING SETS . '(' grouping_set ')'
+
+    '('  shift, and go to state 454
+
+
+State 434
+
+  236 groupby_statement: '(' ')' .
+
+    $default  reduce using rule 236 (groupby_statement)
+
+
+State 435
+
+  231 groupby_list: groupby_list ',' . groupby_statement
+
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    ROLLUP     shift, and go to state 408
+    CUBE       shift, and go to state 409
+    GROUPING   shift, and go to state 410
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 411
+
+    expr               go to state 412
+    groupby_statement  go to state 455
+
+
+State 436
+
+  102 opt_current_of: CURRENT OF GLOBAL NAME .
+
+    $default  reduce using rule 102 (opt_current_of)
+
+
+State 437
+
+   60 opt_null_or_not: NOT NULLX .
+
+    $default  reduce using rule 60 (opt_null_or_not)
+
+
+State 438
+
+   62 opt_rowguidcol: ROWGUIDCOL .
+
+    $default  reduce using rule 62 (opt_rowguidcol)
+
+
+State 439
+
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol . opt_column_constraint_list opt_column_index
+
+    CONSTRAINT  shift, and go to state 104
+
+    INDEX     reduce using rule 63 (opt_column_constraint_list)
+    ')'       reduce using rule 63 (opt_column_constraint_list)
+    ','       reduce using rule 63 (opt_column_constraint_list)
+    $default  reduce using rule 70 (opt_constraint)
+
+    opt_column_constraint_list  go to state 456
+    column_straint_list         go to state 457
+    column_straint              go to state 108
+    opt_constraint              go to state 109
+
+
+State 440
 
    15 expr: expr . '+' expr
    16     | expr . '-' expr
@@ -5692,7 +5643,7 @@ State 447
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  237 groupby_expr: expr .
+   55 opt_default: opt_constraint DEFAULT expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -5708,116 +5659,232 @@ State 447
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
 
-    $default  reduce using rule 237 (groupby_expr)
+    NOT       [reduce using rule 55 (opt_default)]
+    $default  reduce using rule 55 (opt_default)
+
+
+State 441
+
+   78 opt_on: ON NAME '(' NAME ')' .
+
+    $default  reduce using rule 78 (opt_on)
+
+
+State 442
+
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete . opt_on_update opt_not_for_replication
+
+    ON  shift, and go to state 405
+
+    $default  reduce using rule 86 (opt_on_update)
+
+    opt_on_update  go to state 458
+
+
+State 443
+
+   84 opt_on_delete: ON DELETE SET NULLX .
+
+    $default  reduce using rule 84 (opt_on_delete)
+
+
+State 444
+
+   85 opt_on_delete: ON DELETE SET DEFAULT .
+
+    $default  reduce using rule 85 (opt_on_delete)
+
+
+State 445
+
+   82 opt_on_delete: ON DELETE NO ACTION .
+
+    $default  reduce using rule 82 (opt_on_delete)
+
+
+State 446
+
+   89 opt_on_update: ON UPDATE SET . NULLX
+   90              | ON UPDATE SET . DEFAULT
+
+    NULLX    shift, and go to state 459
+    DEFAULT  shift, and go to state 460
+
+
+State 447
+
+   87 opt_on_update: ON UPDATE NO . ACTION
+
+    ACTION  shift, and go to state 461
 
 
 State 448
 
-  231 groupby_statement: ROLLUP '(' groupby_expr_list . ')'
-  236 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+   88 opt_on_update: ON UPDATE CASCADE .
 
-    ')'  shift, and go to state 461
-    ','  shift, and go to state 462
+    $default  reduce using rule 88 (opt_on_update)
 
 
 State 449
 
-  235 groupby_expr_list: groupby_expr .
-
-    $default  reduce using rule 235 (groupby_expr_list)
-
-
-State 450
-
-  232 groupby_statement: CUBE '(' groupby_expr_list . ')'
-  236 groupby_expr_list: groupby_expr_list . ',' groupby_expr
-
-    ')'  shift, and go to state 463
-    ','  shift, and go to state 462
-
-
-State 451
-
-  233 groupby_statement: GROUPING SETS '(' . grouping_set ')'
+   14 expr: '(' . expr ')'
+  240 groupby_expr: '(' . groupby_expr ',' expr ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
     APPROXNUM  shift, and go to state 77
     STRING     shift, and go to state 78
-    ROLLUP     shift, and go to state 464
-    CUBE       shift, and go to state 465
     USERVAR    shift, and go to state 79
-    '('        shift, and go to state 466
+    '('        shift, and go to state 449
 
-    expr                    go to state 447
-    groupby_expr            go to state 467
-    grouping_set            go to state 468
-    grouping_set_item_list  go to state 469
-    grouping_set_item       go to state 470
+    expr          go to state 462
+    groupby_expr  go to state 463
+
+
+State 450
+
+   15 expr: expr . '+' expr
+   16     | expr . '-' expr
+   17     | expr . '*' expr
+   18     | expr . '/' expr
+   19     | expr . COMPARISON expr
+   20     | expr . EQUAL expr
+   21     | expr . AND expr
+   22     | expr . OR expr
+   26     | expr . LIKE expr
+   27     | expr . NOT LIKE expr
+   28     | expr . IN '(' val_list ')'
+   29     | expr . NOT IN '(' val_list ')'
+   30     | expr . BETWEEN expr AND expr
+   31     | expr . NOT BETWEEN expr AND expr
+   32     | expr . IS NULLX
+   33     | expr . IS NOT NULLX
+  239 groupby_expr: expr .
+
+    LIKE        shift, and go to state 116
+    AND         shift, and go to state 117
+    OR          shift, and go to state 118
+    IN          shift, and go to state 119
+    IS          shift, and go to state 120
+    NOT         shift, and go to state 121
+    EQUAL       shift, and go to state 122
+    BETWEEN     shift, and go to state 123
+    COMPARISON  shift, and go to state 124
+    '+'         shift, and go to state 125
+    '-'         shift, and go to state 126
+    '*'         shift, and go to state 127
+    '/'         shift, and go to state 128
+
+    $default  reduce using rule 239 (groupby_expr)
+
+
+State 451
+
+  233 groupby_statement: ROLLUP '(' groupby_expr_list . ')'
+  238 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+
+    ')'  shift, and go to state 464
+    ','  shift, and go to state 465
 
 
 State 452
 
-  229 groupby_list: groupby_list ',' groupby_statement .
+  237 groupby_expr_list: groupby_expr .
 
-    $default  reduce using rule 229 (groupby_list)
+    $default  reduce using rule 237 (groupby_expr_list)
 
 
 State 453
 
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list . opt_column_index
+  234 groupby_statement: CUBE '(' groupby_expr_list . ')'
+  238 groupby_expr_list: groupby_expr_list . ',' groupby_expr
 
-    INDEX  shift, and go to state 471
-
-    $default  reduce using rule 90 (opt_column_index)
-
-    opt_column_index  go to state 472
+    ')'  shift, and go to state 466
+    ','  shift, and go to state 465
 
 
 State 454
 
-   62 opt_column_constraint_list: column_straint_list .
-   64 column_straint_list: column_straint_list . ',' column_straint
+  235 groupby_statement: GROUPING SETS '(' . grouping_set ')'
 
-    ','  shift, and go to state 165
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    ROLLUP     shift, and go to state 467
+    CUBE       shift, and go to state 468
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 469
 
-    ','       [reduce using rule 62 (opt_column_constraint_list)]
-    $default  reduce using rule 62 (opt_column_constraint_list)
+    expr                    go to state 450
+    groupby_expr            go to state 470
+    grouping_set            go to state 471
+    grouping_set_item_list  go to state 472
+    grouping_set_item       go to state 473
 
 
 State 455
 
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update . opt_not_for_replication
+  231 groupby_list: groupby_list ',' groupby_statement .
 
-    NOT  shift, and go to state 272
-
-    $default  reduce using rule 54 (opt_not_for_replication)
-
-    opt_not_for_replication  go to state 473
+    $default  reduce using rule 231 (groupby_list)
 
 
 State 456
 
-   87 opt_on_update: ON UPDATE SET NULLX .
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list . opt_column_index
 
-    $default  reduce using rule 87 (opt_on_update)
+    INDEX  shift, and go to state 474
+
+    $default  reduce using rule 92 (opt_column_index)
+
+    opt_column_index  go to state 475
 
 
 State 457
 
-   88 opt_on_update: ON UPDATE SET DEFAULT .
+   64 opt_column_constraint_list: column_straint_list .
+   66 column_straint_list: column_straint_list . ',' column_straint
 
-    $default  reduce using rule 88 (opt_on_update)
+    ','  shift, and go to state 165
+
+    ','       [reduce using rule 64 (opt_column_constraint_list)]
+    $default  reduce using rule 64 (opt_column_constraint_list)
 
 
 State 458
 
-   85 opt_on_update: ON UPDATE NO ACTION .
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update . opt_not_for_replication
 
-    $default  reduce using rule 85 (opt_on_update)
+    NOT  shift, and go to state 272
+
+    $default  reduce using rule 56 (opt_not_for_replication)
+
+    opt_not_for_replication  go to state 476
 
 
 State 459
+
+   89 opt_on_update: ON UPDATE SET NULLX .
+
+    $default  reduce using rule 89 (opt_on_update)
+
+
+State 460
+
+   90 opt_on_update: ON UPDATE SET DEFAULT .
+
+    $default  reduce using rule 90 (opt_on_update)
+
+
+State 461
+
+   87 opt_on_update: ON UPDATE NO ACTION .
+
+    $default  reduce using rule 87 (opt_on_update)
+
+
+State 462
 
    14 expr: '(' expr . ')'
    15     | expr . '+' expr
@@ -5836,7 +5903,7 @@ State 459
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  237 groupby_expr: expr .
+  239 groupby_expr: expr .
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -5853,132 +5920,132 @@ State 459
     '/'         shift, and go to state 128
     ')'         shift, and go to state 182
 
-    $default  reduce using rule 237 (groupby_expr)
-
-
-State 460
-
-  238 groupby_expr: '(' groupby_expr . ',' expr ')'
-
-    ','  shift, and go to state 474
-
-
-State 461
-
-  231 groupby_statement: ROLLUP '(' groupby_expr_list ')' .
-
-    $default  reduce using rule 231 (groupby_statement)
-
-
-State 462
-
-  236 groupby_expr_list: groupby_expr_list ',' . groupby_expr
-
-    NAME       shift, and go to state 85
-    INTNUMBER  shift, and go to state 76
-    APPROXNUM  shift, and go to state 77
-    STRING     shift, and go to state 78
-    USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
-
-    expr          go to state 447
-    groupby_expr  go to state 475
+    $default  reduce using rule 239 (groupby_expr)
 
 
 State 463
 
-  232 groupby_statement: CUBE '(' groupby_expr_list ')' .
+  240 groupby_expr: '(' groupby_expr . ',' expr ')'
 
-    $default  reduce using rule 232 (groupby_statement)
+    ','  shift, and go to state 477
 
 
 State 464
 
-  244 grouping_set_item: ROLLUP . '(' groupby_expr_list ')'
+  233 groupby_statement: ROLLUP '(' groupby_expr_list ')' .
 
-    '('  shift, and go to state 476
+    $default  reduce using rule 233 (groupby_statement)
 
 
 State 465
 
-  245 grouping_set_item: CUBE . '(' groupby_expr_list ')'
-
-    '('  shift, and go to state 477
-
-
-State 466
-
-   14 expr: '(' . expr ')'
-  238 groupby_expr: '(' . groupby_expr ',' expr ')'
-  239 grouping_set: '(' . ')'
+  238 groupby_expr_list: groupby_expr_list ',' . groupby_expr
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
     APPROXNUM  shift, and go to state 77
     STRING     shift, and go to state 78
     USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
-    ')'        shift, and go to state 478
+    '('        shift, and go to state 449
 
-    expr          go to state 459
-    groupby_expr  go to state 460
+    expr          go to state 450
+    groupby_expr  go to state 478
+
+
+State 466
+
+  234 groupby_statement: CUBE '(' groupby_expr_list ')' .
+
+    $default  reduce using rule 234 (groupby_statement)
 
 
 State 467
 
-  243 grouping_set_item: groupby_expr .
+  246 grouping_set_item: ROLLUP . '(' groupby_expr_list ')'
 
-    $default  reduce using rule 243 (grouping_set_item)
+    '('  shift, and go to state 479
 
 
 State 468
 
-  233 groupby_statement: GROUPING SETS '(' grouping_set . ')'
+  247 grouping_set_item: CUBE . '(' groupby_expr_list ')'
 
-    ')'  shift, and go to state 479
+    '('  shift, and go to state 480
 
 
 State 469
 
-  240 grouping_set: grouping_set_item_list .
-  242 grouping_set_item_list: grouping_set_item_list . ',' grouping_set_item
+   14 expr: '(' . expr ')'
+  240 groupby_expr: '(' . groupby_expr ',' expr ')'
+  241 grouping_set: '(' . ')'
 
-    ','  shift, and go to state 480
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 449
+    ')'        shift, and go to state 481
 
-    $default  reduce using rule 240 (grouping_set)
+    expr          go to state 462
+    groupby_expr  go to state 463
 
 
 State 470
 
-  241 grouping_set_item_list: grouping_set_item .
+  245 grouping_set_item: groupby_expr .
 
-    $default  reduce using rule 241 (grouping_set_item_list)
+    $default  reduce using rule 245 (grouping_set_item)
 
 
 State 471
 
-   91 opt_column_index: INDEX . NAME opt_clustered
+  235 groupby_statement: GROUPING SETS '(' grouping_set . ')'
 
-    NAME  shift, and go to state 481
+    ')'  shift, and go to state 482
 
 
 State 472
 
-   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_not_for_replication opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index .
+  242 grouping_set: grouping_set_item_list .
+  244 grouping_set_item_list: grouping_set_item_list . ',' grouping_set_item
 
-    $default  reduce using rule 44 (column_definition)
+    ','  shift, and go to state 483
+
+    $default  reduce using rule 242 (grouping_set)
 
 
 State 473
 
-   77 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication .
+  243 grouping_set_item_list: grouping_set_item .
 
-    $default  reduce using rule 77 (foreign_key)
+    $default  reduce using rule 243 (grouping_set_item_list)
 
 
 State 474
 
-  238 groupby_expr: '(' groupby_expr ',' . expr ')'
+   93 opt_column_index: INDEX . NAME opt_clustered
+
+    NAME  shift, and go to state 484
+
+
+State 475
+
+   44 column_definition: NAME data_type opt_filestream opt_collate opt_sparse opt_default opt_null_or_not opt_rowguidcol opt_column_constraint_list opt_column_index .
+
+    $default  reduce using rule 44 (column_definition)
+
+
+State 476
+
+   79 foreign_key: FOREIGN KEY opt_column_name_list REFERENCES object opt_column_name_list opt_on_delete opt_on_update opt_not_for_replication .
+
+    $default  reduce using rule 79 (foreign_key)
+
+
+State 477
+
+  240 groupby_expr: '(' groupby_expr ',' . expr ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
@@ -5987,93 +6054,93 @@ State 474
     USERVAR    shift, and go to state 79
     '('        shift, and go to state 81
 
-    expr  go to state 482
-
-
-State 475
-
-  236 groupby_expr_list: groupby_expr_list ',' groupby_expr .
-
-    $default  reduce using rule 236 (groupby_expr_list)
-
-
-State 476
-
-  244 grouping_set_item: ROLLUP '(' . groupby_expr_list ')'
-
-    NAME       shift, and go to state 85
-    INTNUMBER  shift, and go to state 76
-    APPROXNUM  shift, and go to state 77
-    STRING     shift, and go to state 78
-    USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
-
-    expr               go to state 447
-    groupby_expr_list  go to state 483
-    groupby_expr       go to state 449
-
-
-State 477
-
-  245 grouping_set_item: CUBE '(' . groupby_expr_list ')'
-
-    NAME       shift, and go to state 85
-    INTNUMBER  shift, and go to state 76
-    APPROXNUM  shift, and go to state 77
-    STRING     shift, and go to state 78
-    USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
-
-    expr               go to state 447
-    groupby_expr_list  go to state 484
-    groupby_expr       go to state 449
+    expr  go to state 485
 
 
 State 478
 
-  239 grouping_set: '(' ')' .
+  238 groupby_expr_list: groupby_expr_list ',' groupby_expr .
 
-    $default  reduce using rule 239 (grouping_set)
+    $default  reduce using rule 238 (groupby_expr_list)
 
 
 State 479
 
-  233 groupby_statement: GROUPING SETS '(' grouping_set ')' .
-
-    $default  reduce using rule 233 (groupby_statement)
-
-
-State 480
-
-  242 grouping_set_item_list: grouping_set_item_list ',' . grouping_set_item
+  246 grouping_set_item: ROLLUP '(' . groupby_expr_list ')'
 
     NAME       shift, and go to state 85
     INTNUMBER  shift, and go to state 76
     APPROXNUM  shift, and go to state 77
     STRING     shift, and go to state 78
-    ROLLUP     shift, and go to state 464
-    CUBE       shift, and go to state 465
     USERVAR    shift, and go to state 79
-    '('        shift, and go to state 446
+    '('        shift, and go to state 449
 
-    expr               go to state 447
-    groupby_expr       go to state 467
-    grouping_set_item  go to state 485
+    expr               go to state 450
+    groupby_expr_list  go to state 486
+    groupby_expr       go to state 452
+
+
+State 480
+
+  247 grouping_set_item: CUBE '(' . groupby_expr_list ')'
+
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 449
+
+    expr               go to state 450
+    groupby_expr_list  go to state 487
+    groupby_expr       go to state 452
 
 
 State 481
 
-   91 opt_column_index: INDEX NAME . opt_clustered
+  241 grouping_set: '(' ')' .
+
+    $default  reduce using rule 241 (grouping_set)
+
+
+State 482
+
+  235 groupby_statement: GROUPING SETS '(' grouping_set ')' .
+
+    $default  reduce using rule 235 (groupby_statement)
+
+
+State 483
+
+  244 grouping_set_item_list: grouping_set_item_list ',' . grouping_set_item
+
+    NAME       shift, and go to state 85
+    INTNUMBER  shift, and go to state 76
+    APPROXNUM  shift, and go to state 77
+    STRING     shift, and go to state 78
+    ROLLUP     shift, and go to state 467
+    CUBE       shift, and go to state 468
+    USERVAR    shift, and go to state 79
+    '('        shift, and go to state 449
+
+    expr               go to state 450
+    groupby_expr       go to state 470
+    grouping_set_item  go to state 488
+
+
+State 484
+
+   93 opt_column_index: INDEX NAME . opt_clustered
 
     CLUSTERED     shift, and go to state 267
     NONCLUSTERED  shift, and go to state 268
 
-    $default  reduce using rule 72 (opt_clustered)
+    $default  reduce using rule 74 (opt_clustered)
 
-    opt_clustered  go to state 486
+    opt_clustered  go to state 489
 
 
-State 482
+State 485
 
    15 expr: expr . '+' expr
    16     | expr . '-' expr
@@ -6091,7 +6158,7 @@ State 482
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-  238 groupby_expr: '(' groupby_expr ',' expr . ')'
+  240 groupby_expr: '(' groupby_expr ',' expr . ')'
 
     LIKE        shift, and go to state 116
     AND         shift, and go to state 117
@@ -6106,57 +6173,57 @@ State 482
     '-'         shift, and go to state 126
     '*'         shift, and go to state 127
     '/'         shift, and go to state 128
-    ')'         shift, and go to state 487
-
-
-State 483
-
-  236 groupby_expr_list: groupby_expr_list . ',' groupby_expr
-  244 grouping_set_item: ROLLUP '(' groupby_expr_list . ')'
-
-    ')'  shift, and go to state 488
-    ','  shift, and go to state 462
-
-
-State 484
-
-  236 groupby_expr_list: groupby_expr_list . ',' groupby_expr
-  245 grouping_set_item: CUBE '(' groupby_expr_list . ')'
-
-    ')'  shift, and go to state 489
-    ','  shift, and go to state 462
-
-
-State 485
-
-  242 grouping_set_item_list: grouping_set_item_list ',' grouping_set_item .
-
-    $default  reduce using rule 242 (grouping_set_item_list)
+    ')'         shift, and go to state 490
 
 
 State 486
 
-   91 opt_column_index: INDEX NAME opt_clustered .
+  238 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+  246 grouping_set_item: ROLLUP '(' groupby_expr_list . ')'
 
-    $default  reduce using rule 91 (opt_column_index)
+    ')'  shift, and go to state 491
+    ','  shift, and go to state 465
 
 
 State 487
 
-  238 groupby_expr: '(' groupby_expr ',' expr ')' .
+  238 groupby_expr_list: groupby_expr_list . ',' groupby_expr
+  247 grouping_set_item: CUBE '(' groupby_expr_list . ')'
 
-    $default  reduce using rule 238 (groupby_expr)
+    ')'  shift, and go to state 492
+    ','  shift, and go to state 465
 
 
 State 488
 
-  244 grouping_set_item: ROLLUP '(' groupby_expr_list ')' .
+  244 grouping_set_item_list: grouping_set_item_list ',' grouping_set_item .
 
-    $default  reduce using rule 244 (grouping_set_item)
+    $default  reduce using rule 244 (grouping_set_item_list)
 
 
 State 489
 
-  245 grouping_set_item: CUBE '(' groupby_expr_list ')' .
+   93 opt_column_index: INDEX NAME opt_clustered .
 
-    $default  reduce using rule 245 (grouping_set_item)
+    $default  reduce using rule 93 (opt_column_index)
+
+
+State 490
+
+  240 groupby_expr: '(' groupby_expr ',' expr ')' .
+
+    $default  reduce using rule 240 (groupby_expr)
+
+
+State 491
+
+  246 grouping_set_item: ROLLUP '(' groupby_expr_list ')' .
+
+    $default  reduce using rule 246 (grouping_set_item)
+
+
+State 492
+
+  247 grouping_set_item: CUBE '(' groupby_expr_list ')' .
+
+    $default  reduce using rule 247 (grouping_set_item)
