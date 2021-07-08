@@ -161,13 +161,22 @@ create table tablename (
 );
 
 // DEFAULT definition
-create table (
+create table tablename (
     name varchar(50) DEFAULT 'New Position - title not formalized yet',
     data datetime DEFAULT (GETDATE())
 );
 
 // check constraint
-create table (
+create table tablename (
     number int CHECK (CreditRating >= 1 and CreditRating <= 5)
 );
+```
+### Alter statement
+```
+ALTER TABLE dbo.doc_exa ADD column_b VARCHAR(20) NULL ;
+ALTER TABLE dbo.doc_exc ADD column_b VARCHAR(20) NULL CONSTRAINT exb_unique UNIQUE ;
+ALTER TABLE dbo.doc_exd WITH NOCHECK ADD CONSTRAINT exd_check CHECK (column_a > 1) ;
+ALTER TABLE T2 ALTER COLUMN C2 ADD SPARSE ;
+ALTER TABLE dbo.doc_exb DROP COLUMN column_c, column_d;
+ALTER TABLE Production.TransactionHistoryArchive DROP CONSTRAINT PK_TransactionHistoryArchive_TransactionID WITH (ONLINE = ON) ;
 ```

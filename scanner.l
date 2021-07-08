@@ -110,6 +110,27 @@ check|CHECK             {return CHECK;}
 index|INDEX             {return INDEX;}
 create|CREATE           {return CREATE;}
 table|TABLE             {return TABLE;}
+alter|ALTER             {return ALTER;}
+column|COLUMN           {return COLUMN;}
+add|ADD                 {return ADD;}
+drop|DROP               {return DROP;}
+masked|MASKED           {return MASKED;}
+persisted|PERSISTED     {return PERSISTED;}
+hidden|HIDDEN           {return HIDDEN;}
+funciton|FUNCTION       {return FUNCTION;}
+off|OFF                 {return OFF;}
+online|ONLINE           {return ONLINE;}
+nocheck|NOCHECK         {return NOCHECK;}
+period|PERIOD           {return PERIOD;}
+constant|CONSTANT       {return CONSTANT;}
+system_time|SYSTEM_TIME {return SYSTEM_TIME;}
+if|IF                   {return IF;}
+trigger|TRIGGER         {return TRIGGER;}
+change_tracking|CHANGE_TRACKING         {return CHANGE_TRACKING;}
+enable|ENABLE           {return ENABLE;}
+track_columns_updated|TRACK_COLUMNS_UPDATED {return TRACK_COLUMNS_UPDATED;}
+move|MOVE               {return MOVE;}
+to|TO                   {return TO;}
 
     /* interger numbers */
 -?[0-9]+                {

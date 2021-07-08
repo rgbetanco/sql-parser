@@ -107,6 +107,28 @@
 %token CASCADE
 %token CHECK
 %token INDEX
+%token ALTER
+%token COLUMN
+%token ADD
+%token DROP
+%token MASKED
+%token PERSISTED
+%token HIDDEN
+%token FUNCTION
+%token OFF
+%token ONLINE
+%token NOCHECK
+%token PERIOD
+%token CONSTANT
+%token SYSTEM_TIME
+%token IF
+%token MOVE
+%token TO
+
+%token TRIGGER
+%token CHANGE_TRACKING
+%token ENABLE
+%token TRACK_COLUMNS_UPDATED
 
 %union{
     char* strVal;
@@ -153,10 +175,7 @@ statement:
     |delete_statement
     |update_statement
     |create_statement
-    ;
-create_statement:
-    CREATE TABLE object opt_as_alias '(' column_definition_list ')'
-    |CREATE TABLE object opt_as_alias '(' column_straint_list ')'
+    |alter_statement
     ;
 
 /****  expressions  ****/
@@ -202,7 +221,103 @@ val_list:
     |expr ',' val_list
     |query_specification
     ;
+
+/****  alter statement  ****/
+alter_statement:
+    ALTER TABLE object ALTER COLUMN NAME alter_column_options
+    |ALTER TABLE object opt_alter_with ADD column_definition_list
+    |ALTER TABLE object opt_alter_with ADD column_constraint_list
+    |ALTER TABLE object DROP alter_drop_list
+    |ALTER TABLE object opt_with_check_nocheck check_or_nocheck CONSTRAINT ALL
+    |ALTER TABLE object opt_with_check_nocheck check_or_nocheck CONSTRAINT column_name_list
+    |ALTER TABLE object enable_or_disable TRIGGER ALL
+    |ALTER TABLE object enable_or_disable TRIGGER column_name_list
+    |ALTER TABLE object enable_or_disable CHANGE_TRACKING opt_with_track_columns_updated
+    ;
+enable_or_disable:
+    ENABLE 
+    |DISABLE
+    ;
+opt_with_track_columns_updated:
+        {}
+    |WITH '(' TRACK_COLUMNS_UPDATED EQUAL ON ')'
+    |WITH '(' TRACK_COLUMNS_UPDATED EQUAL OFF ')'
+    ;
+opt_with_check_nocheck:
+        {}
+    |WITH CHECK
+    |WITH NOCHECK
+    ;
+check_or_nocheck:
+    CHECK
+    |NOCHECK
+    ;
+alter_drop_list:
+    alter_drop
+    |alter_drop_list ',' alter_drop 
+    ;
+alter_drop:
+    opt_constraint opt_if_exists alter_drop_statement_list
+    |COLUMN opt_if_exists column_name_list
+    |PERIOD FOR SYSTEM_TIME
+    ;
+alter_drop_statement_list:
+    alter_drop_statement 
+    |alter_drop_statement_list ',' alter_drop_statement 
+    ;
+alter_drop_statement:
+    NAME opt_alter_drop_with
+    ;
+opt_alter_drop_with:
+        {}
+    |WITH '(' drop_clustered_constraint_option_list ')'
+    ;
+drop_clustered_constraint_option_list:
+    drop_clustered_constraint_option
+    |drop_clustered_constraint_option_list ',' drop_clustered_constraint_option
+    ;
+drop_clustered_constraint_option:
+    MAXDOP EQUAL expr
+    |ONLINE EQUAL ON
+    |ONLINE EQUAL OFF
+    |MOVE TO expr
+    ;
+opt_if_exists:
+        {}
+    |IF EXISTS
+alter_column_options:
+    object opt_collate opt_null_or_not opt_sparse 
+    |add_or_drop alter_column_add_drop_statement
+    |add_or_drop MASKED opt_with_function
+    ;
+add_or_drop:
+    ADD
+    |DROP
+    ;
+alter_column_add_drop_statement:
+    ROWGUIDCOL
+    |PERSISTED
+    |NOT FOR REPLICATION
+    |SPARSE
+    |HIDDEN
+    ;
+opt_with_function:
+        {}
+    |WITH '(' FUNCTION '=' STRING ')'
+    ;
+opt_alter_with:
+        {}
+    |WITH '(' ONLINE EQUAL ON ')'
+    |WITH '(' ONLINE EQUAL OFF ')'
+    |WITH CHECK
+    |WITH NOCHECK
+    ;
+
 /****  create statement  ****/
+create_statement:
+    CREATE TABLE object opt_as_alias '(' column_definition_list ')'
+    |CREATE TABLE object opt_as_alias '(' column_constraint_list ')'
+    ;
 column_definition_list:
     column_definition
     |column_definition_list ',' column_definition
@@ -229,7 +344,7 @@ opt_sparse:
     ;
 opt_default:
         {}
-    |opt_constraint DEFAULT expr
+    |opt_constraint NAME DEFAULT expr
     ;
 opt_not_for_replication:
         {}
@@ -246,20 +361,20 @@ opt_rowguidcol:
     ;
 opt_column_constraint_list:
         {}
-    |column_straint_list
+    |column_constraint_list
     ;
-column_straint_list:
-    column_straint 
-    |column_straint_list ',' column_straint 
+column_constraint_list:
+    column_constraint 
+    |column_constraint_list ',' column_constraint 
     ;
-column_straint:
-    opt_constraint primary_key
-    |opt_constraint foreign_key
-    |opt_constraint check
+column_constraint:
+    opt_constraint NAME primary_key
+    |opt_constraint NAME foreign_key
+    |opt_constraint NAME check
     ;
 opt_constraint:
         {}
-    |CONSTRAINT NAME
+    |CONSTRAINT
     ;
 primary_key:
     PRIMARY KEY opt_clustered opt_on
