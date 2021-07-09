@@ -84,7 +84,33 @@ FROM Sales_CTE;
 
 // 'option' statement
 SELECT ProductID, OrderQty, SUM(LineTotal) AS Total FROM Sales.SalesOrderDetail WHERE UnitPrice < 5.00 GROUP BY ProductID, OrderQty ORDER BY ProductID, OrderQty OPTION (HASH GROUP, FAST 10);
-SELECT * FROM FactResellerSales OPTION ( LABEL = 'q17' );  
+SELECT * FROM FactResellerSales OPTION ( LABEL = 'q17' );
+
+// subquery
+SELECT Name FROM Production.Product WHERE ListPrice = (
+    SELECT ListPrice
+    FROM Production.Product
+    WHERE [Name] = 'Chainring Bolts' 
+);
+SELECT Name FROM Sales.Store WHERE BusinessEntityID NOT IN (
+    SELECT CustomerID
+    FROM Sales.Customer
+    WHERE TerritoryID = 5
+);
+SELECT LastName, FirstName FROM Person.Person WHERE BusinessEntityID IN (
+    SELECT BusinessEntityID
+    FROM HumanResources.Employee
+    WHERE BusinessEntityID IN (
+        SELECT BusinessEntityID
+        FROM Sales.SalesPerson
+    )
+);
+SELECT [Name] FROM Production.Product WHERE NOT EXISTS (
+    SELECT * 
+    FROM Production.ProductSubcategory
+    WHERE ProductSubcategoryID = 
+    Product.ProductSubcategoryID AND [Name] = 'Wheels'
+);
 ```
 ### Delete statement
 ```

@@ -122,7 +122,6 @@ off|OFF                 {return OFF;}
 online|ONLINE           {return ONLINE;}
 nocheck|NOCHECK         {return NOCHECK;}
 period|PERIOD           {return PERIOD;}
-constant|CONSTANT       {return CONSTANT;}
 system_time|SYSTEM_TIME {return SYSTEM_TIME;}
 if|IF                   {return IF;}
 trigger|TRIGGER         {return TRIGGER;}
@@ -131,6 +130,8 @@ enable|ENABLE           {return ENABLE;}
 track_columns_updated|TRACK_COLUMNS_UPDATED {return TRACK_COLUMNS_UPDATED;}
 move|MOVE               {return MOVE;}
 to|TO                   {return TO;}
+any|ANY                 {return ANY;}
+some|SOME               {return SOME;}
 
     /* interger numbers */
 -?[0-9]+                {

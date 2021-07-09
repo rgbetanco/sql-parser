@@ -119,16 +119,16 @@
 %token ONLINE
 %token NOCHECK
 %token PERIOD
-%token CONSTANT
 %token SYSTEM_TIME
 %token IF
 %token MOVE
 %token TO
-
 %token TRIGGER
 %token CHANGE_TRACKING
 %token ENABLE
 %token TRACK_COLUMNS_UPDATED
+%token ANY
+%token SOME
 
 %union{
     char* strVal;
@@ -149,6 +149,7 @@
 %left '+' '-'
 %left '*' '/' '%'
 %left '^'
+%nonassoc UMINUS
 
 %type <strVal> NAME STRING
 %type <intVal> INTNUMBER
@@ -184,11 +185,11 @@ expr:
     |USERVAR
     |APPROXNUM
     |NAME STRING
-    |'(' expr ')'       {printf("(expression)");}
     |expr '+' expr      {}
     |expr '-' expr      {}
     |expr '*' expr      {}
     |expr '/' expr      {}
+    | '-' expr %prec UMINUS
     |expr COMPARISON expr
     |expr EQUAL expr
     |expr AND expr
@@ -206,6 +207,23 @@ expr:
     |expr IS NOT NULLX
     |USERVAR EQUAL expr
     ;
+
+/****  subquery  ****/
+subquery:
+    expr EQUAL opt_all_some_any '(' query_expression ')'
+    |expr COMPARISON opt_all_some_any '(' query_expression ')'
+    |expr IN '(' query_specification ')'
+    |expr NOT IN '(' query_specification ')'
+    |EXISTS '(' query_expression ')'
+    |NOT EXISTS '(' query_expression ')'
+    ;
+opt_all_some_any:
+        {}
+    |ALL
+    |SOME
+    |ANY
+    ;
+
 
 /****  function ****/    
 expr:
@@ -233,6 +251,7 @@ alter_statement:
     |ALTER TABLE object enable_or_disable TRIGGER ALL
     |ALTER TABLE object enable_or_disable TRIGGER column_name_list
     |ALTER TABLE object enable_or_disable CHANGE_TRACKING opt_with_track_columns_updated
+    |ALTER TABLE column_constraint
     ;
 enable_or_disable:
     ENABLE 
@@ -405,6 +424,7 @@ check:
 opt_column_index:
         {}
     |INDEX NAME opt_clustered
+    ;
 
 /****  update statement  ****/
 update_statement:
@@ -423,6 +443,7 @@ opt_current_of:
         {}
     |CURRENT OF NAME
     |CURRENT OF GLOBAL NAME
+    ;
 
 /****  delete statement  ****/
 delete_statement:
@@ -564,7 +585,8 @@ top_options:
     |top_options TOP expr PERCENT WITH TIES     {printf("select options \"top expr percent with ties\"\n");}
     |top_options TOP expr PERCENT               {printf("select options \"top expr percent\"\n");}
     |top_options TOP expr WITH TIES             {printf("select options \"top expr with ties\"\n");}
-    |top_options TOP expr                       {printf("select options \"top expr\"\n");}
+    |top_options TOP '(' expr ')'                       {printf("select options \"top expr\"\n");}
+    |top_options TOP expr
     ;
 select_expr_list:
     select_expr                         {/*empty*/}
@@ -635,8 +657,7 @@ cross_outer:
 opt_where:
         {}
     |WHERE expr
-    |WHERE EXISTS '(' query_expression ')'
-    |WHERE NOT EXISTS '(' query_expression ')'
+    |WHERE subquery
     ;
 
 /****  group by statement  ****/
