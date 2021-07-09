@@ -257,16 +257,9 @@ alter_drop_list:
     |alter_drop_list ',' alter_drop 
     ;
 alter_drop:
-    opt_constraint opt_if_exists alter_drop_statement_list
-    |COLUMN opt_if_exists column_name_list
+    opt_constraint opt_if_exists NAME opt_alter_drop_with
+    |COLUMN opt_if_exists NAME
     |PERIOD FOR SYSTEM_TIME
-    ;
-alter_drop_statement_list:
-    alter_drop_statement 
-    |alter_drop_statement_list ',' alter_drop_statement 
-    ;
-alter_drop_statement:
-    NAME opt_alter_drop_with
     ;
 opt_alter_drop_with:
         {}
@@ -286,7 +279,7 @@ opt_if_exists:
         {}
     |IF EXISTS
 alter_column_options:
-    object opt_collate opt_null_or_not opt_sparse 
+    expr opt_collate opt_null_or_not opt_sparse 
     |add_or_drop alter_column_add_drop_statement
     |add_or_drop MASKED opt_with_function
     ;

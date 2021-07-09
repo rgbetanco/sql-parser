@@ -173,10 +173,23 @@ create table tablename (
 ```
 ### Alter statement
 ```
+// add statement
 ALTER TABLE dbo.doc_exa ADD column_b VARCHAR(20) NULL ;
 ALTER TABLE dbo.doc_exc ADD column_b VARCHAR(20) NULL CONSTRAINT exb_unique UNIQUE ;
 ALTER TABLE dbo.doc_exd WITH NOCHECK ADD CONSTRAINT exd_check CHECK (column_a > 1) ;
 ALTER TABLE T2 ALTER COLUMN C2 ADD SPARSE ;
+
+// drop statement
 ALTER TABLE dbo.doc_exb DROP COLUMN column_c, column_d;
 ALTER TABLE Production.TransactionHistoryArchive DROP CONSTRAINT PK_TransactionHistoryArchive_TransactionID WITH (ONLINE = ON) ;
+ALTER TABLE dbo.doc_exc DROP my_constraint ;
+ALTER TABLE dbo.doc_exc DROP CONSTRAINT my_constraint, my_pk_constraint, COLUMN column_b;
+
+// alter column statement
+ALTER TABLE dbo.doc_exy ALTER COLUMN column_a DECIMAL (5, 2) ;
+ALTER COLUMN C2 varchar(50) COLLATE Latin1_General_BIN ;
+
+// others statement
+ALTER TABLE dbo.cnst_example NOCHECK CONSTRAINT salary_cap;
+ALTER TABLE dbo.trig_example ENABLE TRIGGER trig1;
 ```
