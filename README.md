@@ -219,3 +219,8 @@ ALTER COLUMN C2 varchar(50) COLLATE Latin1_General_BIN ;
 ALTER TABLE dbo.cnst_example NOCHECK CONSTRAINT salary_cap;
 ALTER TABLE dbo.trig_example ENABLE TRIGGER trig1;
 ```
+### Truncate statement
+```
+TRUNCATE TABLE HumanResources.JobCandidate; 
+TRUNCATE TABLE PartitionTable1 WITH (PARTITIONS (2, 4, 6 TO 8));  
+```

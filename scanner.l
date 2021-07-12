@@ -132,6 +132,8 @@ move|MOVE               {return MOVE;}
 to|TO                   {return TO;}
 any|ANY                 {return ANY;}
 some|SOME               {return SOME;}
+truncate|TRUNCATE       {return TRUNCATE;}
+partitions|PARTITIONS   {return PARTITIONS;}
 
     /* interger numbers */
 -?[0-9]+                {

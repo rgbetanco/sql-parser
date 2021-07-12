@@ -129,6 +129,8 @@
 %token TRACK_COLUMNS_UPDATED
 %token ANY
 %token SOME
+%token TRUNCATE
+%token PARTITIONS
 
 %union{
     char* strVal;
@@ -177,6 +179,7 @@ statement:
     |update_statement
     |create_statement
     |alter_statement
+    |truncate_statement
     ;
 
 /****  expressions  ****/
@@ -206,6 +209,22 @@ expr:
     |expr IS NULLX
     |expr IS NOT NULLX
     |USERVAR EQUAL expr
+    ;
+/****  truncate statement  ****/
+truncate_statement:
+    TRUNCATE TABLE object opt_with_partitions
+    ;
+opt_with_partitions:
+        {}
+    |WITH '(' PARTITIONS '(' partition_number_expression_list ')' ')'
+    ;
+partition_number_expression_list:
+    partition_number_expression
+    |partition_number_expression_list ',' partition_number_expression
+    ;
+partition_number_expression:
+    INTNUMBER
+    |INTNUMBER TO INTNUMBER
     ;
 
 /****  subquery  ****/
