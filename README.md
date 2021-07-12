@@ -224,3 +224,11 @@ ALTER TABLE dbo.trig_example ENABLE TRIGGER trig1;
 TRUNCATE TABLE HumanResources.JobCandidate; 
 TRUNCATE TABLE PartitionTable1 WITH (PARTITIONS (2, 4, 6 TO 8));  
 ```
+## Read JSON file in C
+### reference: [json-c library](https://github.com/json-c/json-c)
+```
+sudo apt install libjson-c-dev
+cd read_json/
+gcc read_json.c -ljson-c
+./a.out
+```

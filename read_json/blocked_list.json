@@ -1,0 +1,7 @@
+{
+	"blocked_table_list":[
+		"users",
+		"city",
+		"name"
+	]
+}
