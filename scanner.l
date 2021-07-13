@@ -5,6 +5,7 @@
 %}
 
 %%
+
     /* reserved word */
 select|SELECT           {return SELECT;}
 from|FROM               {return FROM;}

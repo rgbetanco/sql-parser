@@ -153,7 +153,7 @@
 %left '^'
 %nonassoc UMINUS
 
-%type <strVal> NAME STRING
+%type <strVal> NAME STRING subquery object query_specification delete_statement DELETE
 %type <intVal> INTNUMBER
 %type <floatVal> APPROXNUM
 
@@ -175,7 +175,7 @@ statement_list:
 statement:
     select_statement
     |insert_statement
-    |delete_statement
+    |delete_statement {}
     |update_statement
     |create_statement
     |alter_statement
@@ -229,12 +229,12 @@ partition_number_expression:
 
 /****  subquery  ****/
 subquery:
-    expr EQUAL opt_all_some_any '(' query_expression ')'
-    |expr COMPARISON opt_all_some_any '(' query_expression ')'
+    expr EQUAL opt_all_some_any '(' query_specification ')'
+    |expr COMPARISON opt_all_some_any '(' query_specification ')'
     |expr IN '(' query_specification ')'
     |expr NOT IN '(' query_specification ')'
-    |EXISTS '(' query_expression ')'
-    |NOT EXISTS '(' query_expression ')'
+    |EXISTS '(' query_specification ')'  {$$ = strcat("EXISTS:",$3); printf("%s", $$);}
+    |NOT EXISTS '(' query_specification ')'
     ;
 opt_all_some_any:
         {}
@@ -242,6 +242,31 @@ opt_all_some_any:
     |SOME
     |ANY
     ;
+/*subquery_query_specification:
+    SELECT select_options top_options select_expr_list opt_into subquery_opt_from_list opt_where opt_groupby opt_having {printf("select\n");}
+    ;
+subquery_opt_from_list:
+        {}
+    |FROM subquery_opt_from
+    ;
+subquery_opt_from:
+    subquery_from_statement
+    |subquery_opt_from ',' subquery_from_statement
+    ;
+subquery_from_statement:
+    NAME opt_as_alias
+    |NAME '.' NAME opt_as_alias
+    |subquery_joined_table
+    ;
+subquery_joined_table:
+    subquery_from_statement join_type subquery_from_statement ON expr
+    |from_statement CROSS JOIN from_statement
+    |NAME cross_outer APPLY NAME
+    |'(' joined_table ')'
+    ;
+join_type:
+    opt_join_type opt_join_hint JOIN
+    ;*/
 
 
 /****  function ****/    
@@ -467,13 +492,13 @@ opt_current_of:
 /****  delete statement  ****/
 delete_statement:
     opt_with DELETE top_options FROM object opt_from_list opt_where opt_option
-    |opt_with DELETE top_options object opt_from_list opt_where opt_option
+    |opt_with DELETE top_options object opt_from_list opt_where opt_option  /*{$$="";strcat($$, $4);printf("%s", $$);}*/
     ;
 object:
     NAME '.' NAME '.' NAME '.' NAME
     |NAME '.' NAME '.' NAME
     |NAME '.' NAME
-    |NAME
+    |NAME   {$$ = strdup($1);free($1);}
     ;
 
 /****  insert statement  ****/
@@ -676,7 +701,7 @@ cross_outer:
 opt_where:
         {}
     |WHERE expr
-    |WHERE subquery
+    |WHERE subquery {printf("subquery:%s", $2);}
     ;
 
 /****  group by statement  ****/

@@ -92,12 +92,12 @@ Grammar
    40 partition_number_expression: INTNUMBER
    41                            | INTNUMBER TO INTNUMBER
 
-   42 subquery: expr EQUAL opt_all_some_any '(' query_expression ')'
-   43         | expr COMPARISON opt_all_some_any '(' query_expression ')'
+   42 subquery: expr EQUAL opt_all_some_any '(' query_specification ')'
+   43         | expr COMPARISON opt_all_some_any '(' query_specification ')'
    44         | expr IN '(' query_specification ')'
    45         | expr NOT IN '(' query_specification ')'
-   46         | EXISTS '(' query_expression ')'
-   47         | NOT EXISTS '(' query_expression ')'
+   46         | EXISTS '(' query_specification ')'
+   47         | NOT EXISTS '(' query_specification ')'
 
    48 opt_all_some_any: %empty
    49                 | ALL
@@ -802,7 +802,7 @@ opt_column_name_list (227)
 column_name_list (228)
     on left: 236 237, on right: 64 66 235 237
 query_expression (229)
-    on left: 238 239, on right: 42 43 46 47 192 230 239 245
+    on left: 238 239, on right: 192 230 239 245
 opt_query (230)
     on left: 240 241, on right: 238 239
 union_list (231)
@@ -812,7 +812,7 @@ union_statement (232)
 opt_union (233)
     on left: 246 247 248 249, on right: 244 245
 query_specification (234)
-    on left: 250, on right: 44 45 58 183 238 244
+    on left: 250, on right: 42 43 44 45 46 47 58 183 238 244
 select_options (235)
     on left: 251 252 253, on right: 250 252 253
 top_options (236)
@@ -4418,14 +4418,14 @@ State 306
 
 State 307
 
-   47 subquery: NOT . EXISTS '(' query_expression ')'
+   47 subquery: NOT . EXISTS '(' query_specification ')'
 
     EXISTS  shift, and go to state 404
 
 
 State 308
 
-   46 subquery: EXISTS . '(' query_expression ')'
+   46 subquery: EXISTS . '(' query_specification ')'
 
     '('  shift, and go to state 405
 
@@ -4448,8 +4448,8 @@ State 309
    31     | expr . NOT BETWEEN expr AND expr
    32     | expr . IS NULLX
    33     | expr . IS NOT NULLX
-   42 subquery: expr . EQUAL opt_all_some_any '(' query_expression ')'
-   43         | expr . COMPARISON opt_all_some_any '(' query_expression ')'
+   42 subquery: expr . EQUAL opt_all_some_any '(' query_specification ')'
+   43         | expr . COMPARISON opt_all_some_any '(' query_specification ')'
    44         | expr . IN '(' query_specification ')'
    45         | expr . NOT IN '(' query_specification ')'
   297 opt_where: WHERE expr .
@@ -5382,20 +5382,18 @@ State 403
 
 State 404
 
-   47 subquery: NOT EXISTS . '(' query_expression ')'
+   47 subquery: NOT EXISTS . '(' query_specification ')'
 
     '('  shift, and go to state 483
 
 
 State 405
 
-   46 subquery: EXISTS '(' . query_expression ')'
+   46 subquery: EXISTS '(' . query_specification ')'
 
     SELECT  shift, and go to state 23
-    '('     shift, and go to state 27
 
-    query_expression     go to state 484
-    query_specification  go to state 29
+    query_specification  go to state 484
 
 
 State 406
@@ -5421,7 +5419,7 @@ State 407
 State 408
 
    20 expr: expr EQUAL . expr
-   42 subquery: expr EQUAL . opt_all_some_any '(' query_expression ')'
+   42 subquery: expr EQUAL . opt_all_some_any '(' query_specification ')'
 
     NAME       shift, and go to state 131
     INTNUMBER  shift, and go to state 122
@@ -5442,7 +5440,7 @@ State 408
 State 409
 
    19 expr: expr COMPARISON . expr
-   43 subquery: expr COMPARISON . opt_all_some_any '(' query_expression ')'
+   43 subquery: expr COMPARISON . opt_all_some_any '(' query_specification ')'
 
     NAME       shift, and go to state 131
     INTNUMBER  shift, and go to state 122
@@ -6163,18 +6161,16 @@ State 482
 
 State 483
 
-   47 subquery: NOT EXISTS '(' . query_expression ')'
+   47 subquery: NOT EXISTS '(' . query_specification ')'
 
     SELECT  shift, and go to state 23
-    '('     shift, and go to state 27
 
-    query_expression     go to state 531
-    query_specification  go to state 29
+    query_specification  go to state 531
 
 
 State 484
 
-   46 subquery: EXISTS '(' query_expression . ')'
+   46 subquery: EXISTS '(' query_specification . ')'
 
     ')'  shift, and go to state 532
 
@@ -6229,14 +6225,14 @@ State 489
 
 State 490
 
-   42 subquery: expr EQUAL opt_all_some_any . '(' query_expression ')'
+   42 subquery: expr EQUAL opt_all_some_any . '(' query_specification ')'
 
     '('  shift, and go to state 535
 
 
 State 491
 
-   43 subquery: expr COMPARISON opt_all_some_any . '(' query_expression ')'
+   43 subquery: expr COMPARISON opt_all_some_any . '(' query_specification ')'
 
     '('  shift, and go to state 536
 
@@ -6630,14 +6626,14 @@ State 530
 
 State 531
 
-   47 subquery: NOT EXISTS '(' query_expression . ')'
+   47 subquery: NOT EXISTS '(' query_specification . ')'
 
     ')'  shift, and go to state 566
 
 
 State 532
 
-   46 subquery: EXISTS '(' query_expression ')' .
+   46 subquery: EXISTS '(' query_specification ')' .
 
     $default  reduce using rule 46 (subquery)
 
@@ -6673,24 +6669,20 @@ State 534
 
 State 535
 
-   42 subquery: expr EQUAL opt_all_some_any '(' . query_expression ')'
+   42 subquery: expr EQUAL opt_all_some_any '(' . query_specification ')'
 
     SELECT  shift, and go to state 23
-    '('     shift, and go to state 27
 
-    query_expression     go to state 569
-    query_specification  go to state 29
+    query_specification  go to state 569
 
 
 State 536
 
-   43 subquery: expr COMPARISON opt_all_some_any '(' . query_expression ')'
+   43 subquery: expr COMPARISON opt_all_some_any '(' . query_specification ')'
 
     SELECT  shift, and go to state 23
-    '('     shift, and go to state 27
 
-    query_expression     go to state 570
-    query_specification  go to state 29
+    query_specification  go to state 570
 
 
 State 537
@@ -6994,7 +6986,7 @@ State 565
 
 State 566
 
-   47 subquery: NOT EXISTS '(' query_expression ')' .
+   47 subquery: NOT EXISTS '(' query_specification ')' .
 
     $default  reduce using rule 47 (subquery)
 
@@ -7018,14 +7010,14 @@ State 568
 
 State 569
 
-   42 subquery: expr EQUAL opt_all_some_any '(' query_expression . ')'
+   42 subquery: expr EQUAL opt_all_some_any '(' query_specification . ')'
 
     ')'  shift, and go to state 591
 
 
 State 570
 
-   43 subquery: expr COMPARISON opt_all_some_any '(' query_expression . ')'
+   43 subquery: expr COMPARISON opt_all_some_any '(' query_specification . ')'
 
     ')'  shift, and go to state 592
 
@@ -7272,14 +7264,14 @@ State 590
 
 State 591
 
-   42 subquery: expr EQUAL opt_all_some_any '(' query_expression ')' .
+   42 subquery: expr EQUAL opt_all_some_any '(' query_specification ')' .
 
     $default  reduce using rule 42 (subquery)
 
 
 State 592
 
-   43 subquery: expr COMPARISON opt_all_some_any '(' query_expression ')' .
+   43 subquery: expr COMPARISON opt_all_some_any '(' query_specification ')' .
 
     $default  reduce using rule 43 (subquery)
 
