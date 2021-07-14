@@ -6,7 +6,7 @@ PARSER = parser.y
 all :
 	flex $(SCANNER)
 	bison -vdty $(PARSER)
-	$(CC) -o $(OUT) lex.yy.c y.tab.c
+	$(CC) -o $(OUT) lex.yy.c y.tab.c strmap.c
 	./$(OUT)
 
 clean : 

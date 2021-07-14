@@ -132,11 +132,17 @@
 %token TRUNCATE
 %token PARTITIONS
 
+/* Bison will put this section before yystype definition */
+%code requires{
+    #include "strmap.h"
+}
+
 %union{
     char* strVal;
     int intVal;
     double floatVal;
     int subtok;
+    StrMap* map;
 }
 
 /* operators and precedence levels */
@@ -153,13 +159,15 @@
 %left '^'
 %nonassoc UMINUS
 
-%type <strVal> NAME STRING subquery object query_specification delete_statement DELETE
+%type <strVal> NAME STRING expr select_expr_list select_expr
 %type <intVal> INTNUMBER
 %type <floatVal> APPROXNUM
+%type <map> query_specification
 
 %{
     #include <stdio.h> 
     #include <stdlib.h>
+    #include <string.h>
 
     void yyerror(char*);
     int yylex(void);
@@ -184,7 +192,7 @@ statement:
 
 /****  expressions  ****/
 expr:
-    INTNUMBER           {printf("expression interger %d\n", $1);}
+    INTNUMBER           {}
     |USERVAR
     |APPROXNUM
     |NAME STRING
@@ -197,9 +205,9 @@ expr:
     |expr EQUAL expr
     |expr AND expr
     |expr OR expr
-    |NAME               {printf("expression name %s\n", $1); free($1);}
-    |NAME '.' NAME      {printf("expression field name %s.%s\n", $1, $3); free($1);}
-    |STRING             {printf("expression string %s\n", $1); free($1);}
+    |NAME               {$$ = strdup($1); free($1);}
+    |NAME '.' NAME      {}
+    |STRING             {}
     |expr LIKE expr
     |expr NOT LIKE expr
     |expr IN '(' val_list ')'
@@ -233,7 +241,18 @@ subquery:
     |expr COMPARISON opt_all_some_any '(' query_specification ')'
     |expr IN '(' query_specification ')'
     |expr NOT IN '(' query_specification ')'
-    |EXISTS '(' query_specification ')'  {$$ = strcat("EXISTS:",$3); printf("%s", $$);}
+    |EXISTS '(' query_specification ')'  
+    {
+        char buf[255];
+        int result;
+
+        result = sm_get($3, "select_list", buf, sizeof(buf));
+        if (result == 0) {
+            printf("not found"); /* Handle value not found... */
+        }
+        printf("subquery_select_list: %s\n", buf);
+        sm_delete($3);
+    }
     |NOT EXISTS '(' query_specification ')'
     ;
 opt_all_some_any:
@@ -492,13 +511,13 @@ opt_current_of:
 /****  delete statement  ****/
 delete_statement:
     opt_with DELETE top_options FROM object opt_from_list opt_where opt_option
-    |opt_with DELETE top_options object opt_from_list opt_where opt_option  /*{$$="";strcat($$, $4);printf("%s", $$);}*/
+    |opt_with DELETE top_options object opt_from_list opt_where opt_option 
     ;
 object:
     NAME '.' NAME '.' NAME '.' NAME
     |NAME '.' NAME '.' NAME
     |NAME '.' NAME
-    |NAME   {$$ = strdup($1);free($1);}
+    |NAME   {}
     ;
 
 /****  insert statement  ****/
@@ -617,39 +636,46 @@ opt_union:
     |INTERSECT
     ;
 query_specification:
-    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having {printf("select\n");}
+    SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having 
+    {
+        $$ = sm_new(10); 
+        if ($$ == NULL) {
+            printf("fail");     /* Handle allocation failure */
+        }
+        sm_put($$, "select_list", $4);
+    }
     ;
 select_options:
                                 {/*empty*/}
-    |select_options ALL         {printf("select options \"all\"\n");}
-    |select_options DISTINCT    {printf("select options \"distinct\"\n");}
+    |select_options ALL         {}
+    |select_options DISTINCT    {}
     ;
 top_options:
                                     {/*empty*/}
-    |top_options TOP expr PERCENT WITH TIES     {printf("select options \"top expr percent with ties\"\n");}
-    |top_options TOP expr PERCENT               {printf("select options \"top expr percent\"\n");}
-    |top_options TOP expr WITH TIES             {printf("select options \"top expr with ties\"\n");}
-    |top_options TOP '(' expr ')'                       {printf("select options \"top expr\"\n");}
+    |top_options TOP expr PERCENT WITH TIES    
+    |top_options TOP expr PERCENT              
+    |top_options TOP expr WITH TIES            
+    |top_options TOP '(' expr ')'              
     |top_options TOP expr
     ;
 select_expr_list:
-    select_expr                         {/*empty*/}
+    select_expr                         {$$ = strdup($1); free($1);}
     |select_expr_list ',' select_expr   {/*empty*/}
     ;
 select_expr:    /* funciton not complete yet */
-    '*'                 {printf("select \"*\".\n");}
-    |expr opt_as_alias
+    '*'                 
+    |expr opt_as_alias {$$ = strdup($1); free($1);}
     |NAME '=' expr
     ;
 opt_as_alias:
                     {/*empty*/}
-    |AS NAME        {printf("as %s\n", $2); free($2);}
+    |AS NAME        
     |AS STRING
-    |NAME           {printf("as %s\n", $1); free($1);}
+    |NAME           
     ;
 opt_into:
         {}
-    |INTO NAME  {printf("into option\n");}
+    |INTO NAME  
     ;
 
 /****  from statement  ****/
@@ -701,7 +727,7 @@ cross_outer:
 opt_where:
         {}
     |WHERE expr
-    |WHERE subquery {printf("subquery:%s", $2);}
+    |WHERE subquery {}
     ;
 
 /****  group by statement  ****/
