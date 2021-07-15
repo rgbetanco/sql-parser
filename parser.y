@@ -134,7 +134,7 @@
 
 /* Bison will put this section before yystype definition */
 %code requires{
-    #include "strmap.h"
+    #include "json-c/json.h"
 }
 
 %union{
@@ -142,7 +142,7 @@
     int intVal;
     double floatVal;
     int subtok;
-    StrMap* map;
+    struct json_object* json;
 }
 
 /* operators and precedence levels */
@@ -151,7 +151,7 @@
 %nonassoc LIKE IN
 %left '!'
 %left BETWEEN
-%left <subtok> COMPARISON EQUAL/* = <> < > <= >= <=> */
+%left <subtok> COMPARISON EQUAL /* = <> < > <= >= <=> */
 %left '|'
 %left '&'
 %left '+' '-'
@@ -159,10 +159,10 @@
 %left '^'
 %nonassoc UMINUS
 
-%type <strVal> NAME STRING expr select_expr_list select_expr
+%type <strVal> NAME STRING expr select_expr from_statement
 %type <intVal> INTNUMBER
 %type <floatVal> APPROXNUM
-%type <map> query_specification
+%type <json> query_specification select_expr_list subquery opt_from_list opt_from
 
 %{
     #include <stdio.h> 
@@ -171,6 +171,7 @@
 
     void yyerror(char*);
     int yylex(void);
+    int has_blocked_table(struct json_object* json);
 %}
 
 %%
@@ -243,15 +244,11 @@ subquery:
     |expr NOT IN '(' query_specification ')'
     |EXISTS '(' query_specification ')'  
     {
-        char buf[255];
-        int result;
+        $$ = json_object_new_object();
+        printf("%s\n", json_object_to_json_string($3));
+        has_blocked_table($3);
 
-        result = sm_get($3, "select_list", buf, sizeof(buf));
-        if (result == 0) {
-            printf("not found"); /* Handle value not found... */
-        }
-        printf("subquery_select_list: %s\n", buf);
-        sm_delete($3);
+        json_object_object_add($$, "subquery", $3);
     }
     |NOT EXISTS '(' query_specification ')'
     ;
@@ -261,32 +258,6 @@ opt_all_some_any:
     |SOME
     |ANY
     ;
-/*subquery_query_specification:
-    SELECT select_options top_options select_expr_list opt_into subquery_opt_from_list opt_where opt_groupby opt_having {printf("select\n");}
-    ;
-subquery_opt_from_list:
-        {}
-    |FROM subquery_opt_from
-    ;
-subquery_opt_from:
-    subquery_from_statement
-    |subquery_opt_from ',' subquery_from_statement
-    ;
-subquery_from_statement:
-    NAME opt_as_alias
-    |NAME '.' NAME opt_as_alias
-    |subquery_joined_table
-    ;
-subquery_joined_table:
-    subquery_from_statement join_type subquery_from_statement ON expr
-    |from_statement CROSS JOIN from_statement
-    |NAME cross_outer APPLY NAME
-    |'(' joined_table ')'
-    ;
-join_type:
-    opt_join_type opt_join_hint JOIN
-    ;*/
-
 
 /****  function ****/    
 expr:
@@ -638,11 +609,9 @@ opt_union:
 query_specification:
     SELECT select_options top_options select_expr_list opt_into opt_from_list opt_where opt_groupby opt_having 
     {
-        $$ = sm_new(10); 
-        if ($$ == NULL) {
-            printf("fail");     /* Handle allocation failure */
-        }
-        sm_put($$, "select_list", $4);
+        $$ = json_object_new_object();
+        json_object_object_add($$, "select_list", $4);
+        json_object_object_add($$, "table_name", $6);
     }
     ;
 select_options:
@@ -659,8 +628,24 @@ top_options:
     |top_options TOP expr
     ;
 select_expr_list:
-    select_expr                         {$$ = strdup($1); free($1);}
-    |select_expr_list ',' select_expr   {/*empty*/}
+    select_expr                         
+    {   
+        struct json_object * temp;
+        $$ = json_object_new_array();
+
+        temp = json_object_new_string($1);
+        json_object_array_add($$, temp);
+    }
+    |select_expr_list ',' select_expr   
+    {   
+        /* recursive */
+        struct json_object * temp;
+        $$ = json_object_new_array();
+
+        temp = json_object_new_string($3);
+        json_object_array_add($1, temp);
+        $$ = $1;
+    }
     ;
 select_expr:    /* funciton not complete yet */
     '*'                 
@@ -681,15 +666,31 @@ opt_into:
 /****  from statement  ****/
 opt_from_list:
         {}
-    |FROM opt_from
+    |FROM opt_from  {$$ = $2;}
     ;
 opt_from:
     from_statement
+    {
+        struct json_object * temp;
+        $$ = json_object_new_array();
+
+        temp = json_object_new_string($1);
+        json_object_array_add($$, temp);
+    }
     |opt_from ',' from_statement
+    {   
+        /* recursive */
+        struct json_object * temp;
+        $$ = json_object_new_array();
+
+        temp = json_object_new_string($3);
+        json_object_array_add($1, temp);
+        $$ = $1;
+    }
     ;
 from_statement:
-    NAME opt_as_alias
-    |NAME '.' NAME opt_as_alias
+    NAME opt_as_alias           {$$ = strdup($1); free($1);}
+    |NAME '.' NAME opt_as_alias {$$ = strdup($3); free($3);}
     |joined_table
     ;
 joined_table:
@@ -806,4 +807,32 @@ int main(void)
 void yyerror(char* s)
 {
     fprintf(stderr, "error %s\n", s);
+}
+
+int has_blocked_table(struct json_object* json)
+{
+    struct json_object* blocked_table;
+    char** string_array;
+    int file_length;
+
+    blocked_table = json_object_from_file("./config/blocked_list.json");
+    blocked_table = json_object_object_get(blocked_table, "blocked_table_list");
+    file_length = json_object_array_length(blocked_table);
+    
+    // malloc the memory for string array
+    string_array = malloc(file_length * sizeof(char*));
+    for(int i = 0; i < file_length; i++){
+        string_array[i] = malloc((file_length + 1) * sizeof(char));
+        string_array[i] = json_object_to_json_string(json_object_array_get_idx(blocked_table, i));
+    }
+
+    for(int i = 0; i < file_length; i++){
+        printf("%s\n", string_array[i]);
+    }
+
+    // free the memory for string array
+    /* for(int i = 0; i < file_length; i++){
+        free(string_array[i]);
+    } */
+    free(string_array);
 }

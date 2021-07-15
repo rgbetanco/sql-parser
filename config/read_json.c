@@ -1,11 +1,9 @@
-#include <iostream>
-#include <fstream>
-#include <string>
+#include <stdlib.h>
+#include <stdio.h>
 #include "json-c/json.h"
-using namespace std;
 
 int main(){
-    struct json_object * json;
+    /*struct json_object * json;
     struct json_object * temp;
     fstream flex;
     
@@ -26,6 +24,23 @@ int main(){
     }
 
     flex.close();
+    return 0;*/
+
+    struct json_object * object;
+    struct json_object * array;
+    struct json_object * temp;
+    char * string;
+    string = "string";
+
+    array = json_object_new_array();
+    object = json_object_new_object();
+    temp = json_object_new_string(string);
+    json_object_array_add(array, temp);
+    json_object_array_add(array, temp);
+    json_object_object_add(object, "select_list", array);
+
+    printf(json_object_to_json_string(object));
+
     return 0;
 }
 
