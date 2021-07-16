@@ -132,6 +132,8 @@
 %token TRUNCATE
 %token PARTITIONS
 
+%error-verbose  /* let error message more user-friendly */
+
 /* Bison will put this section before yystype definition */
 %code requires{
     #include "json-c/json.h"
@@ -168,10 +170,12 @@
     #include <stdio.h> 
     #include <stdlib.h>
     #include <string.h>
+    #include <stdbool.h>
 
     void yyerror(char*);
     int yylex(void);
-    int has_blocked_table(struct json_object* json);
+    bool has_blocked_table(struct json_object* json);
+    void json_object_array_to_string_array(struct json_object* json, char** string_array);
 %}
 
 %%
@@ -245,9 +249,11 @@ subquery:
     |EXISTS '(' query_specification ')'  
     {
         $$ = json_object_new_object();
-        printf("%s\n", json_object_to_json_string($3));
-        has_blocked_table($3);
+        if(has_blocked_table($3)){
+            yyerror("there is blocked table in subquery.");
+        }
 
+        printf("%s\n", json_object_to_json_string($3));
         json_object_object_add($$, "subquery", $3);
     }
     |NOT EXISTS '(' query_specification ')'
@@ -806,33 +812,100 @@ int main(void)
 
 void yyerror(char* s)
 {
-    fprintf(stderr, "error %s\n", s);
+    fprintf(stderr, "error : %s\n", s);
 }
 
-int has_blocked_table(struct json_object* json)
+bool has_blocked_table(struct json_object* json)
 {
     struct json_object* blocked_table;
-    char** string_array;
+    char** blocked_table_array;
+    char** table_array;
     int file_length;
+    int table_length;
+    bool result = false;
 
+    // check if the json object has table_list
+    if(json_object_object_get(json, "table_name") == NULL){
+        return result;
+    }
+
+    // read .json file into the json object
     blocked_table = json_object_from_file("./config/blocked_list.json");
     blocked_table = json_object_object_get(blocked_table, "blocked_table_list");
-    file_length = json_object_array_length(blocked_table);
     
     // malloc the memory for string array
-    string_array = malloc(file_length * sizeof(char*));
+    file_length = json_object_array_length(blocked_table);
+    blocked_table_array = malloc(file_length * sizeof(char*));
     for(int i = 0; i < file_length; i++){
-        string_array[i] = malloc((file_length + 1) * sizeof(char));
-        string_array[i] = json_object_to_json_string(json_object_array_get_idx(blocked_table, i));
+        int name_length = json_object_get_string_len((json_object_array_get_idx(blocked_table, i)));
+
+        // below code also can be written like this : 
+        // blocked_table_array[i] = strdup(json_object_to_json_string(json_object_array_get_idx(blocked_table, i)));
+        blocked_table_array[i] = malloc((name_length + 1 + 2) * sizeof(char));
+        strcpy(blocked_table_array[i], json_object_to_json_string(json_object_array_get_idx(blocked_table, i)));
+    }
+    
+    // extract table_name from json parameter
+    struct json_object* temp_pointer;
+    temp_pointer = json_object_object_get(json, "table_name"); // no need to free memory
+    table_length = json_object_array_length(temp_pointer);
+
+    table_array = malloc(table_length * sizeof(char*));
+    for(int i = 0; i < table_length; i++){
+        int name_length = json_object_get_string_len((json_object_array_get_idx(temp_pointer, i)));
+
+        table_array[i] = malloc((name_length + 1 + 2) * sizeof(char));
+        strcpy(table_array[i], json_object_to_json_string(json_object_array_get_idx(temp_pointer, i)));
     }
 
+    /*
     for(int i = 0; i < file_length; i++){
-        printf("%s\n", string_array[i]);
+        printf("%s\n", blocked_table_array[i]);
     }
 
-    // free the memory for string array
-    /* for(int i = 0; i < file_length; i++){
-        free(string_array[i]);
-    } */
-    free(string_array);
+    for(int i = 0; i < table_length; i++){
+        printf("%s\n", table_array[i]);
+    }
+    */
+
+    for(int i = 0; i < file_length; i++){
+        for(int j = 0; j < table_length; j++){
+            if(strcmp(blocked_table_array[i], table_array[j]) == 0){
+                result = true;
+            }
+        }
+    }
+
+    // free the memory of blocked table array
+    for(int i = 0; i < file_length; i++){
+        free(blocked_table_array[i]);
+    } 
+    free(blocked_table_array);
+
+    // free the memory of table array
+    for(int i = 0; i < table_length; i++){
+        free(table_array[i]);
+    } 
+    free(table_array);
+
+    // free the memory of json object
+    json_object_put(blocked_table);
+
+    return result;
 }
+
+/*void json_object_array_to_string_array(struct json_object* json, char* string_array[])
+{
+    printf("ok");
+    int table_length;
+    table_length = json_object_array_length(json);
+    printf(table_length);
+
+    string_array = malloc(table_length * sizeof(char*));
+    for(int i = 0; i < table_length; i++){
+        int name_length = json_object_get_string_len((json_object_array_get_idx(json, i)));
+
+        string_array[i] = malloc((name_length + 1 + 2) * sizeof(char));
+        strcpy(string_array[i], json_object_to_json_string(json_object_array_get_idx(json, i)));
+    }
+}*/

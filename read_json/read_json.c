@@ -23,8 +23,8 @@ int main(){
     //     cout << "open flex file fail." << endl;
     // }
 
-    flex.close();
-    return 0;
+    // flex.close();
+    // return 0;
 
     struct json_object * object;
     struct json_object * array;
