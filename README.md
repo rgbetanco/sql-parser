@@ -228,7 +228,17 @@ TRUNCATE TABLE PartitionTable1 WITH (PARTITIONS (2, 4, 6 TO 8));
 ### reference: [json-c library](https://github.com/json-c/json-c)
 ```
 sudo apt install libjson-c-dev
-cd read_json/
+cd config/
 gcc read_json.c -ljson-c
 ./a.out
+```
+# Python AI
+## set the python virtual environment
+```
+sudo apt-get install python3-venv
+python3 -m venv ./AI 
+cd AI
+source ./bin/activate       // open virtaul environment
+deactivate                  // close virtual environment
+python --version            // check the version of python in virtual environment
 ```

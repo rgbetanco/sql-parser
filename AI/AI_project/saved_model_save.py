@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+print(tf.__version__)
+
 # # Define module
 # class CustomModule(tf.Module):
 
@@ -22,7 +24,7 @@ import tensorflow as tf
 # # Export module in SavedModel format
 # module(tf.constant(0.))
 # tf.saved_model.save(module, './')
-print(tf.__version__)
+
 # A = tf.constant('Hello World!')
 # with tf.compat.v1.Session() as sess:
 #     B = sess.run(A)
