@@ -233,7 +233,7 @@ gcc read_json.c -ljson-c
 ./a.out
 ```
 # Python AI
-## set the python virtual environment
+## Set the python virtual environment
 ```
 sudo apt-get install python3-venv
 python3 -m venv ./AI 
@@ -242,3 +242,10 @@ source ./bin/activate       // open virtaul environment
 deactivate                  // close virtual environment
 python --version            // check the version of python in virtual environment
 ```
+## Environment
+* Python 3.7.5 [(upgrade to python 3.7 from python 3.6)](https://dev.to/serhatteker/how-to-upgrade-to-python-3-7-on-ubuntu-18-04-18-10-5hab)
+* pip 21.1.3
+* tensorflow 2.5.0 [(difference between Keras and tf.keras)](https://stackoverflow.com/questions/55178230/what-is-the-difference-between-keras-and-tf-keras)
+* GCC 7.5.0
+* cmake 3.21.0 [(upgrade cmake to higher version)](https://graspingtech.com/upgrade-cmake/)
+* frugally-deep [(Installation)](https://github.com/Dobiasd/frugally-deep/blob/master/INSTALL.md)
