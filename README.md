@@ -248,4 +248,4 @@ python --version            // check the version of python in virtual environmen
 * tensorflow 2.5.0 [(difference between Keras and tf.keras)](https://stackoverflow.com/questions/55178230/what-is-the-difference-between-keras-and-tf-keras)
 * GCC 7.5.0
 * cmake 3.21.0 [(upgrade cmake to higher version)](https://graspingtech.com/upgrade-cmake/)
-* frugally-deep [(Installation)](https://github.com/Dobiasd/frugally-deep/blob/master/INSTALL.md)
+* [frugally-deep](https://github.com/Dobiasd/frugally-deep) [(Installation)](https://github.com/Dobiasd/frugally-deep/blob/master/INSTALL.md)

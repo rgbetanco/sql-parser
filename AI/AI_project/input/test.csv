@@ -1,0 +1,6 @@
+Sentence,Label
+" select * from users where id = '1' or @ @1 = 1 union select 1,version (  )  -- 1'",1
+" select * from users where id = 1 or 1#"" (  union select 1,version (  )  -- 1",1
+""" or pg_sleep ( __TIME__ ) --",1
+create user name identified by pass123 temporary tablespace temp default tablespace users; ,1
+%29,1
