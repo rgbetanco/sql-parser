@@ -249,3 +249,26 @@ python --version            // check the version of python in virtual environmen
 * GCC 7.5.0
 * cmake 3.21.0 [(upgrade cmake to higher version)](https://graspingtech.com/upgrade-cmake/)
 * [frugally-deep](https://github.com/Dobiasd/frugally-deep) [(Installation)](https://github.com/Dobiasd/frugally-deep/blob/master/INSTALL.md)
+## Call python function in C++ file
+```
+sudo apt-get install python3.7-dev
+// if your python version is 3.9, just replace the "python3.7-dev" into "python3.9-dev"
+```
+
+```
+// main.cpp
+#define PY_SSIZE_T_CLEAN
+#include <python3.7/Python.h>
+
+int main() {
+    Py_Initialize();
+    PyRun_SimpleString("print (\"hello\")");
+    Py_Finalize();
+
+    return 0;
+}
+```
+```
+g++ main.cpp -lpython3.7m
+./a.out
+```
