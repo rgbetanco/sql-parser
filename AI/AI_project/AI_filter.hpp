@@ -6,26 +6,38 @@
 #include <iostream>
 #include <vector>
 
+#include <fdeep/fdeep.hpp>
 #include "pyhelper.hpp"
 
-// determine if the statement is a sql injection
-bool is_sql_injection(std::string sql_statement);
+// determine if the statement is a sql injection, pass the "auto" to the function is supported by c++20
+float sql_injection_predict(const auto model, std::string sql_statement);     
 
 // use python function to preprocess the data
-std::vector<float> data_preprocess(std::string python_file, std::string python_function, std::string sql_statement); 
+std::vector<float> data_preprocess(std::string python_file_name, std::string python_function_name, std::string sql_statement); 
 
 // convert the list to the float vector because the package that convert keras into C++ doesn't support the vector of integer
 std::vector<float> python_list_to_vector(CPyObject python_list); 
 
 
-bool is_sql_injection(std::string sql_statement){
+float sql_injection_predict(const auto model, std::string sql_statement){
     std::string python_file_name = "customized_python_function";
 	std::string python_function_name = "vectorizer";
     std::vector<float> data;
 	
 	data = data_preprocess(python_file_name, python_function_name, sql_statement);
-    std::cout << data.size() << std::endl;
-    return 1;
+    //std::cout << data.size() << std::endl;
+
+    const auto result = model.predict(
+        {
+            fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(data.size())),data)
+        }
+    );
+    
+    //std::cout << fdeep::show_tensors(result) << std::endl;
+    
+    const std::vector<float> result_vec = result.front().to_vector();
+
+    return result_vec[0];
 }
 
 std::vector<float> data_preprocess(std::string python_file_name, std::string python_function_name, std::string sql_statement){

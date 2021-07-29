@@ -7,7 +7,7 @@ def vectorizer(string):
     loaded_vec = CountVectorizer(vocabulary=pickle.load(open(pickle_file, "rb")))
     feature = loaded_vec.transform([string]).toarray().tolist()
 
-    print("the value return from python is : ", feature[0])
+    # print("the value return from python is : ", feature[0])
 
     return feature[0]
 
