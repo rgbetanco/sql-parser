@@ -20,8 +20,8 @@ std::vector<float> python_list_to_vector(CPyObject python_list);
 
 
 float sql_injection_predict(const auto model, std::string sql_statement){
-    std::string python_file_name = "customized_python_function";
-	std::string python_function_name = "vectorizer";
+    std::string python_file_name = "customized_python_function";    //python file name
+	std::string python_function_name = "vectorizer";                //python function in the file
     std::vector<float> data;
 	
 	data = data_preprocess(python_file_name, python_function_name, sql_statement);
