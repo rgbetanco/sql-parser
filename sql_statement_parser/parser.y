@@ -136,7 +136,18 @@
 
 /* Bison will put this section before yystype definition */
 %code requires{
-    #include "json-c/json.h"
+    #include "json-c/json.h"    // for the type json
+
+    #ifdef __cplusplus
+        extern "C" {
+    #endif
+
+    extern int exec_parser(char *s);
+
+    #ifdef __cplusplus
+        }
+    #endif
+
 }
 
 %union{
@@ -172,18 +183,17 @@
     #include <string.h>
     #include <stdbool.h>
 
-    void yyerror(char*);
-    int yylex(void);
     bool has_blocked_table(struct json_object* json);
     int json_object_array_to_string_array(struct json_object* json, char*** string_array);  // It will return the length of string array
     void free_string_array(char** string_array, int length);
+    void yyerror(char*);
 %}
 
 %%
 
 /****  top level  ***/
 statement_list:
-    statement_list statement ';' '\n'
+    statement_list statement ';'
     |
     ;
 statement:
@@ -247,7 +257,9 @@ subquery:
     {
         struct json_object* json = $5;
         if(has_blocked_table(json)){
+            printf("%s\n", json_object_to_json_string(json));
             yyerror("there is blocked table in subquery.");
+            YYABORT;    // imdiately return error the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -257,7 +269,9 @@ subquery:
     {
         struct json_object* json = $5;
         if(has_blocked_table(json)){
+            printf("%s\n", json_object_to_json_string(json));
             yyerror("there is blocked table in subquery.");
+            YYABORT;    // imdiately return error the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -267,7 +281,9 @@ subquery:
     {
         struct json_object* json = $4;
         if(has_blocked_table(json)){
+            printf("%s\n", json_object_to_json_string(json));
             yyerror("there is blocked table in subquery.");
+            YYABORT;    // imdiately return error the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -277,7 +293,9 @@ subquery:
     {
         struct json_object* json = $5;
         if(has_blocked_table(json)){
+            printf("%s\n", json_object_to_json_string(json));
             yyerror("there is blocked table in subquery.");
+            YYABORT;    // imdiately return error the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -288,7 +306,9 @@ subquery:
         struct json_object* json = $3;
         //$$ = json_object_new_object();
         if(has_blocked_table(json)){
+            printf("%s\n", json_object_to_json_string(json));
             yyerror("there is blocked table in subquery.");
+            YYABORT;    // imdiately return error the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -299,7 +319,9 @@ subquery:
     {
         struct json_object* json = $4;
         if(has_blocked_table(json)){
+            printf("%s\n", json_object_to_json_string(json));
             yyerror("there is blocked table in subquery.");
+            YYABORT;    // imdiately return error the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -848,16 +870,6 @@ opt_asc_desc:
     ;
 %%
 
-int main(void)
-{
-    #ifdef YYDEBUG
-    yydebug = 0;    //if yydebug = 1, it will show the degug info in command line
-    #endif
-
-    yyparse();
-    return 0;
-}
-
 void yyerror(char* s)
 {
     fprintf(stderr, "error : %s\n", s);
@@ -878,7 +890,7 @@ bool has_blocked_table(struct json_object* json)
     }
 
     // read .json file into the json object
-    blocked_table = json_object_from_file("./config/blocked_list.json");
+    blocked_table = json_object_from_file("./config/blocked_list.json");    // this need to be input as command line arguement
     blocked_table = json_object_object_get(blocked_table, "blocked_table_list");
     file_length = json_object_array_to_string_array(blocked_table, &blocked_table_array);
     
@@ -939,4 +951,11 @@ void free_string_array(char** string_array, int length)
         free(string_array[i]);
     } 
     free(string_array);
+}
+
+int exec_parser(char *s)
+{
+    yy_scan_string(s);
+    int result = yyparse();
+    return result;
 }

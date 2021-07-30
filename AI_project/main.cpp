@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-	string sql_statement = "select id from name;";
+	string sql_statement = "select name from users;";
 
 	// turn on the logging output when loading model
 	// const auto model = fdeep::load_model("./python_AI/sql_injection_detecting.json");

@@ -235,8 +235,8 @@ gcc read_json.c -ljson-c
 # Python AI
 ## Set the python virtual environment
 ```
-sudo apt-get install python3-venv
-python3 -m venv ./AI 
+sudo apt-get install python3-venv 
+python3 -m venv ./AI        
 cd AI
 source ./bin/activate       // open virtaul environment
 deactivate                  // close virtual environment

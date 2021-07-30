@@ -1,13 +1,11 @@
 CC = gcc
-OUT = parser.out
-SCANNER = scanner.l
-PARSER = parser.y
+OUT = main.out
+DEPENDENCY = json-c
 
 all :
-	flex $(SCANNER)
-	bison -vdty $(PARSER)
-	$(CC) -o $(OUT) lex.yy.c y.tab.c -ljson-c
-	./$(OUT)
+	sh build.sh
+	$(CC) -c -o obj/main.o main.c
+	$(CC) obj/lex.yy.o obj/main.o obj/y.tab.o -o $(OUT) -l$(DEPENDENCY)
 
 clean : 
-	rm -rf *.tab.c *.tab.h *.output lex.yy.c $(OUT)
+	rm *.tab.c *.tab.h *.output lex.yy.c $(OUT) obj/lex.yy.o obj/main.o obj/y.tab.o
