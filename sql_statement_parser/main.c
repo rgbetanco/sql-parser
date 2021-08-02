@@ -8,6 +8,6 @@
 #endif
 
 int main(){
-    int result = exec_parser("select fdsf from fdsf where x=(select fdsf from users);");
+    int result = exec_parser("select fdsf from fdsf where x=(select fdsf from users);", "../config/blocked_list.json");
     printf("%d", result);
 }

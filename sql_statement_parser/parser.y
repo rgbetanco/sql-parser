@@ -133,6 +133,7 @@
 %token PARTITIONS
 
 %error-verbose  /* let error message more user-friendly */
+%parse-param {char* config_file_name}
 
 /* Bison will put this section before yystype definition */
 %code requires{
@@ -142,7 +143,7 @@
         extern "C" {
     #endif
 
-    extern int exec_parser(char *s);
+    extern int exec_parser(const char* statement, const char* filename);    // reuturn 0 if the parse is success, return 1 if the parse is failed, return 2 if the parse if failed due to memoey problem.
 
     #ifdef __cplusplus
         }
@@ -183,10 +184,10 @@
     #include <string.h>
     #include <stdbool.h>
 
-    bool has_blocked_table(struct json_object* json);
+    bool has_blocked_table(struct json_object* json, char* config_file_name);
     int json_object_array_to_string_array(struct json_object* json, char*** string_array);  // It will return the length of string array
     void free_string_array(char** string_array, int length);
-    void yyerror(char*);
+    void yyerror(char* filename, char* s);
 %}
 
 %%
@@ -256,10 +257,10 @@ subquery:
     expr EQUAL opt_all_some_any '(' query_specification ')'
     {
         struct json_object* json = $5;
-        if(has_blocked_table(json)){
+        if(has_blocked_table(json, config_file_name)){
             printf("%s\n", json_object_to_json_string(json));
-            yyerror("there is blocked table in subquery.");
-            YYABORT;    // imdiately return error the yyparse()
+            yyerror(config_file_name, "there is blocked table in subquery.");
+            YYABORT;    // imdiately return error to the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -268,10 +269,10 @@ subquery:
     |expr COMPARISON opt_all_some_any '(' query_specification ')'
     {
         struct json_object* json = $5;
-        if(has_blocked_table(json)){
+        if(has_blocked_table(json, config_file_name)){
             printf("%s\n", json_object_to_json_string(json));
-            yyerror("there is blocked table in subquery.");
-            YYABORT;    // imdiately return error the yyparse()
+            yyerror(config_file_name, "there is blocked table in subquery.");
+            YYABORT;    // imdiately return error to the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -280,10 +281,10 @@ subquery:
     |expr IN '(' query_specification ')'
     {
         struct json_object* json = $4;
-        if(has_blocked_table(json)){
+        if(has_blocked_table(json, config_file_name)){
             printf("%s\n", json_object_to_json_string(json));
-            yyerror("there is blocked table in subquery.");
-            YYABORT;    // imdiately return error the yyparse()
+            yyerror(config_file_name, "there is blocked table in subquery.");
+            YYABORT;    // imdiately return error to the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -292,10 +293,10 @@ subquery:
     |expr NOT IN '(' query_specification ')'
     {
         struct json_object* json = $5;
-        if(has_blocked_table(json)){
+        if(has_blocked_table(json, config_file_name)){
             printf("%s\n", json_object_to_json_string(json));
-            yyerror("there is blocked table in subquery.");
-            YYABORT;    // imdiately return error the yyparse()
+            yyerror(config_file_name, "there is blocked table in subquery.");
+            YYABORT;    // imdiately return error to the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -305,10 +306,10 @@ subquery:
     {
         struct json_object* json = $3;
         //$$ = json_object_new_object();
-        if(has_blocked_table(json)){
+        if(has_blocked_table(json, config_file_name)){
             printf("%s\n", json_object_to_json_string(json));
-            yyerror("there is blocked table in subquery.");
-            YYABORT;    // imdiately return error the yyparse()
+            yyerror(config_file_name, "there is blocked table in subquery.");
+            YYABORT;    // imdiately return error to the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -318,10 +319,10 @@ subquery:
     |NOT EXISTS '(' query_specification ')'
     {
         struct json_object* json = $4;
-        if(has_blocked_table(json)){
+        if(has_blocked_table(json, config_file_name)){
             printf("%s\n", json_object_to_json_string(json));
-            yyerror("there is blocked table in subquery.");
-            YYABORT;    // imdiately return error the yyparse()
+            yyerror(config_file_name, "there is blocked table in subquery.");
+            YYABORT;    // imdiately return error to the yyparse()
         }
 
         printf("%s\n", json_object_to_json_string(json));
@@ -870,12 +871,12 @@ opt_asc_desc:
     ;
 %%
 
-void yyerror(char* s)
+void yyerror(char* filename, char* s)
 {
     fprintf(stderr, "error : %s\n", s);
 }
 
-bool has_blocked_table(struct json_object* json)
+bool has_blocked_table(struct json_object* json, char* config_file_name)
 {
     struct json_object* blocked_table;
     char** blocked_table_array;
@@ -890,7 +891,7 @@ bool has_blocked_table(struct json_object* json)
     }
 
     // read .json file into the json object
-    blocked_table = json_object_from_file("./config/blocked_list.json");    // this need to be input as command line arguement
+    blocked_table = json_object_from_file(config_file_name);
     blocked_table = json_object_object_get(blocked_table, "blocked_table_list");
     file_length = json_object_array_to_string_array(blocked_table, &blocked_table_array);
     
@@ -953,9 +954,9 @@ void free_string_array(char** string_array, int length)
     free(string_array);
 }
 
-int exec_parser(char *s)
+int exec_parser(const char* statement, const char* filename)
 {
-    yy_scan_string(s);
-    int result = yyparse();
+    yy_scan_string(statement);
+    int result = yyparse(filename);
     return result;
 }
