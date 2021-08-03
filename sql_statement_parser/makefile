@@ -8,4 +8,4 @@ all :
 	$(CC) obj/lex.yy.o obj/main.o obj/y.tab.o -o $(OUT) -l$(DEPENDENCY)
 
 clean : 
-	rm *.tab.c *.tab.h *.output lex.yy.c $(OUT) obj/lex.yy.o obj/main.o obj/y.tab.o
+	rm -f *.tab.c *.tab.h *.output lex.yy.c $(OUT) obj/lex.yy.o obj/main.o obj/y.tab.o

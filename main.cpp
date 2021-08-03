@@ -14,10 +14,11 @@ int main(){
     if(parse_result == 0){    // parse success
         const auto model = fdeep::load_model("./AI_project/python_AI/sql_injection_detecting.json", true, fdeep::dev_null_logger);
 
-        const string python_file_name = "customized_python_function";    //python file name
-        const string python_function_name = "vectorizer";                //python function in the file
+        const string python_folder_name = "./AI_project";                // the folder name where python file in 
+        const string python_file_name = "customized_python_function";    // python file name
+        const string python_function_name = "vectorizer";                // python function in the file
 
-        vector<float> data = data_preprocess(python_file_name, python_function_name, sql_statement);
+        vector<float> data = data_preprocess(python_folder_name, python_file_name, python_function_name, sql_statement);
 
         const auto result = model.predict(
             {

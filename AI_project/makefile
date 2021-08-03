@@ -10,4 +10,4 @@ all :
 	@echo "\e[92mcompile $(IN) success!\033[0m"
 
 clean : 
-	rm -rf $(OUT)
+	rm -rf $(OUT) python_AI/sql_injection_detecting.json
