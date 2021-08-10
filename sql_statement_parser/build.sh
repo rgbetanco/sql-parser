@@ -9,5 +9,6 @@ PARSER="parser.y"
 flex $SCANNER
 bison -vdty $PARSER
 
+mkdir -p obj/
 gcc -c -o obj/lex.yy.o lex.yy.c
 gcc -c -o obj/y.tab.o y.tab.c
