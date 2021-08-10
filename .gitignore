@@ -2,15 +2,6 @@ lex.yy.c
 y.tab.c
 y.tab.h
 y.output
-**/AI/AI_project/keras_to_C++/eigen/
-**/AI/AI_project/keras_to_C++/frugally-deep/
-**/AI/AI_project/keras_to_C++/FunctionalPlus/
-**/AI/AI_project/keras_to_C++/json/
-**/AI/bin
-**/AI/include
-**/AI/lib
-**/AI/lib64
-**/AI/share
-**/AI/pyvenv.cfg
+**/AI/
 .vscode/
 *.out

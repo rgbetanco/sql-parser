@@ -8,6 +8,9 @@
 #endif
 
 int main(){
-    int result = exec_parser("select fdsf from fdsf where x=(select fdsf from users);", "../config/blocked_list.json");
-    printf("%d", result);
+    char sql_statement[256];
+    while(gets(sql_statement)){
+        exec_parser(sql_statement, "../config/blocked_list.json");
+    }
+    return 0;
 }

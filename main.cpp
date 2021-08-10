@@ -6,8 +6,11 @@
 using namespace std;
 
 int main(){
-    const string sql_statement = "select name from users;";
     const string config_file = "./config/blocked_list.json";
+    string temp;
+
+    getline(cin, temp);
+    const string sql_statement = temp;
 
     int parse_result = exec_parser(sql_statement.c_str(), config_file.c_str());
     

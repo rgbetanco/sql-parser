@@ -12,4 +12,4 @@ def vectorizer(statement, folder_name):
     return feature[0]
 
 if __name__ == '__main__':
-    vectorizer("select users from name;")
+    vectorizer("select users from name;", "./")

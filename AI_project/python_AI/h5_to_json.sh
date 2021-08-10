@@ -10,5 +10,8 @@ CONVERT_MODEL_FILE_ADDRESS="../keras_to_C++/frugally-deep/keras_export/convert_m
 H5_FILE_ADDRESS="./sql_injection_detecting.h5"            # this variable is the address where your .h5 file is.
 JSON_FILE_ADDRESS="./sql_injection_detecting.json"     # this variable is the address where you want the json file be.
 
-python3 $CONVERT_MODEL_FILE_ADDRESS $H5_FILE_ADDRESS $JSON_FILE_ADDRESS
-echo "\e[92mconvert into json file success!\033[0m"
+if python3 $CONVERT_MODEL_FILE_ADDRESS $H5_FILE_ADDRESS $JSON_FILE_ADDRESS; then
+    echo "\e[92mconvert into json file success!\033[0m"
+else
+    echo "\e[31mconvert into json file failed!\033[0m"
+fi
