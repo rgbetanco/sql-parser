@@ -3,5 +3,11 @@ y.tab.c
 y.tab.h
 y.output
 **/AI/
+**/AI_project/keras_to_C++/eigen/
+**/AI_project/keras_to_C++/frugally-deep/
+**/AI_project/keras_to_C++/FunctionalPlus/
+**/AI_project/keras_to_C++/json/
+**/AI_project/__pycache__/
 .vscode/
 *.out
+*.o

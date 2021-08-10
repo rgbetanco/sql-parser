@@ -279,24 +279,4 @@ sudo apt install make
 sudo apt install flex
 sudo apt install bison
 sudo apt install libjson-c-dev
-
-// set the virtual environment
-sudo apt-get install python3-venv 
-python3 -m venv ./AI        
-cd AI
-source ./bin/activate       // open virtaul environment
-
-// upgrade to python 3.7 from python 3.6 (https://dev.to/serhatteker/how-to-upgrade-to-python-3-7-on-ubuntu-18-04-18-10-5hab)
-sudo apt update -y
-sudo apt install python3.7
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 2
-sudo update-alternatives --config python3
-// choose the python3.7 and press enter
-sudo rm /usr/bin/python3
-sudo ln -s python3.7 /usr/bin/python3
-
-// install pip
-python -m ensurepip
-python -m pip install --upgrade pip
 ```
