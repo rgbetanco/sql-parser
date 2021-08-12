@@ -15,7 +15,6 @@ void send(const char* ip_address, int port, const char* sql_statement);
 int main(int argc, char** argv){
     int  listenfd, connfd, sendfd;
     struct sockaddr_in  receive_address;
-    struct sockaddr_in  send_address;
 
     char  buff[4096];
     int  n;
