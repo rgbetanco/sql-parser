@@ -13,6 +13,7 @@
 #include <iostream>
 using namespace std;
 
+// send data to another server
 void send_data(const char* ip_address, int port, const char* sql_statement);
 
 int main(){
@@ -63,7 +64,11 @@ int main(){
 
         if(parse_result == 0){    // parse success
             printf("success\n");
+            char str[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &(client_info.sin_addr), str, INET_ADDRSTRLEN);
+            printf("from ip %s\n", str);
             send(connfd, "success", strlen("success"), 0);
+            send_data("192.168.11.165", 20000, sql_statement);
         }
         else{               // parse failed
             printf("failed\n");
