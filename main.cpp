@@ -9,21 +9,31 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <cstdio>
 #include <string>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <array>
 using namespace std;
 
-// send data to another server
-void send_data(const char* ip_address, int port, const char* sql_statement);
+// exec command line and return the result
+string exec(const char* cmd);
 
 int main(){
-    // listen on the port 
     int  listenfd, connfd;
     struct sockaddr_in  server_info;
     struct sockaddr_in  client_info;
     unsigned int addrlen = sizeof(client_info);
+    string result;
 
-    char  buff[4096];
+    // database config
+    string HOSTNAME = "localhost";
+    string PASSWORD = "Tiva1135";
+    string DB_NAME = "test";
+    string DB_USER = "SA";
+
+    char  buff[MAXLINE];
     int  n;
 
     if( (listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 ){
@@ -55,60 +65,42 @@ int main(){
         n = recv(connfd, buff, MAXLINE, 0);
         buff[n] = '\0';
 
+        char ip[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(client_info.sin_addr), ip, INET_ADDRSTRLEN);
+
         const char* sql_statement = buff;
         const char* config_file = "./config/blocked_list.json";
 
+        printf("recv msg from %s : %s\n", ip, sql_statement);
+
         int parse_result = exec_parser(sql_statement, config_file);
 
-        printf("recv msg from client: %s\n", sql_statement);
+        string sql_statement_str(sql_statement);
+        string command = "mssql-cli -S " + HOSTNAME + " -d " + DB_NAME + " -U " + DB_USER + " -P " + PASSWORD + " -Q \"" + sql_statement_str + "\"";
 
         if(parse_result == 0){    // parse success
-            printf("success\n");
-            char str[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &(client_info.sin_addr), str, INET_ADDRSTRLEN);
-            printf("from ip %s\n", str);
-            send(connfd, "success", strlen("success"), 0);
-            send_data("192.168.11.165", 20000, sql_statement);
+            result = exec(command.c_str());
+            cout << "database result : " << endl << result << endl;
         }
         else{               // parse failed
-            printf("failed\n");
-            send(connfd, "failed", strlen("failed"), 0);
+            result = "flex and bison parsed failed";
         }
-
+        send(connfd, result.c_str(), result.length(), 0);
         close(connfd);
     }
     close(listenfd);
     return 0;
 }
 
-void send_data(const char* ip_address, int port, const char* sql_statement){
-    int sockfd;
-    char  recvline[4096], sendline[4096];
-    struct sockaddr_in  servaddr;
-
-    if( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-        printf("create socket error: %s(errno: %d)\n", strerror(errno),errno);
-        exit(0);
+string exec(const char* cmd) {
+    array<char, 128> buffer;
+    string result;
+    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw runtime_error("popen() failed!");
     }
-
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(port);
-    if( inet_pton(AF_INET, ip_address, &servaddr.sin_addr) <= 0){
-        printf("inet_pton error for %s\n",ip_address);
-        exit(0);
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
     }
-
-    if( connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0){
-        printf("connect error: %s(errno: %d)\n",strerror(errno),errno);
-        exit(0);
-    }
-
-    printf("send msg to server: %s\n", sql_statement);
-
-    if( send(sockfd, sql_statement, strlen(sql_statement), 0) < 0){
-        printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
-        exit(0);
-    }
-    close(sockfd);
+    return result;
 }

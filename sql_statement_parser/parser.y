@@ -725,9 +725,8 @@ select_expr_list:
     }
     ;
 select_expr:    /* funciton not complete yet */
-    '*'                 
+    '*'                {$$ = strdup("*");} 
     |expr opt_as_alias {$$ = strdup($1); free($1);}
-    |NAME '=' expr
     ;
 opt_as_alias:
                     {/*empty*/}

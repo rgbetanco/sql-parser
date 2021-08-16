@@ -8,9 +8,10 @@
 #endif
 
 int main(){
-    char sql_statement[256];
-    while(gets(sql_statement)){
-        exec_parser(sql_statement, "../config/blocked_list.json");
-    }
-    return 0;
+    yyparse("../config/blocked_list.json");
+    // char sql_statement[256];
+    // while(gets(sql_statement)){
+    //     exec_parser(sql_statement, "../config/blocked_list.json");
+    // }
+    // return 0;
 }
